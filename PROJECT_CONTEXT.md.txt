@@ -1,0 +1,416 @@
+# 5 PECADOS MUSICALES — PROJECT CONTEXT
+
+## VISIÓN GENERAL
+
+5 Pecados Musicales es un proyecto artístico, performativo y transmedia compuesto por cinco avatares simbólicos: Leo Feelow, Ander Popu, Kim Thek, Bodhi Folk y Asher Coda.
+
+No son personajes ficticios tradicionales ni alter egos psicológicos del creador. Son entidades conceptuales que representan tensiones culturales, existenciales y artísticas del mundo contemporáneo.
+
+El proyecto mezcla:
+- música
+- performance
+- estética cinematográfica
+- dirección artística
+- teoría crítica
+- contenido digital
+- identidad visual
+- narrativa transmedia
+
+La música es el eje base, pero el proyecto NO debe sentirse como un grupo musical convencional. Debe sentirse como un universo conceptual vivo.
+
+El objetivo de la web NO es informar únicamente. Debe sentirse como una experiencia inmersiva, artística y cinematográfica.
+
+---
+
+# REGLAS GENERALES DEL UNIVERSO
+
+- Cada avatar tiene identidad visual propia.
+- Cada avatar tiene color propio.
+- Las identidades NO deben mezclarse visualmente.
+- El proyecto debe mantener coherencia estética absoluta.
+- Evitar estética genérica IA.
+- Todo debe sentirse cinematográfico, editorial y artístico.
+- La experiencia debe priorizar diseño y atmósfera antes que funcionalidad.
+- La web debe sentirse como una instalación digital o universo inmersivo.
+- Mobile first SIEMPRE.
+- La sensación debe ser oscura, profunda, elegante y conceptual.
+- El minimalismo debe convivir con profundidad visual.
+- El humo y la iluminación son elementos MUY importantes.
+- La iluminación debe reaccionar coherentemente al color conceptual de cada personaje.
+- Los efectos visuales deben sentirse reales, no artificiales.
+- Evitar saturación excesiva de interfaz.
+- La experiencia debe transmitir misterio, tensión y personalidad.
+
+---
+
+# IDENTIDAD VISUAL GENERAL
+
+## ESTÉTICA GLOBAL
+
+- Cinematic web design
+- Editorial design
+- Immersive UI
+- Dark atmosphere
+- Premium fashion campaign aesthetic
+- Experimental digital art direction
+- High contrast
+- Depth-based layouts
+- Atmospheric lighting
+- Realistic smoke/fog
+- Subtle motion
+- Smooth transitions
+- Minimal but emotionally intense
+- Brutalist + luxury aesthetic fusion
+- Render-like visual depth
+- Black backgrounds with controlled gradients
+- Strong typography hierarchy
+- Slow immersive feeling
+
+---
+
+# PERSONAJES
+
+# LEO FEELOW
+
+## COLOR PRINCIPAL
+Gris.
+
+## CONCEPTO
+
+Leo representa:
+- experiencia real
+- calle
+- cuerpo
+- acción
+- juventud urbana
+- frustración contemporánea
+- conocimiento vivido
+- desafío social
+- movimiento físico
+
+Critica:
+- exceso de información
+- desconexión digital
+- teoría vacía
+- sobreintelectualización
+
+Su conocimiento se experimenta, no se acumula.
+
+---
+
+## ESTÉTICA VISUAL
+
+- tonos grises
+- humo gris
+- iluminación fría
+- fotografía urbana
+- estética deportiva callejera
+- sensación nocturna
+- brutalismo urbano
+- textura industrial
+- hormigón
+- basket callejero
+- energía física
+- desenfoques dinámicos
+- contraste fuerte
+- sensación de reto y presencia física
+
+---
+
+## REFERENCIAS
+
+- street basketball
+- urbex
+- graffiti
+- breakdance
+- hip hop
+- abandoned spaces
+- urban philosophy
+- raw street cinematography
+
+---
+
+## REGLAS IMPORTANTES
+
+- NO usar verde en Leo.
+- NO estética techno.
+- Debe sentirse físico y urbano.
+- Debe transmitir realidad callejera y experiencia vivida.
+- El gris es obligatorio como aura conceptual.
+
+---
+
+# ANDER POPU
+
+## COLOR PRINCIPAL
+Verde.
+
+## CONCEPTO
+
+Ander representa:
+- espectáculo
+- algoritmo
+- superficialidad consciente
+- capitalismo emocional
+- validación social
+- entretenimiento digital
+- éxito visible
+- autoexposición
+
+No es un influencer cliché. Es una crítica interna del espectáculo contemporáneo.
+
+---
+
+## ESTÉTICA VISUAL
+
+- verde ácido
+- luces verdes
+- humo verde
+- estética club
+- lujo artificial
+- brillo digital
+- sensación aspiracional
+- flashes
+- nightlife
+- DJ culture
+- modern capitalism aesthetic
+- glossy visuals
+- synthetic success
+
+---
+
+## REFERENCIAS
+
+- DJ performance
+- influencer culture
+- nightlife
+- commercial music
+- modern social media identity
+
+---
+
+## REGLAS IMPORTANTES
+
+- El verde es obligatorio.
+- La iluminación debe reaccionar al verde.
+- Debe sentirse atractivo pero inquietante.
+- Nunca debe sentirse humilde o natural.
+
+---
+
+# KIM THEK
+
+## COLOR PRINCIPAL
+Negro.
+
+## CONCEPTO
+
+Kim representa:
+- oscuridad interna
+- catarsis
+- arte como herida
+- techno
+- autodestrucción
+- transformación emocional
+- ritual creativo
+- melancolía
+- vacío
+
+Su identidad depende de mantenerse roto.
+
+---
+
+## ESTÉTICA VISUAL
+
+- negros profundos
+- techno aesthetic
+- humo oscuro
+- luces minimalistas
+- iluminación industrial
+- sombras pesadas
+- sensación ritual
+- atmósfera densa
+- estética rave oscura
+- vacío emocional
+- luces frías mínimas
+
+---
+
+## REFERENCIAS
+
+- techno culture
+- industrial rave
+- dark editorial fashion
+- underground electronic scene
+
+---
+
+## REGLAS IMPORTANTES
+
+- NO colores vivos.
+- Debe sentirse pesado y profundo.
+- El negro domina toda la identidad.
+
+---
+
+# ASHER CODA
+
+## COLOR PRINCIPAL
+Blanco.
+
+## CONCEPTO
+
+Asher representa:
+- conocimiento
+- divulgación cultural
+- perfeccionismo
+- pensamiento crítico
+- intelectualidad
+- tensión entre pureza y exposición pública
+
+Su conflicto:
+mantener la complejidad en un entorno simplificado por algoritmos.
+
+---
+
+## ESTÉTICA VISUAL
+
+- blanco puro
+- iluminación limpia
+- editorial minimalism
+- diseño intelectual
+- profundidad suave
+- humo blanco sutil
+- estética de ensayo filosófico
+- composición precisa
+- sensación académica elegante
+
+---
+
+## REFERENCIAS
+
+- philosophical essays
+- editorial magazines
+- cultural criticism
+- luxury minimalism
+
+---
+
+## REGLAS IMPORTANTES
+
+- NO estética callejera.
+- NO saturación visual.
+- Debe sentirse limpio y sofisticado.
+- El blanco domina toda la identidad.
+
+---
+
+# BODHI FOLK
+
+## COLOR PRINCIPAL
+Rojo oscuro.
+
+## CONCEPTO
+
+Bodhi representa:
+- destrucción del folklore
+- mercenario cultural
+- capitalismo contra tradición
+- pérdida cultural
+- contradicción interna
+- memoria colectiva
+- violencia simbólica
+
+Es un ejecutor que destruye aquello que también le pertenece.
+
+---
+
+## ESTÉTICA VISUAL
+
+- rojo oscuro
+- humo rojo
+- estética samurái contemporánea
+- tensión rural-industrial
+- tradición rota
+- textura orgánica
+- sensación de amenaza silenciosa
+- cinematic assassin aesthetic
+
+---
+
+## REFERENCIAS
+
+- folklore destruction
+- rural decay
+- samurai imagery
+- mercenary aesthetics
+- cultural loss
+
+---
+
+## REGLAS IMPORTANTES
+
+- Debe sentirse peligroso y melancólico.
+- El rojo debe dominar visualmente.
+- No hacerlo futurista sci-fi.
+
+---
+
+# OBJETIVO DE LA WEB
+
+La web debe sentirse como:
+- una experiencia artística
+- una instalación digital
+- un universo narrativo
+- una obra audiovisual interactiva
+
+NO como:
+- una página corporativa
+- un portfolio genérico
+- una landing comercial tradicional
+
+---
+
+# FUNCIONALIDADES NECESARIAS
+
+- Página principal inmersiva
+- Apartado individual para cada avatar
+- Carruseles visuales
+- Integración de imágenes ya existentes
+- Contacto RRSS
+- Contacto Gmail
+- Responsive completo
+- Mobile first
+- Smooth scrolling
+- Cinematic transitions
+
+---
+
+# TECNOLOGÍAS Y DIRECCIÓN TÉCNICA
+
+Priorizar:
+- Next.js
+- React
+- Tailwind
+- Framer Motion
+- Three.js (si añade profundidad real)
+- GSAP (opcional)
+
+---
+
+# DIRECCIÓN DE DISEÑO
+
+IMPORTANTE:
+El diseño debe priorizar:
+- atmósfera
+- profundidad
+- emoción
+- identidad visual
+- sensación cinematográfica
+
+Antes que:
+- exceso de texto
+- exceso de funcionalidad
+- UI corporativa tradicional
+
+La web debe sentirse viva.
