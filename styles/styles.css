@@ -519,9 +519,129 @@ h2,
     0 2rem 5rem rgba(0, 0, 0, 0.22);
 }
 
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  opacity: 0.82;
+  mix-blend-mode: screen;
+}
+
+.hero-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.smoke-layer,
+.volumetric-beam {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.smoke-layer {
+  width: clamp(24rem, 58vw, 60rem);
+  height: clamp(18rem, 42vw, 42rem);
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at 35% 45%, rgba(244, 238, 227, 0.12), transparent 0 42%),
+    radial-gradient(ellipse at 62% 48%, rgba(167, 167, 162, 0.1), transparent 0 48%),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.08), transparent 0 64%);
+  filter: blur(clamp(2rem, 5vw, 4.8rem));
+  opacity: 0.42;
+  transform: translate3d(0, 0, 0) rotate(0deg);
+  animation: smokeDrift 22s ease-in-out infinite alternate;
+}
+
+.smoke-a {
+  left: -14%;
+  top: 18%;
+}
+
+.smoke-b {
+  right: -18%;
+  top: 6%;
+  opacity: 0.34;
+  animation-duration: 28s;
+  animation-delay: -8s;
+}
+
+.smoke-c {
+  left: 24%;
+  bottom: -12%;
+  width: clamp(20rem, 48vw, 50rem);
+  height: clamp(16rem, 34vw, 36rem);
+  opacity: 0.26;
+  animation-duration: 31s;
+  animation-delay: -13s;
+}
+
+.volumetric-beam {
+  top: 8%;
+  width: clamp(16rem, 34vw, 34rem);
+  height: 120%;
+  opacity: 0.3;
+  filter: blur(clamp(1.4rem, 4vw, 3.6rem));
+  transform-origin: top center;
+  animation: beamPulse 16s ease-in-out infinite alternate;
+}
+
+.beam-ander {
+  left: 2%;
+  background: linear-gradient(180deg, rgba(0, 168, 117, 0.28), transparent 72%);
+  transform: rotate(18deg) skewX(-12deg);
+}
+
+.beam-asher {
+  left: 42%;
+  background: linear-gradient(180deg, rgba(216, 210, 196, 0.22), transparent 68%);
+  transform: rotate(-4deg) skewX(8deg);
+  animation-delay: -5s;
+}
+
+.beam-bodhi {
+  right: 0;
+  background: linear-gradient(180deg, rgba(199, 15, 24, 0.22), transparent 74%);
+  transform: rotate(-20deg) skewX(14deg);
+  animation-delay: -9s;
+}
+
+.hero-editorial-frame {
+  position: absolute;
+  inset: clamp(4.5rem, 8vw, 6.5rem) clamp(0.7rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem);
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: clamp(0.85rem, 2vw, 1.5rem);
+  pointer-events: none;
+  color: rgba(244, 238, 227, 0.52);
+  font-family: var(--font-label);
+  font-size: clamp(0.58rem, 0.9vw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.hero-editorial-frame span:last-child {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
 .hero-bg {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -536,6 +656,7 @@ h2,
 .hero-scrim {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background:
     radial-gradient(ellipse at 63% 44%, rgba(214, 163, 72, 0.22), transparent 20rem),
     radial-gradient(ellipse at 63% 58%, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.72) 46rem),
@@ -683,16 +804,6 @@ h2,
   pointer-events: none;
   perspective: 1400px;
   transform-style: preserve-3d;
-}
-
-.hero-canvas {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
 }
 
 .hero-stage::after {
@@ -1155,6 +1266,7 @@ h2::after {
   padding-bottom: 3rem;
 }
 
+.map-section::before,
 .avatar-section::before,
 .archive-section::before {
   content: "";
@@ -2094,7 +2206,7 @@ body.admin-mode .stat-control input[type="range"] {
   --world-accent: var(--asher);
   --world-stone: #d8d3c7;
   --world-vein: #b79045;
-  --world-dark: #4e4b45;
+  --world-dark: #4d4a45;
 }
 
 .leo-world {
@@ -2459,6 +2571,31 @@ body.admin-mode .stat-control input[type="range"] {
   }
 }
 
+
+@keyframes smokeDrift {
+  from {
+    opacity: 0.24;
+    transform: translate3d(-2rem, 1.2rem, 0) rotate(-4deg) scale(0.94);
+  }
+
+  to {
+    opacity: 0.5;
+    transform: translate3d(2.6rem, -1.8rem, 0) rotate(5deg) scale(1.08);
+  }
+}
+
+@keyframes beamPulse {
+  from {
+    opacity: 0.18;
+    filter: blur(clamp(1.6rem, 4vw, 3.8rem));
+  }
+
+  to {
+    opacity: 0.36;
+    filter: blur(clamp(2.2rem, 5vw, 4.8rem));
+  }
+}
+
 @media (max-width: 960px) {
   .intro-grid,
   .archive-layout,
@@ -2495,5 +2632,305 @@ body.admin-mode .stat-control input[type="range"] {
   .gate-door {
     width: min(38rem, 84vw);
     height: min(30rem, 58vh);
+  }
+
+  .world-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .site-header {
+    align-items: flex-start;
+    padding: 0.85rem 1rem;
+  }
+
+  .nav-links {
+    max-width: 14rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.8rem;
+    font-size: 0.68rem;
+  }
+
+  .hero {
+    min-height: 90svh;
+    padding: 7rem 1rem 3rem;
+  }
+
+  .hero::before {
+    inset: 5.5rem 0.75rem 1rem;
+    border-radius: 0.55rem;
+  }
+
+  .hero-canvas {
+    opacity: 0.5;
+  }
+
+  .hero-atmosphere {
+    opacity: 0.62;
+  }
+
+  .smoke-layer {
+    filter: blur(2rem);
+  }
+
+  .volumetric-beam {
+    height: 88%;
+    opacity: 0.18;
+  }
+
+  .hero-editorial-frame {
+    inset: 5.5rem 0.75rem 1rem;
+    padding: 0.8rem;
+  }
+
+  .hero-editorial-frame span:first-child {
+    display: none;
+  }
+
+  .hero-bg {
+    object-position: center top;
+  }
+
+  .hero-stage {
+    inset: 5.5rem 0.75rem 1rem;
+    opacity: 0.56;
+  }
+
+  .hero-monolith {
+    --hero-card-slide: 0px;
+    left: 50%;
+    right: auto;
+    top: 35%;
+    width: min(18rem, 72vw);
+    transform: translate(-50%, -50%);
+  }
+
+  .hero.is-locking .hero-monolith,
+  .hero.is-unlocked .hero-monolith,
+  .hero.is-unlocking .hero-monolith {
+    animation: none;
+    transform: translate(-50%, -50%);
+  }
+
+  .hero-light {
+    right: auto;
+    left: 50%;
+    width: 20rem;
+    height: 20rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .manifesto-title {
+    line-height: 1.14;
+  }
+
+  .manifesto-title::before {
+    left: 0;
+    top: -0.75rem;
+    bottom: auto;
+    width: 8rem;
+    height: 1px;
+    background:
+      linear-gradient(90deg, transparent, rgba(194, 138, 53, 0.56), rgba(244, 238, 227, 0.32), transparent);
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  section {
+    padding-inline: 1rem;
+  }
+
+  .avatar-map,
+  .workflow-grid {
+    margin-inline: -1rem;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .carousel-controls {
+    grid-template-columns: 2.25rem 1fr 2.25rem;
+  }
+
+  .icon-button {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .hero-depth {
+    opacity: 0.46;
+  }
+
+  .marble-slab {
+    transform: none !important;
+  }
+
+  .slab-gold {
+    left: auto;
+    right: -3rem;
+    top: 18%;
+  }
+
+  .slab-green,
+  .slab-red,
+  .slab-black,
+  .slab-grey {
+    display: none;
+  }
+
+  .slab-white {
+    left: -4rem;
+    top: 36%;
+  }
+
+  .marble-palette {
+    grid-template-columns: repeat(2, minmax(5.5rem, 1fr));
+  }
+
+  .palette-chip {
+    min-height: 5.2rem;
+  }
+
+  .avatar-feature::before {
+    inset-inline: -1rem;
+    opacity: 0.13;
+    transform: none;
+  }
+
+  .avatar-feature::after {
+    width: 24rem;
+    height: 24rem;
+    top: 24%;
+    right: -12rem;
+    opacity: 0.46;
+  }
+
+  .avatar-feature:nth-of-type(even)::after {
+    left: -12rem;
+  }
+
+  .funko-cameo {
+    width: 3.15rem;
+    height: 4.6rem;
+    right: 0.45rem;
+    bottom: 3.65rem;
+    opacity: 0.58;
+  }
+
+  .site-footer {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding-bottom: 2.5rem;
+  }
+
+  .site-footer > a,
+  .creator-signature {
+    grid-column: 1;
+    justify-self: center;
+  }
+
+  .creator-signature {
+    order: 1;
+  }
+
+  .site-footer > a {
+    order: 2;
+  }
+
+  .sins-title {
+    margin-bottom: 2.5rem;
+  }
+
+  .sins-title::before {
+    right: 0;
+    top: -0.52em;
+    font-size: 0.58em;
+  }
+
+  .latin-subtitle {
+    margin-top: 2rem;
+    padding-inline: 0;
+    font-size: clamp(1.45rem, 8vw, 2.2rem);
+  }
+
+  .latin-subtitle::before,
+  .latin-subtitle::after {
+    display: none;
+  }
+
+  .entry-gate {
+    padding: 1rem;
+  }
+
+  .gate-door {
+    width: min(24rem, 88vw);
+    height: min(28rem, 58vh);
+  }
+
+  .gate-color {
+    height: 36%;
+  }
+
+  .gate-content h1 {
+    font-size: clamp(4rem, 22vw, 7rem);
+  }
+
+  .world-header {
+    align-items: flex-start;
+    padding: 0.85rem 1rem;
+  }
+
+  .world-back {
+    max-width: 9rem;
+    text-align: right;
+    font-size: 0.66rem;
+  }
+
+  .world-hero {
+    min-height: 88svh;
+  }
+
+  .world-marble {
+    width: min(22rem, 84vw);
+    transform: rotateX(58deg) rotateZ(-14deg) translateY(2rem);
+  }
+
+  .world-hero::before {
+    inset: 5.5rem 0.75rem 1rem;
+  }
+
+  .world-grid article {
+    min-height: 13rem;
+  }
+
+  .world-grid p {
+    margin-top: 3.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .ambient-shard,
+  .smoke-layer,
+  .volumetric-beam {
+    animation: none;
   }
 }
