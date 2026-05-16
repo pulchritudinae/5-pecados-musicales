@@ -13,6 +13,27 @@ const avatarLights = {
   kim: "rgba(94, 113, 128, 0.5)",
   bodhi: "rgba(199, 15, 24, 0.58)"
 };
+const gsap = window.gsap;
+
+const runHeroReveal = () => {
+  if (!gsap || prefersReducedMotion) {
+    return;
+  }
+
+  gsap.fromTo(
+    [".hero-editorial-frame", ".hero-content .eyebrow", ".hero-content h1", ".hero-copy", ".hero-actions"],
+    { autoAlpha: 0, y: 24, filter: "blur(10px)" },
+    {
+      autoAlpha: 1,
+      y: 0,
+      filter: "blur(0px)",
+      duration: 1.35,
+      ease: "power3.out",
+      stagger: 0.08,
+      delay: 0.15
+    }
+  );
+};
 
 document.body.classList.toggle("admin-mode", adminMode);
 
@@ -188,6 +209,7 @@ const unlockHero = () => {
 
   hero.classList.remove("is-locking");
   hero.classList.add("is-unlocking");
+  window.setTimeout(runHeroReveal, prefersReducedMotion ? 0 : 640);
 
   window.setTimeout(() => {
     hero.classList.remove("is-unlocking");
@@ -257,3 +279,36 @@ document.querySelectorAll(".stat-control").forEach((control, index) => {
 
   updateStat();
 });
+
+document.querySelectorAll(".avatar-copy h3").forEach((heading) => {
+  const letters = [...heading.textContent];
+
+  heading.textContent = "";
+  letters.forEach((letter, index) => {
+    const span = document.createElement("span");
+    span.className = "letter";
+    span.style.setProperty("--letter-index", index);
+    span.textContent = letter === " " ? "\u00a0" : letter;
+    heading.appendChild(span);
+  });
+});
+
+const nameTargets = document.querySelectorAll(".avatar-feature");
+
+if (!prefersReducedMotion && "IntersectionObserver" in window) {
+  const nameObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-name-visible");
+          nameObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.28 }
+  );
+
+  nameTargets.forEach((target) => nameObserver.observe(target));
+} else {
+  nameTargets.forEach((target) => target.classList.add("is-name-visible"));
+}
