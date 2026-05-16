@@ -2760,3 +2760,169 @@ body.admin-mode .stat-control input[type="range"] {
     animation: none;
   }
 }
+
+/* ── Hero Canvas (Three.js) ─────────────────────────────────────────────── */
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0.68;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ── Smoke layers for character pages ───────────────────────────────────── */
+.smoke-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.smoke-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(4.5rem);
+  opacity: 0;
+  mix-blend-mode: screen;
+  animation: smokeDrift var(--smoke-dur, 18s) ease-in-out infinite var(--smoke-delay, 0s);
+}
+
+.smoke-blob:nth-child(1) {
+  width: 55vw; height: 55vw;
+  left: -10%; top: 10%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--world-accent), transparent 54%), transparent 68%);
+  --smoke-dur: 22s;
+}
+
+.smoke-blob:nth-child(2) {
+  width: 38vw; height: 38vw;
+  right: -8%; top: 30%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--world-accent), transparent 66%), transparent 72%);
+  --smoke-dur: 17s;
+  --smoke-delay: -6s;
+}
+
+.smoke-blob:nth-child(3) {
+  width: 46vw; height: 46vw;
+  left: 20%; bottom: -10%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--world-accent), transparent 72%), transparent 76%);
+  --smoke-dur: 26s;
+  --smoke-delay: -11s;
+}
+
+.smoke-blob:nth-child(4) {
+  width: 28vw; height: 28vw;
+  right: 18%; top: 5%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--world-accent), transparent 60%), transparent 70%);
+  --smoke-dur: 20s;
+  --smoke-delay: -3s;
+}
+
+@keyframes smokeDrift {
+  0%   { opacity: 0;    transform: translate(0, 0)            scale(0.88); }
+  18%  { opacity: 0.28; }
+  50%  { opacity: 0.18; transform: translate(3%, -4%)         scale(1.06); }
+  82%  { opacity: 0.24; }
+  100% { opacity: 0;    transform: translate(-2%, 3%)         scale(0.92); }
+}
+
+/* Kim world: reduce opacity of smoke since it's all black */
+.kim-world .smoke-blob { filter: blur(5rem); }
+
+/* ── Character hero tagline ──────────────────────────────────────────────── */
+.world-tagline {
+  margin: 0.6rem auto 0;
+  max-width: 38rem;
+  color: rgba(244, 238, 227, 0.62);
+  font-size: clamp(1rem, 2vw, 1.22rem);
+  line-height: 1.62;
+  font-style: italic;
+}
+
+/* ── Character manifesto quote ───────────────────────────────────────────── */
+.world-quote {
+  position: relative;
+  padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 5vw, 5rem);
+  border-top: 1px solid var(--line);
+  text-align: center;
+  isolation: isolate;
+}
+
+.world-quote::before {
+  content: "\201C";
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: clamp(6rem, 14vw, 12rem);
+  line-height: 1;
+  color: color-mix(in srgb, var(--world-accent), transparent 68%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.world-quote blockquote {
+  margin: 0 auto;
+  max-width: 52rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 3.2rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.22;
+  color: transparent;
+  background: linear-gradient(96deg, #f8efe0, color-mix(in srgb, var(--world-accent), #f4eee3 56%) 54%, color-mix(in srgb, var(--world-accent), #c28a35 22%));
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.world-quote cite {
+  display: block;
+  margin-top: 1.4rem;
+  color: color-mix(in srgb, var(--world-accent), white 18%);
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ── Character nav (prev / next avatar) ─────────────────────────────────── */
+.world-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2.5rem clamp(1rem, 5vw, 5rem);
+  border-top: 1px solid var(--line);
+}
+
+.world-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: rgba(244, 238, 227, 0.62);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 180ms ease;
+}
+
+.world-nav a:hover { color: var(--ink); }
+.world-nav a:first-child::before { content: "←"; color: var(--world-accent); }
+.world-nav a:last-child::after  { content: "→"; color: var(--world-accent); }
+.world-nav span { color: var(--gold); font-family: var(--font-display); font-size: 1rem; font-style: italic; }
+
+@media (max-width: 680px) {
+  .smoke-blob { filter: blur(3rem); }
+  .world-quote blockquote { font-size: clamp(1.4rem, 7vw, 2rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smoke-blob { animation: none; opacity: 0.12; }
+}
