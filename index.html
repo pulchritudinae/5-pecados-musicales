@@ -8,9 +8,14 @@
       name="description"
       content="Web visual y conceptual para 5PM, Cinco Pecados Musicales: cinco avatares, cinco tensiones y una identidad audiovisual coherente."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="styles/styles.css" />
   </head>
   <body>
+    <!-- Entry Gate / Landing Overlay -->
     <section class="entry-gate" aria-labelledby="entry-title">
       <div class="gate-depth" aria-hidden="true">
         <span class="gate-orbit orbit-one"></span>
@@ -43,7 +48,14 @@
         <a href="#archivo">Contacto</a>
       </nav>
     </header>
+
+    <!-- Cinematic Blur Overlay for Camera Focus Pull Effect -->
+    <div class="cinematic-blur-overlay" aria-hidden="true"></div>
+
+    <!-- Custom Cursor Light -->
     <div class="cursor-light" aria-hidden="true"></div>
+
+    <!-- Ambient Depth Shards -->
     <div class="ambient-depth" aria-hidden="true">
       <span class="ambient-shard shard-green"></span>
       <span class="ambient-shard shard-white"></span>
@@ -51,6 +63,9 @@
       <span class="ambient-shard shard-black"></span>
       <span class="ambient-shard shard-red"></span>
     </div>
+
+    <!-- WebGL Canvas Background -->
+    <canvas id="webgl-canvas" class="webgl-canvas" aria-hidden="true"></canvas>
 
     <main id="inicio">
       <section class="hero is-locking" aria-labelledby="hero-title">
@@ -459,8 +474,7 @@
       <a href="#inicio">Volver arriba</a>
     </footer>
 
-    <script type="module" src="scripts/three-scene.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-    <script src="scripts/app.js"></script>
+    <!-- Module Scripts: Three.js + GSAP + Lenis + Howler (NPM via Vite) -->
+    <script type="module" src="scripts/app.js"></script>
   </body>
 </html>
