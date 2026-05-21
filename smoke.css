@@ -1,0 +1,109 @@
+.smoke-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.72;
+  mix-blend-mode: screen;
+}
+
+.smoke-wrap::before,
+.smoke-wrap::after,
+.smoke-blob {
+  content: "";
+  position: absolute;
+  width: clamp(18rem, 34vw, 38rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 44% 42%, color-mix(in srgb, var(--world-accent), white 14%) 0 8%, color-mix(in srgb, var(--world-accent), transparent 62%) 22%, transparent 68%);
+  filter: blur(1.6rem);
+  opacity: 0.18;
+  transform: translate3d(0, 0, 0) scale(1);
+  animation: smokeDrift 18s ease-in-out infinite alternate;
+}
+
+.smoke-wrap::before {
+  left: 6%;
+  top: 16%;
+  animation-duration: 22s;
+}
+
+.smoke-wrap::after {
+  right: 8%;
+  bottom: 12%;
+  opacity: 0.14;
+  animation-duration: 26s;
+  animation-delay: -8s;
+}
+
+.smoke-blob:nth-child(1) {
+  left: 18%;
+  bottom: 18%;
+  width: clamp(16rem, 30vw, 34rem);
+  opacity: 0.11;
+  animation-duration: 24s;
+  animation-delay: -4s;
+}
+
+.smoke-blob:nth-child(2) {
+  right: 22%;
+  top: 20%;
+  width: clamp(12rem, 25vw, 28rem);
+  opacity: 0.13;
+  animation-duration: 20s;
+  animation-delay: -10s;
+}
+
+.smoke-blob:nth-child(3) {
+  left: 38%;
+  top: 46%;
+  width: clamp(14rem, 28vw, 32rem);
+  opacity: 0.09;
+  animation-duration: 28s;
+  animation-delay: -14s;
+}
+
+.smoke-blob:nth-child(4) {
+  right: -6%;
+  top: 8%;
+  width: clamp(20rem, 36vw, 42rem);
+  opacity: 0.12;
+  animation-duration: 30s;
+  animation-delay: -18s;
+}
+
+@keyframes smokeDrift {
+  0% {
+    transform: translate3d(-1.2rem, 1rem, 0) scale(0.94) rotate(0deg);
+  }
+
+  50% {
+    transform: translate3d(1.6rem, -1.4rem, 0) scale(1.05) rotate(8deg);
+  }
+
+  100% {
+    transform: translate3d(2.2rem, 1.2rem, 0) scale(1.12) rotate(-5deg);
+  }
+}
+
+@media (max-width: 720px) {
+  .smoke-wrap {
+    opacity: 0.48;
+  }
+
+  .smoke-blob,
+  .smoke-wrap::before,
+  .smoke-wrap::after {
+    filter: blur(2rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smoke-blob,
+  .smoke-wrap::before,
+  .smoke-wrap::after {
+    animation: none;
+  }
+}
