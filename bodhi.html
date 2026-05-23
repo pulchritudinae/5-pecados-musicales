@@ -7,6 +7,77 @@
     <meta name="description" content="Mundo individual de Bodhi Folk dentro de Cinco Pecados Musicales." />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="smoke.css" />
+    <style>
+      /* ── HERO SCROLLYTELLING (FIXED LAYOUT) ── */
+      .world-hero {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        background: #000;
+      }
+      #hero-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        filter: brightness(0.6) contrast(1.1);
+      }
+      .hero-readability {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.8) 100%);
+        pointer-events: none;
+      }
+      .world-title {
+        position: absolute;
+        z-index: 10;
+        top: 20%;
+        width: 100%;
+        text-align: center;
+        pointer-events: none;
+      }
+      .world-title h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 5rem;
+        background: linear-gradient(135deg, #f4eee3, #c70f18);
+        -webkit-background-clip: text;
+        color: transparent;
+        margin: 0;
+      }
+      .world-title .eyebrow {
+        font-size: 1rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #f4eee3;
+        margin-bottom: 1rem;
+      }
+      .world-tagline {
+        font-size: 1.25rem;
+        color: #c70f18;
+        max-width: 600px;
+        margin: 1.5rem auto 0;
+      }
+      /* Loading indicator */
+      .loading-indicator {
+        position: absolute;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+        color: #f4eee3;
+        font-size: 1.5rem;
+        transition: opacity 0.5s ease;
+      }
+      .loading-indicator.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
   </head>
   <body class="character-page bodhi-world">
     <header class="world-header">
@@ -15,15 +86,11 @@
     </header>
 
     <main>
-      <section class="world-hero">
-        <div class="smoke-wrap" aria-hidden="true">
-          <div class="smoke-blob"></div>
-          <div class="smoke-blob"></div>
-          <div class="smoke-blob"></div>
-          <div class="smoke-blob"></div>
-        </div>
-        <div class="world-marble" aria-hidden="true"></div>
-        <div class="world-title">
+      <section class="world-hero" id="hero-scene">
+        <div class="loading-indicator" id="loading-indicator">Cargando experiencia...</div>
+        <canvas id="hero-canvas"></canvas>
+        <div class="hero-readability"></div>
+        <div class="world-title" id="main-title">
           <p class="eyebrow">05 — Etnomusicólogo / Guionista / Don Juan</p>
           <h1>Bodhi Folk</h1>
           <p class="world-tagline">Mercenario cultural. Destruye aquello que también le pertenece, sin perder la cadencia.</p>
@@ -62,5 +129,138 @@
         <a href="ander.html">Ander Popu</a>
       </nav>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script>
+      (function() {
+        'use strict';
+
+        const canvas = document.getElementById('hero-canvas');
+        const ctx = canvas.getContext('2d');
+        const heroScene = document.getElementById('hero-scene');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const mainTitle = document.getElementById('main-title');
+
+        const frameCount = 26;
+        const images = [];
+        let loadedCount = 0;
+        let allLoaded = false;
+
+        // 1. PRECARGA TOTAL DE IMÁGENES
+        function preloadImages() {
+          return new Promise((resolve, reject) => {
+            for (let i = 1; i <= frameCount; i++) {
+              const img = new Image();
+              img.src = `./images/ezgif-frame-${i.toString().padStart(3, '0')}.jpg`;
+              img.onload = () => {
+                loadedCount++;
+                if (loadedCount === frameCount) {
+                  allLoaded = true;
+                  resolve(images);
+                }
+              };
+              img.onerror = (e) => {
+                console.warn(`Error cargando frame ${i}:`, e);
+                loadedCount++;
+                if (loadedCount === frameCount) {
+                  allLoaded = true;
+                  resolve(images);
+                }
+              };
+              images.push(img);
+            }
+          });
+        }
+
+        // 2. CONFIGURACIÓN DEL CANVAS CON OBJECT-FIT COVER
+        function resizeCanvas() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          if (allLoaded && images[0]) {
+            renderFrame(0);
+          }
+        }
+
+        // 3. RENDERIZADO OPTIMIZADO CON OBJECT-FIT COVER
+        function renderFrame(frameIndex) {
+          if (!allLoaded || !images[frameIndex]) return;
+
+          const img = images[frameIndex];
+          
+          // Limpiar canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Calcular escala para object-fit: cover
+          const imgRatio = img.width / img.height;
+          const canvasRatio = canvas.width / canvas.height;
+          
+          let scale;
+          if (canvasRatio > imgRatio) {
+            scale = canvas.width / img.width;
+          } else {
+            scale = canvas.height / img.height;
+          }
+          
+          // Escala ligeramente mayor para cubrir completamente (1.05 como en el original)
+          scale *= 1.05;
+
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+          
+          // Centrar la imagen
+          const x = (canvas.width - scaledWidth) / 2;
+          const y = (canvas.height - scaledHeight) / 2;
+
+          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+        }
+
+        // 4. INICIALIZACIÓN CON SCROLLTRIGGER
+        function initScrollTrigger() {
+          gsap.registerPlugin(ScrollTrigger);
+
+          const scrub = { frame: 0 };
+
+          // Crear timeline con ScrollTrigger
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: heroScene,
+              start: 'top top',
+              end: '+=200%',
+              pin: true,
+              scrub: 1,
+              onUpdate: (self) => {
+                // Mapear progreso (0-1) al índice de frames (0-25)
+                scrub.frame = self.progress * (frameCount - 1);
+                renderFrame(Math.round(scrub.frame));
+                
+                // Fade out del título basado en el progreso
+                const titleOpacity = Math.max(0, 1 - self.progress * 1.5);
+                gsap.to(mainTitle, { opacity: titleOpacity, duration: 0.1 });
+              }
+            }
+          });
+
+          // Ocultar indicador de carga
+          loadingIndicator.classList.add('hidden');
+          
+          // Renderizar primer frame
+          renderFrame(0);
+        }
+
+        // 5. FLUJO DE INICIALIZACIÓN
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Iniciar precarga y configurar canvas
+        resizeCanvas();
+        
+        preloadImages().then(() => {
+          initScrollTrigger();
+        }).catch((err) => {
+          console.error('Error en precarga:', err);
+          loadingIndicator.textContent = 'Error cargando la experiencia';
+        });
+      })();
+    </script>
   </body>
 </html>
