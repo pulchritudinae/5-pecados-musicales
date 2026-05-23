@@ -4,11 +4,160 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>5PM | Cinco Pecados Musicales</title>
-    <meta
-      name="description"
-      content="Web visual y conceptual para 5PM, Cinco Pecados Musicales: cinco avatares, cinco tensiones y una identidad audiovisual coherente."
-    />
+    <meta name="description" content="Web visual y conceptual para 5PM, Cinco Pecados Musicales." />
     <link rel="stylesheet" href="styles/styles.css" />
+    <style>
+      /* ================================================================
+         OPCIÓN NUCLEAR: CLASES NUEVAS PARA BURLAR EL CACHÉ Y FLEXBOX
+         ================================================================ */
+
+      body {
+        overflow-x: hidden; /* Impide scroll lateral pase lo que pase */
+      }
+
+      /* 1. PUERTA DE ENTRADA (Intacta) */
+      .gate-content h1 {
+        font-family: var(--font-display); font-size: clamp(5rem, 15vw, 12rem);
+        line-height: 0.85; font-weight: 700; letter-spacing: -0.02em; color: transparent;
+        background: radial-gradient(circle at 30% 20%, rgba(0, 168, 117, 0.4) 0%, transparent 20%),
+                    radial-gradient(circle at 80% 30%, rgba(199, 15, 24, 0.3) 0%, transparent 25%),
+                    radial-gradient(circle at 50% 80%, rgba(167, 167, 162, 0.3) 0%, transparent 20%),
+                    radial-gradient(circle at 20% 70%, rgba(216, 210, 196, 0.25) 0%, transparent 25%),
+                    linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 20%, #050505 40%, #2a2a2a 60%, #000000 100%);
+        background-size: 150% 150%; -webkit-background-clip: text; background-clip: text;
+        position: relative; display: inline-block; filter: drop-shadow(0 0 2rem rgba(255, 255, 255, 0.15));
+        animation: marbleShine 8s ease-in-out infinite;
+      }
+      @keyframes marbleShine { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+      .gate-button {
+        min-width: 14rem; min-height: 3.2rem; margin-top: 2rem; border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); color: #f4eee3;
+        cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase;
+        box-shadow: 0 0 1.5rem rgba(0, 0, 0, 0.5); transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); position: relative; overflow: hidden; z-index: 10;
+      }
+      .gate-button::before { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transition: left 0.6s ease; }
+      .gate-button:hover { border-color: rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); box-shadow: 0 0 2.5rem rgba(255, 255, 255, 0.1); }
+      .gate-button:hover::before { left: 100%; }
+      body.entry-unlocked .entry-gate { transform: translateY(-100%); pointer-events: none; transition: transform 1s cubic-bezier(0.7, 0, 0.3, 1); }
+      body.entry-unlocked .gate-door { opacity: 0; transition: opacity 0.5s ease 0.5s; }
+
+      /* 2. LAYOUT HERO REDISEÑADO */
+      .hero {
+        position: relative;
+        min-height: 100vh;
+        overflow: hidden; 
+      }
+
+      /* Contenedor central anclado absoluto para ser inmune al canvas de fondo */
+      .hero-layout-grid {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        max-width: 1200px;
+        min-height: 600px; /* Asegura espacio vertical para el logo */
+        padding: 0 5%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center; /* Centra el texto verticalmente */
+        z-index: 20;
+      }
+
+      /* 3. COLUMNA IZQUIERDA (Texto puro) */
+      .hero-text-block {
+        width: 50%; /* Ocupa exactamente la mitad izquierda */
+        min-width: 300px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 1s ease 2.5s, transform 1s ease 2.5s;
+      }
+
+      body.entry-unlocked .hero-text-block { opacity: 1; transform: translateY(0); }
+
+      .hero-text-block .eyebrow {
+        font-family: var(--font-label); font-size: clamp(0.7rem, 1.5vw, 0.9rem); font-weight: 700;
+        letter-spacing: 0.2em; text-transform: uppercase; color: #c28a35; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .hero-text-block h1 {
+        font-family: 'Playfair Display', var(--font-display), serif; font-size: clamp(2.5rem, 5vw, 4.5rem);
+        line-height: 1.1; font-weight: 700; margin-bottom: 1.5rem; text-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        background: linear-gradient(135deg, #f4eee3 0%, #c28a35 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+      }
+      .hero-text-block p {
+        font-family: var(--font-body); font-size: clamp(1rem, 1.2vw, 1.15rem); line-height: 1.6;
+        color: rgba(244, 238, 227, 0.85); margin-bottom: 2.5rem; max-width: 600px;
+      }
+
+      .hero-action-btns { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+      .hero-action-btns .button { padding: 1rem 2rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.85rem; text-decoration: none; transition: all 0.3s ease; cursor: pointer; display: inline-block; }
+      .hero-action-btns .button.primary { background-color: #c28a35; color: #0a0a0a; border: 1px solid #c28a35; }
+      .hero-action-btns .button.primary:hover { background-color: #d49a42; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(194, 138, 53, 0.5); }
+      .hero-action-btns .button.ghost { background-color: transparent; color: #f4eee3; border: 1px solid #c28a35; }
+      .hero-action-btns .button.ghost:hover { background-color: rgba(194, 138, 53, 0.1); color: #fff; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+
+      /* 4. COLUMNA DERECHA (Sistema anti-errores Absoluto) */
+      
+      /* A. Transportista (Posición absoluta: ignora Flexbox por completo) */
+      .hero-card-mover {
+        position: absolute;
+        right: 5%; /* Lo anclamos SÍ O SÍ a la derecha */
+        top: 50%;
+        margin-top: -275px; /* Lo centramos verticalmente (mitad de sus 550px) */
+        width: 450px; 
+        height: 550px;
+        
+        /* Oculto sobre el texto a la izquierda */
+        opacity: 0;
+        transform: translateX(-50vw);
+        transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1) 2s, opacity 1s ease 2s;
+      }
+
+      body.entry-unlocked .hero-card-mover {
+        transform: translateX(0); /* Al ponerlo a 0, se queda anclado en su right: 5% */
+        opacity: 1;
+      }
+
+      /* B. El Elevador (Para flotar sin pisar el transform del padre) */
+      .hero-card-levitator { width: 100%; height: 100%; }
+
+      body.entry-unlocked .hero-card-levitator {
+        animation: floatingCardAnim 6s ease-in-out infinite 3.5s forwards;
+      }
+
+      @keyframes floatingCardAnim {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+      }
+
+      /* C. El Diseño del Monolito */
+      .hero-monolith-card {
+        width: 100%; height: 100%; position: relative; border-radius: 12px; overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%),
+                    repeating-linear-gradient(45deg, rgba(194, 138, 53, 0.1) 0px, rgba(194, 138, 53, 0.1) 2px, transparent 2px, transparent 10px),
+                    linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 30%, #050505 60%, #2a2a2a 100%);
+      }
+
+      .hero-monolith-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .hero-monolith-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 40%, rgba(255, 255, 255, 0.05) 100%); pointer-events: none; z-index: 2; border-radius: 12px; }
+      
+      .monolith-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: absolute; top: 0; left: 0; font-family: var(--font-display); font-size: 8rem; font-weight: 900; color: rgba(255,255,255,0.1); background: radial-gradient(circle, rgba(194,138,53,0.2) 0%, transparent 70%); }
+
+      /* Responsive (Pantallas pequeñas) */
+      @media (max-width: 900px) {
+        .hero-layout-grid {
+          position: relative; top: auto; left: auto; transform: none; min-height: auto;
+          flex-direction: column-reverse; text-align: center; padding-top: 6rem;
+        }
+        .hero-text-block { width: 100%; }
+        .hero-card-mover {
+          position: relative; right: auto; top: auto; margin: 0 auto;
+          width: 100%; max-width: 350px; height: 400px;
+          transform: none; opacity: 1; transition: none;
+        }
+        .hero-card-levitator { animation: floatingCardAnim 6s ease-in-out infinite forwards; } 
+      }
+    </style>
   </head>
   <body>
     <section class="entry-gate" aria-labelledby="entry-title">
@@ -28,9 +177,8 @@
         <span class="gate-color bodhi"></span>
       </div>
       <div class="gate-content">
-        <p class="eyebrow">Cinco Pecados Musicales</p>
         <h1 id="entry-title">5PM</h1>
-        <button class="gate-button" type="button">Entrar al modo inmersivo</button>
+        <button class="gate-button" id="enterBtn" type="button">Entrar al mundo</button>
       </div>
     </section>
 
@@ -56,6 +204,7 @@
     <main id="inicio">
       <section class="hero is-locking" aria-labelledby="hero-title">
         <canvas id="hero-canvas" class="hero-canvas" aria-hidden="true"></canvas>
+
         <div class="hero-atmosphere" aria-hidden="true">
           <span class="smoke-layer smoke-a"></span>
           <span class="smoke-layer smoke-b"></span>
@@ -64,17 +213,7 @@
           <span class="volumetric-beam beam-asher"></span>
           <span class="volumetric-beam beam-bodhi"></span>
         </div>
-        <div class="hero-editorial-frame" aria-hidden="true">
-          <span>Acto I</span>
-          <span>Universo 5PM</span>
-        </div>
-        <img
-          class="hero-bg"
-          src="./images/hero-bg.png"
-          alt="Logotipo 5PM sobre marmol con vetas doradas"
-          onerror="this.style.display='none'"
-        />
-        <div class="hero-scrim" aria-hidden="true"></div>
+
         <div class="hero-depth" aria-hidden="true">
           <span class="marble-slab slab-gold"></span>
           <span class="marble-slab slab-green"></span>
@@ -83,29 +222,44 @@
           <span class="marble-slab slab-black"></span>
           <span class="marble-slab slab-grey"></span>
         </div>
+
         <div class="hero-stage" aria-hidden="true">
           <span class="hero-light light-ander"></span>
           <span class="hero-light light-asher"></span>
           <span class="hero-light light-leo"></span>
           <span class="hero-light light-kim"></span>
           <span class="hero-light light-bodhi"></span>
-          <div class="hero-monolith">
-            <span class="monolith-fallback">5PM</span>
-            <img src="./images/hero-bg.png" alt="" onerror="this.style.display='none'" />
-          </div>
         </div>
-        <div class="hero-content">
-          <p class="eyebrow">En el universo de</p>
-          <h1 id="hero-title">Cinco Pecados Musicales</h1>
-          <p class="hero-copy">
-            Cinco avatares nacen como una expresión libremente ligada al sistema,
-            al ciclo, a la industria. Cada uno con sus propios objetivos, inquietudes,
-            filosofías, valores y, sobre todo, gustos musicales.
-          </p>
-          <div class="hero-actions" aria-label="Accesos rapidos">
-            <a class="button primary" href="#avatares">Explorar avatares</a>
-            <a class="button ghost" href="#manifiesto">Explorar universo 5PM</a>
+
+        <div class="hero-layout-grid">
+
+          <div class="hero-text-block">
+            <p class="eyebrow">En el universo de</p>
+            <h1 id="hero-title">Cinco Pecados Musicales</h1>
+            <p class="hero-copy">
+              Cinco avatares nacen como una expresión libremente ligada al sistema,
+              al ciclo, a la industria. Cada uno con sus propios objetivos, inquietudes,
+              filosofías, valores y, sobre todo, gustos musicales.
+            </p>
+            <div class="hero-action-btns" aria-label="Accesos rapidos">
+              <a class="button primary" href="#avatares">Explorar avatares</a>
+              <a class="button ghost"   href="#manifiesto">Explorar universo 5PM</a>
+            </div>
           </div>
+
+          <div class="hero-card-mover">
+            <div class="hero-card-levitator">
+              <div class="hero-monolith-card">
+                <img 
+                  src="./images/hero-bg.png" 
+                  alt="Logotipo 5PM" 
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                />
+                <span class="monolith-fallback" style="display:none;">5PM</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -125,9 +279,9 @@
             <div class="marble-palette" aria-label="Paleta de marmoles del proyecto">
               <a class="palette-chip green" href="ander.html" data-cursor-color="rgba(0, 168, 117, 0.56)">Ander</a>
               <a class="palette-chip white" href="asher.html" data-cursor-color="rgba(216, 210, 196, 0.5)">Asher</a>
-              <a class="palette-chip grey" href="leo.html" data-cursor-color="rgba(167, 167, 162, 0.48)">Leo</a>
-              <a class="palette-chip black" href="kim.html" data-cursor-color="rgba(94, 113, 128, 0.5)">Kim</a>
-              <a class="palette-chip red" href="bodhi.html" data-cursor-color="rgba(199, 15, 24, 0.58)">Bodhi</a>
+              <a class="palette-chip grey"  href="leo.html"   data-cursor-color="rgba(167, 167, 162, 0.48)">Leo</a>
+              <a class="palette-chip black" href="kim.html"   data-cursor-color="rgba(94, 113, 128, 0.5)">Kim</a>
+              <a class="palette-chip red"   href="bodhi.html" data-cursor-color="rgba(199, 15, 24, 0.58)">Bodhi</a>
             </div>
           </div>
         </div>
@@ -463,5 +617,16 @@
     <script src="scripts/three-scene.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script src="scripts/app.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const enterBtn = document.getElementById('enterBtn');
+        if (enterBtn) {
+          enterBtn.addEventListener('click', () => {
+            document.body.classList.add('entry-unlocked');
+          });
+        }
+      });
+    </script>
   </body>
 </html>
