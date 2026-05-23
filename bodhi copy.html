@@ -118,62 +118,92 @@
       const heroScene = document.getElementById('hero-scene');
       const canvas    = document.getElementById('hero-canvas');
       const ctx       = canvas.getContext('2d', { alpha: false });
-
-      // 1. CARGA DE LA IMAGEN DE RESPALDO (Adiós pantallazo negro)
-      const posterImg = new Image();
-      posterImg.src = './images/pframe.png';
       
-      const video = document.createElement('video');
-      video.src = './images/videoframe.mp4';
-      video.muted = true;
-      video.playsInline = true;
-      video.style.cssText = 'position:fixed; top:-9999px; visibility:hidden; z-index:-99;';
-      document.body.appendChild(video);
+      const frameCount = 26;
+      const images = [];
+      let imagesLoaded = 0;
+      let allImagesReady = false;
 
-      let videoReady = false;
+      // Mostrar indicador de carga
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;color:#f4eee3;font-family:var(--font-label);font-size:clamp(1rem,2vw,1.5rem);letter-spacing:0.2em;text-transform:uppercase;';
+      loadingIndicator.textContent = 'Cargando experiencia... 0%';
+      document.body.appendChild(loadingIndicator);
 
-      // Función de dibujo unificada
-      function drawFrame(source) {
+      // 1. PRE-CARGA TOTAL DE LAS 26 IMÁGENES
+      function preloadImages() {
+        return new Promise((resolve) => {
+          for (let i = 1; i <= frameCount; i++) {
+            const img = new Image();
+            img.src = `./images/ezgif-frame-${i.toString().padStart(3, '0')}.jpg`;
+            img.onload = () => {
+              imagesLoaded++;
+              const percent = Math.round((imagesLoaded / frameCount) * 100);
+              loadingIndicator.textContent = `Cargando experiencia... ${percent}%`;
+              
+              if (imagesLoaded === frameCount) {
+                allImagesReady = true;
+                loadingIndicator.textContent = 'Experiencia lista';
+                setTimeout(() => loadingIndicator.remove(), 500);
+                resolve();
+              }
+            };
+            img.onerror = () => {
+              console.error(`Error cargando frame ${i}`);
+              imagesLoaded++;
+              if (imagesLoaded === frameCount) {
+                allImagesReady = true;
+                loadingIndicator.remove();
+                resolve();
+              }
+            };
+            images.push(img);
+          }
+        });
+      }
+
+      // Función de dibujo con object-fit: cover
+      function drawFrame(imgIndex) {
+        if (!images[imgIndex] || !images[imgIndex].complete) return;
+        
+        const img = images[imgIndex];
         const cw = canvas.width;
         const ch = canvas.height;
-        // Si el video está listo usa sus dimensiones, si no, usa las de la imagen
-        const sw = source.videoWidth || source.width || cw;
-        const sh = source.videoHeight || source.height || ch;
+        const iw = img.width;
+        const ih = img.height;
 
-        const scale = Math.max(cw / sw, ch / sh) * 1.10; // Zoom del 10% para ocultar marca de agua
-        const dw = sw * scale;
-        const dh = sh * scale;
+        // Calcular scale para object-fit: cover (mantener ratio, cubrir todo el canvas)
+        const scale = Math.max(cw / iw, ch / ih) * 1.05;
+        const dw = iw * scale;
+        const dh = ih * scale;
         const dx = (cw - dw) / 2;
         const dy = (ch - dh) / 2;
 
-        ctx.drawImage(source, dx, dy, dw, dh);
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.drawImage(img, dx, dy, dw, dh);
       }
 
       function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        // Si el video está listo lo dibuja, si no, dibuja la foto inicial
-        if (videoReady) drawFrame(video);
-        else if (posterImg.complete) drawFrame(posterImg);
+        if (allImagesReady && images.length > 0) {
+          drawFrame(0); // Dibujar primer frame
+        }
       }
 
       window.addEventListener('resize', resize);
 
-      // Cuando la imagen de respaldo cargue, dibujarla inmediatamente
-      posterImg.onload = () => {
-        if (!videoReady) { resize(); }
-      };
-
-      video.addEventListener('canplaythrough', () => {
-        videoReady = true;
+      // Iniciar pre-carga y luego ScrollTrigger
+      preloadImages().then(() => {
         resize();
         initScroll();
-      }, { once: true });
-
-      video.load();
+      });
 
       function initScroll() {
-        // Animación de los textos para que no se pisen
+        // Estado del scrub
+        const scrubState = { frame: 0 };
+
+        // Animación de los textos
         const tlText = gsap.timeline({
           scrollTrigger: {
             trigger: heroScene,
@@ -183,27 +213,27 @@
           }
         });
 
-        // El título principal sube y se desvanece un poco
         tlText.to("#main-title", { y: -100, opacity: 0.3, duration: 1 }, 0);
-        // El nuevo texto sube desde abajo y aparece
         tlText.to("#scroll-text", { y: -100, opacity: 1, duration: 1 }, 0.5);
 
-        // Control del vídeo en el canvas
+        // ScrollTrigger principal para el scrubbing de frames
         ScrollTrigger.create({
           trigger: heroScene,
           start: 'top top',
           end: '+=200%',
           pin: true,
-          scrub: 1, // Suavizado
-          onUpdate: self => {
-            if (video.duration) {
-              const time = self.progress * (video.duration - 0.2);
-              video.currentTime = time;
+          scrub: 0.5,
+          onUpdate: (self) => {
+            // Mapear progreso (0-1) al índice de frame (0-25)
+            const targetFrame = Math.round(self.progress * (frameCount - 1));
+            
+            // Solo redibujar si el frame cambió (optimización)
+            if (targetFrame !== scrubState.frame) {
+              scrubState.frame = targetFrame;
+              drawFrame(scrubState.frame);
             }
           }
         });
-
-        video.addEventListener('seeked', () => drawFrame(video));
       }
     })();
     </script>
