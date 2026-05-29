@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ander Popu | Universo 5PM</title>
+    <meta name="description" content="Mundo individual de Ander Popu dentro de Cinco Pecados Musicales." />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="smoke.css" />
+  </head>
+  <body class="character-page ander-world">
+    <header class="world-header">
+      <a class="brand-mark" href="index.html">5PM</a>
+      <a class="world-back" href="index.html?skipIntro=1#manifiesto">Volver al universo 5PM</a>
+    </header>
+
+    <main>
+      <section class="world-hero">
+        <div class="smoke-wrap" aria-hidden="true">
+          <div class="smoke-blob"></div>
+          <div class="smoke-blob"></div>
+          <div class="smoke-blob"></div>
+          <div class="smoke-blob"></div>
+        </div>
+        <div class="world-marble" aria-hidden="true"></div>
+        <div class="world-title">
+          <p class="eyebrow">01 — DJ / Productor / Icono popular</p>
+          <h1>Ander Popu</h1>
+          <p class="world-tagline">La euforia compartida como pecado. El ritmo que no pide permiso para gustar.</p>
+        </div>
+      </section>
+
+      <section class="world-quote" aria-label="Cita de Ander Popu">
+        <blockquote>
+          "Que nadie baile solo. Eso es todo."
+        </blockquote>
+        <cite>Ander Popu — Pecado del espectáculo</cite>
+      </section>
+
+      <section class="world-archive" aria-labelledby="ander-archive-title">
+        <div class="section-kicker">Contenido multimedia</div>
+        <h2 id="ander-archive-title">Historial de Ander Popu.</h2>
+        <div class="world-grid">
+          <article>
+            <span>Discotecas</span>
+            <p>Espacio reservado para performances, clips y registros de noche. El escenario como hogar, el beat como idioma universal.</p>
+          </article>
+          <article>
+            <span>Festivales</span>
+            <p>Espacio reservado para apariciones, carteles, escenarios y momentos clave. La multitud como combustible.</p>
+          </article>
+          <article>
+            <span>Mashups</span>
+            <p>Espacio reservado para piezas propias, mezclas y pruebas de identidad sonora. El pop como filosofía, no como género.</p>
+          </article>
+        </div>
+      </section>
+
+      <nav class="world-nav" aria-label="Navegación entre avatares">
+        <a href="bodhi.html">Bodhi Folk</a>
+        <span>5PM</span>
+        <a href="asher.html">Asher Coda</a>
+      </nav>
+    </main>
+  </body>
+</html>
