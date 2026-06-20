@@ -3356,3 +3356,212 @@ body.admin-mode .stat-control input[type="range"] {
 @media (prefers-reduced-motion: reduce) {
   .smoke-blob { animation: none; opacity: 0.12; }
 }
+/* =========================================
+   LEO FEELOW - BRUTALIST UI 
+========================================= */
+.feelow-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+.leo-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+    color: #fff;
+    margin: 0;
+    line-height: 1;
+    text-shadow: 2px 2px 0px #333;
+}
+
+.feelow-back-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #888;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    transition: color 0.3s ease;
+}
+.feelow-back-link:hover { color: #fff; }
+
+.feelow-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+@media (min-width: 900px) {
+    .feelow-layout-grid {
+        grid-template-columns: 320px 1fr;
+    }
+}
+
+.feelow-panel {
+    background: #080808;
+    border: 1px solid #222;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.panel-header-minimal {
+    font-size: 0.75rem;
+    color: #666;
+    letter-spacing: 0.2em;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #222;
+    padding-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.feelow-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.feelow-form h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.feelow-form input, .feelow-form select {
+    width: 100%;
+    background: #050505;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+.feelow-form input:focus, .feelow-form select:focus {
+    border-color: #666;
+    outline: none;
+}
+
+.brutalist-btn {
+    width: 100%;
+    background: #e0e0e0;
+    color: #000;
+    border: none;
+    padding: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.1em;
+}
+.brutalist-btn:hover {
+    background: #fff;
+    transform: translateY(-2px);
+}
+.brutalist-btn.outline {
+    background: transparent;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+.brutalist-btn.outline:hover { background: #222; color: #fff; }
+
+input[type="file"] { display: none; }
+.custom-file-upload {
+    display: block;
+    border: 1px dashed #444;
+    padding: 1rem;
+    text-align: center;
+    color: #888;
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+.custom-file-upload:hover { border-color: #888; color: #ccc; }
+.divider { border-color: #222; margin: 2rem 0; }
+.form-subtitle { color: #888; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;}
+
+.brutalist-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.brutalist-table th, .brutalist-table td {
+    padding: 1.2rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #1a1a1a;
+}
+.brutalist-table th {
+    color: #666;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+}
+.brutalist-table td {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+/* Avatares */
+.ranking-photo, .profile-photo {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #111;
+    border: 1px solid #333;
+}
+.profile-photo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1rem;
+}
+
+/* Panel Admin */
+.admin-panel { border-color: #444; }
+.admin-header { color: #fff; border-bottom-color: #444; }
+.stats-inputs { display: flex; gap: 1rem;}
+.match-buttons { display: flex; gap: 1rem; }
+.match-btn {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.match-btn.win { background: #333; color: #fff; }
+.match-btn.win:hover { background: #555; }
+.match-btn.loss { background: transparent; color: #888; border: 1px solid #333; }
+.match-btn.loss:hover { background: #111; color: #ccc;}
+.hidden { display: none !important; }
+
+/* Perfil Brutalista */
+.profile-card h3 { margin: 0; font-size: 1.8rem; text-transform: uppercase; color: #fff;}
+.profile-card p { color: #888; font-size: 0.85rem; margin: 0.2rem 0;}
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #222;
+}
+.profile-stats div {
+    background: #111;
+    padding: 1rem;
+    border: 1px solid #222;
+}
+.profile-stats span { color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;}
+.profile-stats strong { display: block; font-size: 1.5rem; color: #fff; margin-top: 0.5rem;}
+.profile-badges { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem;}
+.profile-badges span {
+    background: #222;
+    color: #ccc;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
