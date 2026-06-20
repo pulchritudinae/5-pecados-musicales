@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feelow Hoopers | 5PM</title>
+    <meta name="description" content="Registro urbano de participantes y ranking de Feelow Hoopers." />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="smoke.css" />
+</head>
+<body class="character-page leo-world">
+    <header class="world-header">
+        <a class="brand-mark" href="index.html">5PM</a>
+    </header>
+
+    <main>
+        <section class="feelow-hero">
+            <div class="feelow-hero-copy">
+                <span class="archive-label">Registro urbano</span>
+                <h1>FEELOW HOOPERS</h1>
+                <p>Los jugadores que han dejado huella</p>
+                <a class="feelow-back-link" href="leo.html">Volver a Leo</a>
+            </div>
+        </section>
+
+        <section class="feelow-app-shell">
+            <article class="feelow-panel auth-panel">
+                <div class="feelow-panel-header">
+                    <span>Acceso</span>
+                </div>
+                <form id="register-form" class="feelow-form">
+                    <h3>Registrar participante</h3>
+                    <input type="text" id="register-username" placeholder="Nombre de usuario" required />
+                    <input type="text" id="register-city" placeholder="Ciudad (opcional)" />
+                    <input type="file" id="register-photo" accept="image/*" />
+                    <button type="submit">Registrarse</button>
+                </form>
+                <form id="login-form" class="feelow-form">
+                    <h3>Iniciar sesión</h3>
+                    <input type="text" id="login-username" placeholder="Nombre de usuario" required />
+                    <button type="submit">Entrar</button>
+                </form>
+            </article>
+
+            <article class="feelow-panel profile-panel">
+                <div class="feelow-panel-header">
+                    <span>Perfil</span>
+                </div>
+                <div id="profile-view" class="profile-view"></div>
+            </article>
+        </section>
+
+        <section class="feelow-panel ranking-panel">
+            <div class="feelow-panel-header">
+                <span>Ranking global</span>
+            </div>
+            <div class="ranking-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Foto</th>
+                            <th>Usuario</th>
+                            <th>Victorias</th>
+                            <th>Derrotas</th>
+                            <th>Puntuación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="admin-panel" class="feelow-panel admin-panel hidden">
+            <div class="feelow-panel-header">
+                <span>Panel administrador</span>
+            </div>
+            <div class="admin-grid">
+                <form id="admin-create-form" class="feelow-form">
+                    <h3>Crear usuario</h3>
+                    <input type="text" id="admin-create-username" placeholder="Usuario" required />
+                    <input type="text" id="admin-create-city" placeholder="Ciudad" />
+                    <input type="file" id="admin-create-photo" accept="image/*" />
+                    <button type="submit">Añadir</button>
+                </form>
+
+                <form id="admin-stats-form" class="feelow-form">
+                    <h3>Editar estadísticas</h3>
+                    <select id="admin-user-select"></select>
+                    <input type="number" id="admin-wins" min="0" value="0" />
+                    <input type="number" id="admin-losses" min="0" value="0" />
+                    <button type="submit">Actualizar</button>
+                </form>
+
+                <div class="feelow-form admin-actions">
+                    <h3>Registrar resultado</h3>
+                    <select id="admin-result-user"></select>
+                    <button id="admin-win-btn" type="button">Registrar victoria</button>
+                    <button id="admin-loss-btn" type="button">Registrar derrota</button>
+                </div>
+
+                <form id="admin-badges-form" class="feelow-form">
+                    <h3>Otorgar insignias</h3>
+                    <select id="admin-badge-user"></select>
+                    <select id="admin-badge-select">
+                        <option>Primer Hooper</option>
+                        <option>Campeón del torneo</option>
+                        <option>Participante fundador</option>
+                        <option>Derrotó a Leo</option>
+                        <option>Top 10 histórico</option>
+                    </select>
+                    <button type="submit">Añadir insignia</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="scripts/feelow-hoopers.js"></script>
+</body>
+</html>

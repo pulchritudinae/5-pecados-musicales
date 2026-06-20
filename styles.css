@@ -2274,6 +2274,347 @@ body.admin-mode .stat-control input[type="range"] {
   line-height: 1.65;
 }
 
+.feelow-entry-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 2rem 0 1.5rem;
+  padding: 1.35rem 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04), transparent 50%),
+    linear-gradient(180deg, rgba(10, 10, 10, 0.96), rgba(5, 5, 5, 0.98));
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.feelow-entry-card::before,
+.feelow-entry-card::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.feelow-entry-card::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 50%, color-mix(in srgb, var(--world-accent), transparent 76%), transparent 12rem),
+    linear-gradient(90deg, color-mix(in srgb, var(--world-accent), transparent 88%), transparent 62%);
+  opacity: 0.45;
+  z-index: -1;
+}
+
+.feelow-entry-card::after {
+  right: 0;
+  top: 0;
+  width: 42%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--world-accent), transparent 88%));
+  opacity: 0.18;
+  z-index: -1;
+}
+
+.feelow-entry-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.feelow-entry-tag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  color: color-mix(in srgb, var(--world-accent), white 26%);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+.feelow-entry-card h3 {
+  margin: 0;
+  color: color-mix(in srgb, var(--world-accent), white 18%);
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 3.1rem);
+  line-height: 0.92;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.feelow-entry-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 9.5rem;
+  padding: 0.9rem 1rem;
+  color: #050505;
+  background: linear-gradient(90deg, var(--world-vein), var(--world-accent));
+  border: 1px solid color-mix(in srgb, var(--world-accent), white 18%);
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 10px 24px color-mix(in srgb, var(--world-accent), transparent 78%);
+}
+
+.feelow-entry-button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 14px 30px color-mix(in srgb, var(--world-accent), transparent 68%);
+}
+
+.feelow-entry-button i {
+  font-style: normal;
+  font-size: 0.95rem;
+}
+
+.feelow-hero {
+  position: relative;
+  min-height: 56vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.feelow-hero::before {
+  content: "";
+  position: absolute;
+  inset: 20% 10%;
+  border: 1px solid color-mix(in srgb, var(--world-accent), transparent 62%);
+  background:
+    radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--world-accent), transparent 78%), transparent 22rem),
+    rgba(255, 255, 255, 0.03);
+}
+
+.feelow-hero-copy {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.feelow-hero-copy h1 {
+  margin: 0.6rem 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.8rem, 9vw, 6rem);
+  line-height: 0.88;
+  color: color-mix(in srgb, var(--world-accent), white 18%);
+}
+
+.feelow-hero-copy p {
+  margin: 0 0 1rem;
+  color: rgba(244, 238, 227, 0.72);
+}
+
+.feelow-back-link {
+  color: var(--world-accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+}
+
+.feelow-app-shell {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1rem;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+.feelow-panel {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    #070707;
+  overflow: hidden;
+}
+
+.feelow-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.78rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: color-mix(in srgb, var(--world-accent), white 18%);
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  letter-spacing: 0.22em;
+}
+
+.auth-panel,
+.profile-panel,
+.ranking-panel,
+.admin-panel {
+  margin-bottom: 1rem;
+}
+
+.feelow-form {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+.feelow-form h3 {
+  margin: 0;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(244, 238, 227, 0.82);
+}
+
+.feelow-form input,
+.feelow-form select,
+.feelow-form button {
+  width: 100%;
+  padding: 0.84rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  font: inherit;
+}
+
+.feelow-form button {
+  cursor: pointer;
+  background: linear-gradient(90deg, var(--world-vein), var(--world-accent));
+  color: #050505;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.profile-photo,
+.ranking-photo {
+  width: 5rem;
+  height: 5rem;
+  object-fit: cover;
+  border-radius: 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profile-card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+}
+
+.profile-card p {
+  margin: 0.2rem 0;
+  color: rgba(244, 238, 227, 0.8);
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  padding: 0 1rem 1rem;
+}
+
+.profile-stats div {
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-stats span,
+.profile-badges span,
+.empty-state {
+  display: block;
+  color: rgba(244, 238, 227, 0.72);
+}
+
+.profile-stats strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.8rem;
+  color: color-mix(in srgb, var(--world-accent), white 18%);
+}
+
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0 1rem 1rem;
+}
+
+.profile-badges span {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.ranking-panel {
+  max-width: 1120px;
+  margin: 0 auto 2rem;
+}
+
+.ranking-table-wrap {
+  overflow-x: auto;
+}
+
+.ranking-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ranking-table-wrap th,
+.ranking-table-wrap td {
+  padding: 0.9rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ranking-table-wrap th {
+  color: rgba(244, 238, 227, 0.78);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.ranking-table-wrap td {
+  color: rgba(244, 238, 227, 0.9);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .feelow-app-shell,
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feelow-entry-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 /* Typographic hierarchy */
 .gate-content h1,
 .hero h1,
