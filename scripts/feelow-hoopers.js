@@ -1,23 +1,18 @@
 /* =========================================================
    FEELOW HOOPERS — Registro de jugadores (Leo Feelow · 5PM)
    ---------------------------------------------------------
-   Mini-aplicación de frontend puro (localStorage).
-   No es una plataforma deportiva: es un archivo urbano
-   permanente de quienes han participado en los retos y
-   torneos asociados a Leo Feelow dentro del universo 5PM.
+   Mini-aplicación de frontend puro (localStorage) + escena
+   3D del balón de hormigón como fondo del Hero.
 
-   NOTA DE SEGURIDAD
-   Las contraseñas se guardan en localStorage del navegador
-   porque no hay backend. Esto NO es autenticación real:
-   sirve para que cada hooper gestione su acceso informal,
-   pero cualquiera con acceso al dispositivo podría leerlas.
-   Cuando exista backend, mover a un endpoint con hash.
+   Estética estricta de Leo: SOLO escala de grises, negro
+   profundo, blanco y asfalto. Cero colores vivos.
 
    MODELO DE DATOS
    ----------------------------------------------------------------
    users: [{
      id, username, password, city, photo,
      wins, losses, tournaments, matches,
+     rep, streak,                          // ← Reputación + racha
      joinedAt, badges: [string]
    }]
    events: [{
@@ -26,6 +21,8 @@
    }]
    ----------------------------------------------------------------
    ========================================================= */
+
+import { ConcreteBasketball } from './feelow-basketball.js';
 
 const STORAGE_KEY = 'feelow-hoopers-users';
 const CURRENT_KEY = 'feelow-hoopers-current-user';
@@ -39,6 +36,28 @@ const MIN_PASSWORD_LEN = 4;
 const PHOTO_MAX_BYTES  = 420_000;   // tope de un dataURL en localStorage (~0.4MB)
 const PHOTO_TARGET_PX  = 256;       // lado máx. del thumbnail tras compresión
 
+/* ---------- Sistema ELO ---------- */
+const ELO_K      = 32;              // factor de volatilidad
+const ELO_START  = 1000;            // todo hooper inicia con 1000 REP
+const ELO_D      = 400;             // escala de la fórmula
+const STREAK_FIRE = 3;              // a partir de aquí se muestra 💨 xN
+
+/* ---------- Tiers urbanos (solo grises) ---------- */
+const TIERS = [
+    { min: 0,    label: 'Grava',    cls: 'tier-grava',    accent: '#666' },
+    { min: 1000, label: 'Asfalto',  cls: 'tier-asfalto',  accent: '#a7a7a2' },
+    { min: 1200, label: 'Hormigón', cls: 'tier-hormigon', accent: '#d8d8d8' },
+    { min: 1400, label: 'Acero',    cls: 'tier-acero',    accent: '#ffffff' },
+];
+
+/* ---------- Badges (alias canónicos) ---------- */
+const BADGE_META = {
+    'Participante fundador': { emoji: '⛓️',   cls: 'badge-founder' },
+    'Primer Hooper':         { emoji: '👟',   cls: 'badge-first' },
+    'Campeón del torneo':    { emoji: '👑',   cls: 'badge-champion' },
+    'Leyenda':               { emoji: '🚧',   cls: 'badge-legend' },
+    'Derrotó a Leo':         { emoji: '💀',   cls: 'badge-leo' },
+};
 
 /* ---------- Persistencia ---------- */
 
@@ -63,6 +82,8 @@ function loadUsers() {
 }
 
 // Rellena campos nuevos en usuarios antiguos para no perder datos.
+// Migración pts → rep: si venía de la versión anterior (sin rep),
+// recalcula un REP coherente con su historial W/L a partir de 1000.
 function migrateUsers(users) {
     if (!Array.isArray(users)) return [];
 
@@ -80,10 +101,18 @@ function migrateUsers(users) {
         if (typeof u.matches     !== 'number') u.matches     = 0;
         if (typeof u.wins        !== 'number') u.wins        = 0;
         if (typeof u.losses      !== 'number') u.losses      = 0;
+        if (typeof u.streak      !== 'number') u.streak      = 0;
         if (!Array.isArray(u.badges)) u.badges = [];
+
         if (typeof u.photo   !== 'string') u.photo   = '';
         if (typeof u.city    !== 'string') u.city    = '';
         if (typeof u.joinedAt !== 'string') u.joinedAt = new Date().toISOString();
+
+        // Rep: si no existe (viene de la versión pts), derivar de W/L.
+        if (typeof u.rep !== 'number') {
+            // Aproximación: cada victoria suma ~12, cada derrota resta ~10.
+            u.rep = ELO_START + Math.round(u.wins * 12 - u.losses * 10);
+        }
     });
     return users;
 }
@@ -99,8 +128,9 @@ function ensureAdminUser(users) {
             city: 'Madrid',
             photo: '',
             wins: 12, losses: 4, tournaments: 3, matches: 16,
+            rep: 1480, streak: 0,
             joinedAt: '2026-06-01',
-            badges: ['Primer Hooper', 'Campeón del torneo', 'Participante fundador']
+            badges: ['Participante fundador', 'Primer Hooper', 'Campeón del torneo', 'Leyenda']
         });
     } else {
         // Refuerza credenciales por si una versión vieja las vació.
@@ -141,6 +171,51 @@ function migrateEvents(events) {
 }
 
 
+/* ---------- ELO / Tiers ---------- */
+
+function expectedScore(repA, repB) {
+    return 1 / (1 + Math.pow(10, (repB - repA) / ELO_D));
+}
+
+// Aplica un enfrentamiento (ganador vs perdedor) al rep y racha de ambos.
+// Devuelve el delta aplicado al ganador (para feedback).
+function applyMatchElo(winner, loser) {
+    const eW = expectedScore(winner.rep, loser.rep);
+    const eL = expectedScore(loser.rep, winner.rep);
+
+    const deltaW = ELO_K * (1 - eW);
+    const deltaL = ELO_K * (0 - eL);
+
+    winner.rep = Math.round(winner.rep + deltaW);
+    loser.rep  = Math.round(loser.rep  + deltaL);
+
+    winner.wins   += 1;
+    loser.losses  += 1;
+    winner.matches = (winner.matches || 0) + 1;
+    loser.matches  = (loser.matches  || 0) + 1;
+
+    winner.streak = (winner.streak || 0) >= 0 ? winner.streak + 1 : 1;
+    loser.streak  = 0;
+
+    return deltaW;
+}
+
+function tierFor(rep) {
+    let t = TIERS[0];
+    for (const tier of TIERS) {
+        if (rep >= tier.min) t = tier;
+    }
+    return t;
+}
+
+// Racha legible: 💨 xN a partir de STREAK_FIRE; “—” si está en cero.
+function streakLabel(streak) {
+    if (!streak || streak <= 0) return '<span class="streak-cold">—</span>';
+    if (streak >= STREAK_FIRE)  return `<span class="streak-hot">💨 x${streak}</span>`;
+    return `<span class="streak-warm">${streak}</span>`;
+}
+
+
 /* ---------- Utilidades ---------- */
 
 function escapeHtml(value) {
@@ -155,14 +230,9 @@ function formatDate(dateString) {
     return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-function scoreForUser(user) {
-    // 3 puntos por victoria, −1 por derrota.
-    return user.wins * 3 - user.losses;
-}
-
 function sortUsers(users) {
     return [...users].sort((a, b) => {
-        const diff = scoreForUser(b) - scoreForUser(a);
+        const diff = (b.rep || 0) - (a.rep || 0);
         if (diff !== 0) return diff;
         if (b.wins !== a.wins) return b.wins - a.wins;
         return a.username.localeCompare(b.username);
@@ -260,7 +330,7 @@ function showFeedback(message, type = 'ok') {
 }
 
 
-/* ---------- Render: Ranking ---------- */
+/* ---------- Render: Ranking (con REP, racha y filas clickeables) ---------- */
 
 function updateRanking() {
     const users = sortUsers(loadUsers());
@@ -276,9 +346,14 @@ function updateRanking() {
         const position = index + 1;
         const positionLabel = position < 10 ? `0${position}` : String(position);
         const isTop = position === 1;
+        const tier  = tierFor(user.rep || 0);
 
         const row = document.createElement('tr');
+        row.classList.add('ranking-row');
+        row.dataset.username = user.username;
         if (isTop) row.classList.add('is-top');
+        row.classList.add(tier.cls);
+
         row.innerHTML = `
             <td><span class="rank-position">${positionLabel}</span></td>
             <td>
@@ -289,15 +364,17 @@ function updateRanking() {
             </td>
             <td>${user.wins}</td>
             <td class="muted-cell">${user.losses}</td>
-            <td class="muted-cell">${user.tournaments || 0}</td>
-            <td><span class="score-cell">${scoreForUser(user)}</span></td>
+            <td><span class="score-cell">${user.rep || 0}</span></td>
+            <td class="streak-cell">${streakLabel(user.streak || 0)}</td>
         `;
+
+        row.addEventListener('click', () => openProfileModal(user.username));
         tbody.appendChild(row);
     });
 }
 
 
-/* ---------- Render: Perfil ---------- */
+/* ---------- Render: Perfil (sidebar) ---------- */
 
 function renderProfile() {
     const profileView = document.getElementById('profile-view');
@@ -312,6 +389,7 @@ function renderProfile() {
         return;
     }
 
+    const tier = tierFor(user.rep || 0);
     const badgesHtml = (user.badges && user.badges.length)
         ? user.badges.map((b) => `<span>${escapeHtml(b)}</span>`).join('')
         : '<span class="is-empty">Sin insignias</span>';
@@ -323,6 +401,7 @@ function renderProfile() {
                 <h3>${escapeHtml(user.username)}</h3>
                 <p>${user.city ? escapeHtml(user.city) : 'Ubicación desconocida'}</p>
                 <p>Registro · ${formatDate(user.joinedAt)}</p>
+                <p class="profile-rep-line"><strong>${user.rep || 0}</strong> REP · <span class="profile-tier-tag ${tier.cls}">${tier.label}</span></p>
             </div>
         </div>
         <div class="profile-stats">
@@ -393,12 +472,20 @@ function buildUserOptions(excludeUsername = null) {
 function updateAdminSelects() {
     const userOptions = buildUserOptions();
 
-    ['admin-user-select', 'admin-result-user', 'admin-edit-user-select', 'admin-badge-user', 'admin-delete-select', 'tournament-add-user'].forEach((id) => {
+    ['admin-user-select', 'admin-edit-user-select', 'admin-badge-user', 'admin-delete-select', 'tournament-add-user'].forEach((id) => {
         const el = document.getElementById(id);
         if (!el) return;
         el.innerHTML = userOptions
             ? userOptions
             : '<option disabled>— Sin hoopers —</option>';
+    });
+
+    // Selects de Enfrentamiento: ganador/perdedor con todos los hoopers.
+    ['admin-match-winner', 'admin-match-loser'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const all = loadUsers().map((u) => `<option value="${escapeHtml(u.username)}">${escapeHtml(u.username)}</option>`).join('');
+        el.innerHTML = all || '<option disabled>— Sin hoopers —</option>';
     });
 }
 
@@ -462,6 +549,7 @@ async function handleRegister(event) {
     users.push({
         id: Date.now(), username, password, city, photo,
         wins: 0, losses: 0, tournaments: 0, matches: 0,
+        rep: ELO_START, streak: 0,
         joinedAt: new Date().toISOString(), badges: []
     });
     saveUsers(users);
@@ -543,6 +631,7 @@ async function handleAdminCreate(event) {
     users.push({
         id: Date.now(), username, password, city, photo,
         wins: 0, losses: 0, tournaments: 0, matches: 0,
+        rep: ELO_START, streak: 0,
         joinedAt: new Date().toISOString(), badges: []
     });
     saveUsers(users);
@@ -560,6 +649,7 @@ function handleAdminStats(event) {
     const losses      = Math.max(0, Number(document.getElementById('admin-losses').value || 0));
     const tournaments = Math.max(0, Number(document.getElementById('admin-tournaments').value || 0));
     const matches     = Math.max(0, Number(document.getElementById('admin-matches').value || 0));
+    const rep         = Math.max(0, Number(document.getElementById('admin-rep').value || 0));
 
     if (!username) { showFeedback('Selecciona un hooper.', 'error'); return; }
 
@@ -571,31 +661,53 @@ function handleAdminStats(event) {
     target.losses = losses;
     target.tournaments = tournaments;
     target.matches = matches;
+    target.rep = rep;
     saveUsers(users);
 
     showFeedback(`Stats de ${username} actualizadas.`, 'ok');
     updateAllViews();
 }
 
-function handleResult(type) {
-    const username = document.getElementById('admin-result-user').value;
-    if (!username) { showFeedback('Selecciona un hooper.', 'error'); return; }
+// Registrar Enfrentamiento: aplica ELO a ganador y perdedor.
+function handleAdminMatch(event) {
+    event.preventDefault();
+    if (!isAdmin()) return;
+
+    const winnerName = document.getElementById('admin-match-winner').value;
+    const loserName  = document.getElementById('admin-match-loser').value;
+
+    if (!winnerName || !loserName) {
+        showFeedback('Selecciona ganador y perdedor.', 'error'); return;
+    }
+    if (winnerName === loserName) {
+        showFeedback('Ganador y perdedor deben ser distintos.', 'error'); return;
+    }
 
     const users = loadUsers();
-    const target = users.find((u) => u.username === username);
-    if (!target) return;
+    const winner = users.find((u) => u.username === winnerName);
+    const loser  = users.find((u) => u.username === loserName);
+    if (!winner || !loser) return;
 
-    if (type === 'win')  target.wins   += 1;
-    else                 target.losses += 1;
-    target.matches = (target.matches || 0) + 1;
+    const repWBefore = winner.rep;
+    const repLBefore = loser.rep;
+    applyMatchElo(winner, loser);
+    const deltaW = winner.rep - repWBefore;
+    const deltaL = loser.rep  - repLBefore;
+
+    // Insignia especial: si el perdedor era Leo.
+    if (loserName === DEFAULT_ADMIN && !winner.badges.includes('Derrotó a Leo')) {
+        winner.badges.push('Derrotó a Leo');
+    }
 
     saveUsers(users);
-    showFeedback(`Resultado registrado para ${username}.`, 'ok');
+
+    const fmt = (n) => (n >= 0 ? `+${n}` : `${n}`);
+    showFeedback(`Enfrentamiento registrado. ${winnerName} ${fmt(Math.round(deltaW))} REP · ${loserName} ${fmt(Math.round(deltaL))} REP.`, 'ok');
     updateAllViews();
 }
 
-function handleBadges(event) {
-    event.preventDefault();
+// Otorga o revoca una insignia.
+function handleBadge(action) {
     const username = document.getElementById('admin-badge-user').value;
     const badge    = document.getElementById('admin-badge-select').value;
     if (!username) { showFeedback('Selecciona un hooper.', 'error'); return; }
@@ -605,12 +717,24 @@ function handleBadges(event) {
     if (!target) return;
 
     if (!Array.isArray(target.badges)) target.badges = [];
-    if (!target.badges.includes(badge)) {
-        target.badges.push(badge);
-        saveUsers(users);
-        showFeedback(`Insignia «${badge}» otorgada a ${username}.`, 'ok');
-    } else {
-        showFeedback(`${username} ya tiene esa insignia.`, 'error');
+
+    if (action === 'grant') {
+        if (!target.badges.includes(badge)) {
+            target.badges.push(badge);
+            saveUsers(users);
+            showFeedback(`Insignia «${badge}» otorgada a ${username}.`, 'ok');
+        } else {
+            showFeedback(`${username} ya tiene esa insignia.`, 'error');
+        }
+    } else { // revoke
+        const before = target.badges.length;
+        target.badges = target.badges.filter((b) => b !== badge);
+        if (target.badges.length !== before) {
+            saveUsers(users);
+            showFeedback(`Insignia «${badge}» revocada a ${username}.`, 'ok');
+        } else {
+            showFeedback(`${username} no tenía esa insignia.`, 'error');
+        }
     }
     updateAllViews();
 }
@@ -789,7 +913,7 @@ function handleCloseTournament(event) {
     ev.winner   = winner || null;
     ev.closedAt = new Date().toISOString();
 
-    // Sumar 1 torneo jugado a cada participante, +1 victoria al campeón.
+    // Sumar 1 torneo jugado a cada participante; insignia de campeón.
     const users = loadUsers();
     ev.participants.forEach((name) => {
         const u = users.find((x) => x.username === name);
@@ -797,17 +921,96 @@ function handleCloseTournament(event) {
     });
     if (winner) {
         const w = users.find((x) => x.username === winner);
-        if (w) {
-            w.wins = (w.wins || 0) + 1;
-            w.matches = (w.matches || 0) + 1;
-            if (!w.badges.includes('Campeón del torneo')) w.badges.push('Campeón del torneo');
-        }
+        if (w && !w.badges.includes('Campeón del torneo')) w.badges.push('Campeón del torneo');
     }
 
     saveUsers(users);
     saveEvents(events);
     showFeedback(`«${ev.name}» cerrado${winner ? `. Campeón: ${winner}` : ''}.`, 'ok');
     updateAllViews();
+}
+
+
+/* ---------- Modal de perfil (placa de metal) ---------- */
+
+function openProfileModal(username) {
+    const users = loadUsers();
+    const user = users.find((u) => u.username === username);
+    if (!user) return;
+
+    const dialog = document.getElementById('profile-modal');
+    if (!dialog) return;
+
+    const photo = user.photo || getDefaultAvatar();
+    const tier  = tierFor(user.rep || 0);
+
+    document.getElementById('profile-modal-photo').src = photo;
+    document.getElementById('profile-modal-photo').alt = `Foto de ${user.username}`;
+    document.getElementById('profile-modal-name').textContent  = user.username;
+    document.getElementById('profile-modal-city').textContent  = user.city || 'Ubicación desconocida';
+    document.getElementById('profile-modal-rep').textContent   = user.rep || 0;
+    document.getElementById('profile-modal-streak').textContent = user.streak || 0;
+    document.getElementById('profile-modal-wins').textContent  = user.wins || 0;
+    document.getElementById('profile-modal-losses').textContent = user.losses || 0;
+
+    const tierEl = document.getElementById('profile-modal-tier');
+    tierEl.textContent = `${tier.label} · ${user.rep || 0} REP`;
+    tierEl.className = `profile-modal-tier ${tier.cls}`;
+
+    // Insignias octogonales.
+    const badgesWrap = document.getElementById('profile-modal-badges');
+    if (user.badges && user.badges.length) {
+        badgesWrap.innerHTML = user.badges.map((b) => {
+            const meta = BADGE_META[b] || { emoji: '·', cls: 'badge-custom' };
+            return `
+                <span class="street-badge ${meta.cls}" title="${escapeHtml(b)}">
+                    <span class="street-badge-emoji">${meta.emoji}</span>
+                    <span class="street-badge-label">${escapeHtml(b)}</span>
+                </span>`;
+        }).join('');
+    } else {
+        badgesWrap.innerHTML = '<span class="profile-badges-empty">Sin insignias todavía.</span>';
+    }
+
+    if (typeof dialog.showModal === 'function') {
+        if (dialog.open) dialog.close();
+        dialog.showModal();
+    } else {
+        dialog.setAttribute('open', '');
+    }
+}
+
+function closeProfileModal() {
+    const dialog = document.getElementById('profile-modal');
+    if (!dialog) return;
+    if (dialog.open) dialog.close();
+}
+
+
+/* ---------- Balón 3D (Hero) ---------- */
+
+let heroBall = null;
+
+function initHeroBasketball() {
+    const container = document.getElementById('hero-basketball');
+    if (!container) return;
+    try {
+        heroBall = new ConcreteBasketball('#hero-basketball');
+    } catch (err) {
+        // WebGL no disponible: el fondo se queda con sus gradientes CSS.
+        console.warn('[Feelow] No se pudo iniciar el balón 3D:', err);
+    }
+
+    // Pausar cuando el hero sale del viewport (ahorro de GPU).
+    const hero = document.querySelector('.feelow-hero');
+    if (hero && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (heroBall) heroBall.setVisible(entry.isIntersecting);
+            });
+        }, { threshold: 0.05 });
+        io.observe(hero);
+    }
 }
 
 
@@ -835,10 +1038,11 @@ function init() {
     document.getElementById('admin-stats-form') ?.addEventListener('submit', handleAdminStats);
     document.getElementById('admin-edit-form')  ?.addEventListener('submit', handleAdminEdit);
     document.getElementById('admin-delete-form')?.addEventListener('submit', handleAdminDelete);
-    document.getElementById('admin-badges-form')?.addEventListener('submit', handleBadges);
+    document.getElementById('admin-match-form') ?.addEventListener('submit', handleAdminMatch);
 
-    document.getElementById('admin-win-btn')  ?.addEventListener('click', () => handleResult('win'));
-    document.getElementById('admin-loss-btn') ?.addEventListener('click', () => handleResult('loss'));
+    // Insignias: otorgar / revocar
+    document.getElementById('admin-badge-grant') ?.addEventListener('click', () => handleBadge('grant'));
+    document.getElementById('admin-badge-revoke')?.addEventListener('click', () => handleBadge('revoke'));
 
     document.getElementById('admin-edit-user-select')?.addEventListener('change', loadEditUser);
     document.getElementById('tournament-close-select')?.addEventListener('change', loadTournamentSelects);
@@ -848,10 +1052,27 @@ function init() {
     document.getElementById('tournament-add-btn')     ?.addEventListener('click', handleAddParticipant);
     document.getElementById('tournament-close-form')  ?.addEventListener('submit', handleCloseTournament);
 
+    // Modal: cerrar
+    document.getElementById('profile-modal-close')?.addEventListener('click', closeProfileModal);
+    const modal = document.getElementById('profile-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            // Click sobre el backdrop (no sobre la placa) cierra el modal.
+            if (e.target === modal) closeProfileModal();
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeProfileModal();
+    });
+
+    // Resize global del balón 3D.
+    window.addEventListener('resize', () => { if (heroBall) heroBall.resize(); });
+
     // Inicializar almacenes
     loadUsers();      // fuerza seed + admin + migración
     if (!localStorage.getItem(EVENTS_KEY)) saveEvents([]);
 
+    initHeroBasketball();
     updateAllViews();
 }
 

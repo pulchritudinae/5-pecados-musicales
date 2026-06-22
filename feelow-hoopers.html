@@ -7,6 +7,16 @@
     <meta name="description" content="Registro permanente de los jugadores que han dejado huella en los retos y torneos asociados a Leo Feelow." />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="smoke.css" />
+
+    <!-- Three.js (Asset Pack del universo 5PM) -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+    </script>
 </head>
 <body class="character-page leo-world">
     <header class="world-header">
@@ -15,6 +25,9 @@
 
     <main class="feelow-container">
         <section class="feelow-hero">
+            <!-- Fondo 3D: balón de hormigón. z-index controlado por CSS. -->
+            <div class="feelow-hero-canvas" id="hero-basketball" aria-hidden="true"></div>
+
             <div class="feelow-hero-copy">
                 <h1 class="leo-title" data-text="FEELOW HOOPERS">FEELOW HOOPERS</h1>
                 <p class="feelow-hero-subtitle">Los jugadores que han dejado huella</p>
@@ -69,13 +82,14 @@
                                     <th>Hooper</th>
                                     <th>W</th>
                                     <th>L</th>
-                                    <th>Torneos</th>
-                                    <th>PTS</th>
+                                    <th>REP</th>
+                                    <th>Racha</th>
                                 </tr>
                             </thead>
                             <tbody id="ranking-body"></tbody>
                         </table>
                     </div>
+                    <p class="ranking-hint">Pulsa cualquier hooper para abrir su placa.</p>
                 </section>
 
                 <section class="feelow-panel ranking-panel">
@@ -122,6 +136,10 @@
                                     <input type="number" id="admin-matches" min="0" value="0" />
                                 </div>
                             </div>
+                            <div class="stat-field">
+                                <label for="admin-rep">Reputación (REP)</label>
+                                <input type="number" id="admin-rep" min="0" value="1000" />
+                            </div>
                             <button type="submit" class="brutalist-btn admin-btn">Actualizar</button>
                         </form>
 
@@ -136,26 +154,29 @@
                             <button type="submit" class="brutalist-btn outline">Guardar cambios</button>
                         </form>
 
-                        <div class="feelow-form admin-box">
-                            <h3>Registrar resultado</h3>
-                            <select id="admin-result-user" class="admin-input" aria-label="Usuario"></select>
-                            <div class="match-buttons">
-                                <button id="admin-win-btn" type="button" class="match-btn win">Victoria</button>
-                                <button id="admin-loss-btn" type="button" class="match-btn loss">Derrota</button>
-                            </div>
-                        </div>
+                        <form id="admin-match-form" class="feelow-form admin-box">
+                            <h3>Registrar Enfrentamiento</h3>
+                            <label for="admin-match-winner" class="admin-field-label">Ganador</label>
+                            <select id="admin-match-winner" class="admin-input" aria-label="Ganador"></select>
+                            <label for="admin-match-loser" class="admin-field-label">Perdedor</label>
+                            <select id="admin-match-loser" class="admin-input" aria-label="Perdedor"></select>
+                            <button type="submit" class="brutalist-btn admin-btn">Registrar Enfrentamiento</button>
+                        </form>
 
                         <form id="admin-badges-form" class="feelow-form admin-box">
                             <h3>Otorgar insignias</h3>
                             <select id="admin-badge-user" aria-label="Usuario"></select>
                             <select id="admin-badge-select" aria-label="Insignia">
-                                <option>Primer Hooper</option>
-                                <option>Campeón del torneo</option>
-                                <option>Participante fundador</option>
-                                <option>Derrotó a Leo</option>
-                                <option>Top 10 histórico</option>
+                                <option value="Participante fundador">Participante fundador</option>
+                                <option value="Primer Hooper">Primer Hooper</option>
+                                <option value="Campeón del torneo">Campeón del torneo</option>
+                                <option value="Leyenda">Leyenda</option>
+                                <option value="Derrotó a Leo">Derrotó a Leo</option>
                             </select>
-                            <button type="submit" class="brutalist-btn outline">Añadir</button>
+                            <div class="match-buttons">
+                                <button type="button" id="admin-badge-grant" class="match-btn">Otorgar</button>
+                                <button type="button" id="admin-badge-revoke" class="match-btn loss">Revocar</button>
+                            </div>
                         </form>
 
                         <form id="admin-delete-form" class="feelow-form admin-box admin-box-danger">
@@ -195,6 +216,31 @@
         </section>
     </main>
 
-    <script src="scripts/feelow-hoopers.js"></script>
+    <!-- =========================================================
+         PLACA DE PERFIL (modal brutalista, <dialog> nativo)
+         ========================================================= -->
+    <dialog id="profile-modal" class="profile-modal" aria-labelledby="profile-modal-name">
+        <article class="profile-modal-plate">
+            <button type="button" class="profile-modal-close" id="profile-modal-close" aria-label="Cerrar placa">✕</button>
+            <div class="profile-modal-frame">
+                <img id="profile-modal-photo" class="profile-modal-photo" src="" alt="" />
+            </div>
+            <h2 id="profile-modal-name" class="profile-modal-name">—</h2>
+            <p class="profile-modal-meta" id="profile-modal-city">—</p>
+
+            <div class="profile-modal-stats">
+                <div><span>REP</span><strong id="profile-modal-rep">1000</strong></div>
+                <div><span>Racha</span><strong id="profile-modal-streak">0</strong></div>
+                <div><span>Victorias</span><strong id="profile-modal-wins">0</strong></div>
+                <div><span>Derrotas</span><strong id="profile-modal-losses">0</strong></div>
+            </div>
+
+            <div class="profile-modal-tier" id="profile-modal-tier">—</div>
+
+            <div class="profile-modal-badges" id="profile-modal-badges"></div>
+        </article>
+    </dialog>
+
+    <script type="module" src="scripts/feelow-hoopers.js"></script>
 </body>
 </html>
