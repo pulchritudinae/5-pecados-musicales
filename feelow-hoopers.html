@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Feelow Hoopers | 5PM</title>
-    <meta name="description" content="Ranking de Feelow Hoopers." />
+    <meta name="description" content="Registro permanente de los jugadores que han dejado huella en los retos y torneos asociados a Leo Feelow." />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="smoke.css" />
 </head>
@@ -17,55 +17,59 @@
         <section class="feelow-hero">
             <div class="feelow-hero-copy">
                 <h1 class="leo-title" data-text="FEELOW HOOPERS">FEELOW HOOPERS</h1>
+                <p class="feelow-hero-subtitle">Los jugadores que han dejado huella</p>
                 <a class="feelow-back-link" href="leo.html"><span class="arrow">←</span> Volver a Leo</a>
             </div>
         </section>
 
+        <div class="feelow-feedback" id="feedback" role="status" aria-live="polite"></div>
+
         <section class="feelow-layout-grid">
-            
+
             <div class="feelow-sidebar">
                 <article class="feelow-panel auth-panel">
-                    <div class="panel-header-minimal">ACCESO</div>
-                    
-                    <form id="login-form" class="feelow-form">
-                        <input type="text" id="login-username" placeholder="Usuario" required />
-                        <input type="password" id="login-password" placeholder="Contraseña (solo admin)" />
-                        <button type="submit" class="brutalist-btn">ENTRAR</button>
+                    <div class="panel-header-minimal">Acceso</div>
+
+                    <form id="login-form" class="feelow-form" autocomplete="on">
+                        <input type="text" id="login-username" placeholder="Usuario" required autocomplete="username" />
+                        <input type="password" id="login-password" placeholder="Contraseña" required autocomplete="current-password" />
+                        <button type="submit" class="brutalist-btn">Entrar</button>
                     </form>
 
                     <hr class="divider">
 
-                    <form id="register-form" class="feelow-form">
+                    <form id="register-form" class="feelow-form" autocomplete="off">
                         <span class="form-subtitle">Nuevo Hooper</span>
                         <input type="text" id="register-username" placeholder="Nombre de usuario" required />
+                        <input type="password" id="register-password" placeholder="Contraseña (mín. 4 caracteres)" required />
                         <input type="text" id="register-city" placeholder="Ciudad (opcional)" />
-                        
+
                         <label for="register-photo" class="custom-file-upload">Subir foto de perfil</label>
                         <input type="file" id="register-photo" accept="image/*" />
-                        
-                        <button type="submit" class="brutalist-btn outline">REGISTRARSE</button>
+
+                        <button type="submit" class="brutalist-btn outline">Registrarse</button>
                     </form>
                 </article>
 
                 <article class="feelow-panel profile-panel hidden" id="user-profile">
-                    <div class="panel-header-minimal">TU PERFIL</div>
+                    <div class="panel-header-minimal">Tu perfil</div>
                     <div id="profile-view" class="profile-view"></div>
-                    <button type="button" class="brutalist-btn outline" style="margin-top: 1rem;" onclick="clearCurrentUser(); location.reload();">Cerrar Sesión</button>
+                    <button type="button" class="brutalist-btn outline" id="logout-btn" style="margin-top: 1rem;">Cerrar sesión</button>
                 </article>
             </div>
 
             <div class="feelow-main-content">
                 <section class="feelow-panel ranking-panel">
-                    <div class="panel-header-minimal">GLOBAL RANKING</div>
+                    <div class="panel-header-minimal">Global Ranking</div>
                     <div class="ranking-table-wrap">
                         <table class="brutalist-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>HOOPER</th>
-                                    <th>USUARIO</th>
+                                    <th>Hooper</th>
                                     <th>W</th>
                                     <th>L</th>
+                                    <th>Torneos</th>
                                     <th>PTS</th>
                                 </tr>
                             </thead>
@@ -74,49 +78,115 @@
                     </div>
                 </section>
 
+                <section class="feelow-panel ranking-panel">
+                    <div class="panel-header-minimal">Torneos</div>
+                    <div id="tournaments-list" class="tournaments-grid"></div>
+                </section>
+
                 <section id="admin-panel" class="feelow-panel admin-panel hidden">
-                    <div class="panel-header-minimal admin-header">ADMINISTRACIÓN LEO FEELOW</div>
+                    <div class="panel-header-minimal admin-header">Administración Leo Feelow</div>
+
+                    <div class="admin-section-title">Gestión de hoopers</div>
                     <div class="admin-grid">
-                        
-                        <form id="admin-stats-form" class="feelow-form admin-box">
-                            <h3>Gestión de Stats</h3>
-                            <select id="admin-user-select" class="admin-input"></select>
-                            <div class="stats-inputs">
-                                <input type="number" id="admin-wins" placeholder="W" min="0" value="0" />
-                                <input type="number" id="admin-losses" placeholder="L" min="0" value="0" />
-                            </div>
-                            <button type="submit" class="brutalist-btn admin-btn">ACTUALIZAR</button>
+
+                        <form id="admin-create-form" class="feelow-form admin-box">
+                            <h3>Añadir usuario</h3>
+                            <input type="text" id="admin-create-username" placeholder="Usuario" required />
+                            <input type="password" id="admin-create-password" placeholder="Contraseña (mín. 4)" required />
+                            <input type="text" id="admin-create-city" placeholder="Ciudad" />
+                            <label for="admin-create-photo" class="custom-file-upload">Foto (opcional)</label>
+                            <input type="file" id="admin-create-photo" accept="image/*" />
+                            <button type="submit" class="brutalist-btn outline">Crear</button>
                         </form>
 
-                        <div class="feelow-form admin-box admin-actions">
-                            <h3>Registrar Resultado</h3>
-                            <select id="admin-result-user" class="admin-input"></select>
+                        <form id="admin-stats-form" class="feelow-form admin-box">
+                            <h3>Gestión de stats</h3>
+                            <select id="admin-user-select" class="admin-input" aria-label="Usuario"></select>
+                            <div class="stats-inputs">
+                                <div class="stat-field">
+                                    <label for="admin-wins">Victorias</label>
+                                    <input type="number" id="admin-wins" min="0" value="0" />
+                                </div>
+                                <div class="stat-field">
+                                    <label for="admin-losses">Derrotas</label>
+                                    <input type="number" id="admin-losses" min="0" value="0" />
+                                </div>
+                            </div>
+                            <div class="stats-inputs">
+                                <div class="stat-field">
+                                    <label for="admin-tournaments">Torneos</label>
+                                    <input type="number" id="admin-tournaments" min="0" value="0" />
+                                </div>
+                                <div class="stat-field">
+                                    <label for="admin-matches">Partidos</label>
+                                    <input type="number" id="admin-matches" min="0" value="0" />
+                                </div>
+                            </div>
+                            <button type="submit" class="brutalist-btn admin-btn">Actualizar</button>
+                        </form>
+
+                        <form id="admin-edit-form" class="feelow-form admin-box">
+                            <h3>Editar usuario</h3>
+                            <select id="admin-edit-user-select" class="admin-input" aria-label="Usuario a editar"></select>
+                            <input type="text" id="admin-edit-city" placeholder="Ciudad" />
+                            <input type="password" id="admin-edit-password" placeholder="Nueva contraseña (opcional)" />
+                            <div id="admin-edit-photo-current" class="admin-edit-photo-preview"></div>
+                            <label for="admin-edit-photo" class="custom-file-upload">Cambiar foto (opcional)</label>
+                            <input type="file" id="admin-edit-photo" accept="image/*" />
+                            <button type="submit" class="brutalist-btn outline">Guardar cambios</button>
+                        </form>
+
+                        <div class="feelow-form admin-box">
+                            <h3>Registrar resultado</h3>
+                            <select id="admin-result-user" class="admin-input" aria-label="Usuario"></select>
                             <div class="match-buttons">
-                                <button id="admin-win-btn" type="button" class="match-btn win">WIN</button>
-                                <button id="admin-loss-btn" type="button" class="match-btn loss">LOSS</button>
+                                <button id="admin-win-btn" type="button" class="match-btn win">Victoria</button>
+                                <button id="admin-loss-btn" type="button" class="match-btn loss">Derrota</button>
                             </div>
                         </div>
 
-                        <form id="admin-create-form" class="feelow-form admin-box">
-                            <h3>Añadir Usuario</h3>
-                            <input type="text" id="admin-create-username" placeholder="Usuario" required />
-                            <input type="text" id="admin-create-city" placeholder="Ciudad" />
-                            <label for="admin-create-photo" class="custom-file-upload">Foto (Opcional)</label>
-                            <input type="file" id="admin-create-photo" accept="image/*" />
-                            <button type="submit" class="brutalist-btn outline">CREAR</button>
-                        </form>
-
                         <form id="admin-badges-form" class="feelow-form admin-box">
-                            <h3>Otorgar Insignias</h3>
-                            <select id="admin-badge-user"></select>
-                            <select id="admin-badge-select">
+                            <h3>Otorgar insignias</h3>
+                            <select id="admin-badge-user" aria-label="Usuario"></select>
+                            <select id="admin-badge-select" aria-label="Insignia">
                                 <option>Primer Hooper</option>
                                 <option>Campeón del torneo</option>
                                 <option>Participante fundador</option>
                                 <option>Derrotó a Leo</option>
                                 <option>Top 10 histórico</option>
                             </select>
-                            <button type="submit" class="brutalist-btn outline">AÑADIR</button>
+                            <button type="submit" class="brutalist-btn outline">Añadir</button>
+                        </form>
+
+                        <form id="admin-delete-form" class="feelow-form admin-box admin-box-danger">
+                            <h3>Eliminar usuario</h3>
+                            <select id="admin-delete-select" aria-label="Usuario a eliminar"></select>
+                            <button type="submit" class="brutalist-btn danger">Eliminar del registro</button>
+                        </form>
+
+                    </div>
+
+                    <div class="admin-section-title">Gestión de torneos</div>
+                    <div class="admin-grid">
+
+                        <form id="tournament-create-form" class="feelow-form admin-box">
+                            <h3>Crear torneo</h3>
+                            <input type="text" id="tournament-name" placeholder="Nombre del torneo" required />
+                            <button type="submit" class="brutalist-btn admin-btn">Crear</button>
+                        </form>
+
+                        <div class="feelow-form admin-box">
+                            <h3>Inscribir participante</h3>
+                            <select id="tournament-add-select" class="admin-input" aria-label="Torneo"></select>
+                            <select id="tournament-add-user" class="admin-input" aria-label="Hooper"></select>
+                            <button type="button" id="tournament-add-btn" class="brutalist-btn outline">Inscribir</button>
+                        </div>
+
+                        <form id="tournament-close-form" class="feelow-form admin-box">
+                            <h3>Cerrar torneo</h3>
+                            <select id="tournament-close-select" class="admin-input" aria-label="Torneo"></select>
+                            <select id="tournament-close-participant" class="admin-input" aria-label="Campeón"></select>
+                            <button type="submit" class="brutalist-btn outline">Cerrar y designar campeón</button>
                         </form>
 
                     </div>
