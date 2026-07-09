@@ -125,37 +125,40 @@ export class ConcreteBasketball {
         this.camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 50);
         this.camera.position.set(0, 0.3, 3.6);
 
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: true });
         this.renderer.setSize(w, h);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        // Canvas transparente: deja ver los gradientes del hero y NO bloquea scroll.
         this.renderer.setClearColor(0x000000, 0);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 0.7;
+        // Exposición más alta para que el hormigón gris sea visible (no negro plano).
+        this.renderer.toneMappingExposure = 1.35;
         this.renderer.domElement.setAttribute('aria-hidden', 'true');
+        this.renderer.domElement.style.pointerEvents = 'none';
         this.el.appendChild(this.renderer.domElement);
 
-        /* Environment map para reflejos PBR */
+        /* Environment map para reflejos PBR sobre el acero de las canaletas */
         this.scene.environment = createEnvMap(this.renderer);
 
-        /* Iluminación dramática */
-        const key = new THREE.DirectionalLight(0xbbbbcc, 2.5);
+        /* Key light frontal fría — revela los poros del hormigón */
+        const key = new THREE.DirectionalLight(0xccccdd, 3.2);
         key.position.set(3, 4, 5);
         this.scene.add(key);
 
-        /* Rim lights fríos para resaltar rugosidad */
-        const rim1 = new THREE.DirectionalLight(0x7799bb, 4);
+        /* 3 Rim lights frías (ambiente nocturno) — esculpen el volumen */
+        const rim1 = new THREE.DirectionalLight(0x8899bb, 5.5);
         rim1.position.set(-4, 1, -2);
         this.scene.add(rim1);
 
-        const rim2 = new THREE.DirectionalLight(0x556688, 2.5);
+        const rim2 = new THREE.DirectionalLight(0x667799, 3.5);
         rim2.position.set(1, -4, -1);
         this.scene.add(rim2);
 
-        const rim3 = new THREE.DirectionalLight(0x667799, 2);
+        const rim3 = new THREE.DirectionalLight(0x7788aa, 3);
         rim3.position.set(-1, 2, -4);
         this.scene.add(rim3);
 
-        this.scene.add(new THREE.AmbientLight(0x0a0a10, 0.3));
+        this.scene.add(new THREE.AmbientLight(0x1a1a22, 0.45));
 
         this._buildBall();
 
@@ -189,13 +192,23 @@ export class ConcreteBasketball {
 
     _buildBall() {
         const RADIUS = 1;
-        const SEGMENTS = 140;
-        const GROOVE_W = 0.048;
-        const GROOVE_D = 0.038;
+        // Mayor densidad de vértices → poros y canaletas mejor esculpidos.
+        const SEGMENTS = 220;
+        const GROOVE_W = 0.055;
+        const GROOVE_D = 0.052;
+        const PORE_AMP = 0.012;   // micro-relieve del hormigón poroso
 
         const geo = new THREE.SphereGeometry(RADIUS, SEGMENTS, SEGMENTS);
         const pos = geo.attributes.position;
         const maskArr = new Float32Array(pos.count);
+
+        // RNG determinista para los poros (sin parpadeo entre frames).
+        const poreHash = (i) => {
+            let h = (i * 374761393 + 0x9e3779b9) >>> 0;
+            h = (h ^ (h >> 13)) >>> 0;
+            h = (h * 1274126177) >>> 0;
+            return ((h ^ (h >> 16)) & 0xffffff) / 0xffffff;
+        };
 
         for (let i = 0; i < pos.count; i++) {
             const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
@@ -206,9 +219,19 @@ export class ConcreteBasketball {
             let disp = 0, mask = 0;
 
             if (dist < GROOVE_W) {
+                // Canaleta con borde afilado: cae rápido y rebota (acero hundido).
                 const t = 1 - dist / GROOVE_W;
-                disp = -GROOVE_D * t * t;
+                disp = -GROOVE_D * (t * t * (3 - 2 * t));
                 mask = t;
+            } else if (dist < GROOVE_W * 1.6) {
+                // Reborde levantado junto a cada canaleta (cantos metálicos).
+                const t = 1 - (dist - GROOVE_W) / (GROOVE_W * 0.6);
+                disp = PORE_AMP * 0.8 * t * t;
+            }
+
+            // Poros del hormigón: ruido sutil por vértice (donde no hay canaleta).
+            if (mask === 0) {
+                disp += (poreHash(i) - 0.5) * 2 * PORE_AMP;
             }
 
             const newR = Math.max(0.01, RADIUS + disp);
@@ -219,15 +242,17 @@ export class ConcreteBasketball {
         geo.setAttribute('aGrooveMask', new THREE.BufferAttribute(maskArr, 1));
         geo.computeVertexNormals();
 
-        const concreteNM = generateNoiseNormalMap(512, 9, 6, 2.5);
+        // Normal map FBM de mayor resolución → rugosidad del hormigón gris.
+        const concreteNM = generateNoiseNormalMap(720, 11, 7, 3.2);
 
         const mat = new THREE.MeshPhysicalMaterial({
-            color: new THREE.Color(0.26, 0.255, 0.25),
-            roughness: 0.94,
-            metalness: 0.04,
+            color: new THREE.Color(0.34, 0.335, 0.33),   // gris asfalto más claro y visible
+            roughness: 0.92,
+            metalness: 0.06,
             normalMap: concreteNM,
-            normalScale: new THREE.Vector2(0.35, 0.35),
-            envMapIntensity: 0.4,
+            normalScale: new THREE.Vector2(0.55, 0.55),
+            envMapIntensity: 0.7,
+            clearcoat: 0.0,
         });
 
         mat.onBeforeCompile = (shader) => {
@@ -247,22 +272,24 @@ export class ConcreteBasketball {
                 `#include <common>
                  varying float vGrooveMask;`
             );
+            // Hormigón gris rugoso vs. acero oscuro pulido en las canaletas.
             shader.fragmentShader = shader.fragmentShader.replace(
                 '#include <color_fragment>',
                 `#include <color_fragment>
-                 vec3 concreteCol = vec3(0.26, 0.255, 0.25);
-                 vec3 steelCol = vec3(0.055, 0.055, 0.065);
+                 vec3 concreteCol = vec3(0.34, 0.335, 0.33);
+                 vec3 steelCol    = vec3(0.085, 0.085, 0.10);
                  diffuseColor.rgb = mix(concreteCol, steelCol, vGrooveMask);`
             );
+            // Acero más liso y reflectante que el hormigón poroso.
             shader.fragmentShader = shader.fragmentShader.replace(
                 '#include <roughnessmap_fragment>',
                 `#include <roughnessmap_fragment>
-                 roughnessFactor = mix(0.94, 0.32, vGrooveMask);`
+                 roughnessFactor = mix(0.92, 0.28, vGrooveMask);`
             );
             shader.fragmentShader = shader.fragmentShader.replace(
                 '#include <metalnessmap_fragment>',
                 `#include <metalnessmap_fragment>
-                 metalnessFactor = mix(0.04, 0.88, vGrooveMask);`
+                 metalnessFactor = mix(0.06, 0.92, vGrooveMask);`
             );
         };
 

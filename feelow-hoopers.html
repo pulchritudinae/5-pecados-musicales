@@ -19,18 +19,31 @@
     </script>
 </head>
 <body class="character-page leo-world">
+    <div class="street-basket-bg" aria-hidden="true">
+        <div class="street-basket-glow street-basket-glow-a"></div>
+        <div class="street-basket-glow street-basket-glow-b"></div>
+        <div class="street-basket-court"></div>
+        <div class="street-basket-lines"></div>
+        <div class="street-basket-pulse"></div>
+    </div>
+
     <header class="world-header">
         <a class="brand-mark" href="index.html">5PM</a>
     </header>
 
     <main class="feelow-container">
         <section class="feelow-hero">
-            <!-- Fondo 3D: balón de hormigón. z-index controlado por CSS. -->
-            <div class="feelow-hero-canvas" id="hero-basketball" aria-hidden="true"></div>
+            <div class="feelow-basketball-art" aria-hidden="true">
+                <div class="feelow-basketball-plate">
+                    <div class="feelow-ball-image">
+                        <img src="3d/feelow-hero-ball.png" alt="Balón Leo Feelow" />
+                        <div class="feelow-ball-overlay"></div>
+                    </div>
+                </div>
+            </div>
 
             <div class="feelow-hero-copy">
                 <h1 class="leo-title" data-text="FEELOW HOOPERS">FEELOW HOOPERS</h1>
-                <p class="feelow-hero-subtitle">Los jugadores que han dejado huella</p>
                 <a class="feelow-back-link" href="leo.html"><span class="arrow">←</span> Volver a Leo</a>
             </div>
         </section>
@@ -81,7 +94,9 @@
                                     <th>#</th>
                                     <th>Hooper</th>
                                     <th>W</th>
-                                    <th>L</th>
+                                    <th>JU</th>
+                                    <th>P</th>
+                                    <th>D</th>
                                     <th>REP</th>
                                     <th>Racha</th>
                                 </tr>
@@ -122,8 +137,8 @@
                                     <input type="number" id="admin-wins" min="0" value="0" />
                                 </div>
                                 <div class="stat-field">
-                                    <label for="admin-losses">Derrotas</label>
-                                    <input type="number" id="admin-losses" min="0" value="0" />
+                                    <label for="admin-unique-games">Juego Único (JU)</label>
+                                    <input type="number" id="admin-unique-games" min="0" value="0" />
                                 </div>
                             </div>
                             <div class="stats-inputs">
@@ -137,8 +152,9 @@
                                 </div>
                             </div>
                             <div class="stat-field">
-                                <label for="admin-rep">Reputación (REP)</label>
-                                <input type="number" id="admin-rep" min="0" value="1000" />
+                                <label for="admin-rep" class="rep-locked-label">Reputación (REP) — Automática</label>
+                                <input type="number" id="admin-rep" min="0" value="1000" disabled readonly aria-disabled="true" />
+                                <span class="rep-locked-hint">Calculada por la calle: 1000 + W×30 + JU×15 + Partidos×4 + Insignias − Derrotas×6.</span>
                             </div>
                             <button type="submit" class="brutalist-btn admin-btn">Actualizar</button>
                         </form>
@@ -160,19 +176,40 @@
                             <select id="admin-match-winner" class="admin-input" aria-label="Ganador"></select>
                             <label for="admin-match-loser" class="admin-field-label">Perdedor</label>
                             <select id="admin-match-loser" class="admin-input" aria-label="Perdedor"></select>
+                            <label class="unique-game-toggle">
+                                <input type="checkbox" id="admin-match-unique-winner" />
+                                <span>Ganador: Juego Único (JU)</span>
+                            </label>
+                            <label class="unique-game-toggle">
+                                <input type="checkbox" id="admin-match-unique-loser" />
+                                <span>Perdedor: Juego Único (JU)</span>
+                            </label>
                             <button type="submit" class="brutalist-btn admin-btn">Registrar Enfrentamiento</button>
                         </form>
 
                         <form id="admin-badges-form" class="feelow-form admin-box">
-                            <h3>Otorgar insignias</h3>
+                            <h3>Insignias de la calle</h3>
                             <select id="admin-badge-user" aria-label="Usuario"></select>
                             <select id="admin-badge-select" aria-label="Insignia">
-                                <option value="Participante fundador">Participante fundador</option>
-                                <option value="Primer Hooper">Primer Hooper</option>
-                                <option value="Campeón del torneo">Campeón del torneo</option>
-                                <option value="Leyenda">Leyenda</option>
-                                <option value="Derrotó a Leo">Derrotó a Leo</option>
+                                <option value="CIMIENTOS">CIMIENTOS</option>
+                                <option value="SANGRE NUEVA">SANGRE NUEVA</option>
+                                <option value="DUEÑO DE LA PISTA">DUEÑO DE LA PISTA</option>
+                                <option value="ROMPE-ÍDOLOS">ROMPE-ÍDOLOS</option>
+                                <option value="LEYENDA">LEYENDA</option>
+                                <option value="1V1 INCOMBATIBLE">1V1 INCOMBATIBLE</option>
+                                <option value="CLUTCH">CLUTCH</option>
+                                <option value="RACHA DE FUEGO">RACHA DE FUEGO</option>
+                                <option value="CAMPEÓN DE TORNEO">CAMPEÓN DE TORNEO</option>
+                                <option value="MVP DE LA CALLE">MVP DE LA CALLE</option>
                             </select>
+                            <div id="admin-badge-preview" class="admin-badge-preview" aria-live="polite">
+                                <div class="admin-badge-preview-icon" id="admin-badge-preview-icon">🏀</div>
+                                <div class="admin-badge-preview-copy">
+                                    <span class="preview-label">Previsualización</span>
+                                    <strong id="admin-badge-preview-title">CIMIENTOS</strong>
+                                    <span id="admin-badge-preview-text">Fundó el registro del proyecto y abrió el camino del 1vs1 callejero.</span>
+                                </div>
+                            </div>
                             <div class="match-buttons">
                                 <button type="button" id="admin-badge-grant" class="match-btn">Otorgar</button>
                                 <button type="button" id="admin-badge-revoke" class="match-btn loss">Revocar</button>
@@ -232,12 +269,13 @@
                 <div><span>REP</span><strong id="profile-modal-rep">1000</strong></div>
                 <div><span>Racha</span><strong id="profile-modal-streak">0</strong></div>
                 <div><span>Victorias</span><strong id="profile-modal-wins">0</strong></div>
-                <div><span>Derrotas</span><strong id="profile-modal-losses">0</strong></div>
+                <div><span>Juego Único</span><strong id="profile-modal-unique">0</strong></div>
             </div>
 
             <div class="profile-modal-tier" id="profile-modal-tier">—</div>
 
             <div class="profile-modal-badges" id="profile-modal-badges"></div>
+            <div class="badge-detail-card" id="profile-modal-badge-detail"></div>
         </article>
     </dialog>
 

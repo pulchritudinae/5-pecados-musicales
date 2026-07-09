@@ -5,13 +5,24 @@
    3D del balón de hormigón como fondo del Hero.
 
    Estética estricta de Leo: SOLO escala de grises, negro
-   profundo, blanco y asfalto. Cero colores vivos.
+   profundo, blanco y asfalto. Cero colores vivos. El único
+   acento permitido es una pátina ocre/oro viejo (#c28a35),
+   reservada en exclusiva a la élite absoluta (The Kings).
+
+   MÉTRICAS DE LA CALLE
+   ----------------------------------------------------------------
+   No existe "Derrotas". En su lugar: Juego Único (JU) =
+   partidos donde el hooper demostró estilo salvaje, movimientos
+   locos o puro respeto, más allá del marcador.
+
+   REP es AUTOMÁTICA (nadie la edita a mano):
+       REP = 1000 + (W × 30) + (JU × 15) + (Insignias × 50)
 
    MODELO DE DATOS
    ----------------------------------------------------------------
    users: [{
      id, username, password, city, photo,
-     wins, losses, tournaments, matches,
+     wins, losses(legacy), uniqueGames, tournaments, matches,
      rep, streak,                          // ← Reputación + racha
      joinedAt, badges: [string]
    }]
@@ -21,8 +32,6 @@
    }]
    ----------------------------------------------------------------
    ========================================================= */
-
-import { ConcreteBasketball } from './feelow-basketball.js';
 
 const STORAGE_KEY = 'feelow-hoopers-users';
 const CURRENT_KEY = 'feelow-hoopers-current-user';
@@ -36,27 +45,72 @@ const MIN_PASSWORD_LEN = 4;
 const PHOTO_MAX_BYTES  = 420_000;   // tope de un dataURL en localStorage (~0.4MB)
 const PHOTO_TARGET_PX  = 256;       // lado máx. del thumbnail tras compresión
 
-/* ---------- Sistema ELO ---------- */
-const ELO_K      = 32;              // factor de volatilidad
-const ELO_START  = 1000;            // todo hooper inicia con 1000 REP
-const ELO_D      = 400;             // escala de la fórmula
-const STREAK_FIRE = 3;              // a partir de aquí se muestra 💨 xN
+/* ---------- Fórmula de reputación (respeto callejero) ---------- */
+const REP_BASE      = 1000;          // todo hooper inicia con 1000 REP
+const REP_PER_WIN   = 30;            // cada Victoria suma +30 REP
+const REP_PER_JU    = 15;            // cada Juego Único suma +15 REP
+const REP_PER_MATCH = 4;             // jugar partidos da respeto base, aunque menos que ganar
+const REP_PER_LOSS  = 6;             // las derrotas cortan el impulso si se acumulan
+const REP_PER_BADGE = 45;           // valor base para insignias desconocidas
+const STREAK_FIRE   = 3;             // a partir de aquí se muestra 💨 xN
 
-/* ---------- Tiers urbanos (solo grises) ---------- */
-const TIERS = [
-    { min: 0,    label: 'Grava',    cls: 'tier-grava',    accent: '#666' },
-    { min: 1000, label: 'Asfalto',  cls: 'tier-asfalto',  accent: '#a7a7a2' },
-    { min: 1200, label: 'Hormigón', cls: 'tier-hormigon', accent: '#d8d8d8' },
-    { min: 1400, label: 'Acero',    cls: 'tier-acero',    accent: '#ffffff' },
-];
+const BADGE_REP_VALUES = {
+    'CIMIENTOS': 55,
+    'SANGRE NUEVA': 40,
+    'DUEÑO DE LA PISTA': 80,
+    'ROMPE-ÍDOLOS': 75,
+    'LEYENDA': 100,
+    '1V1 INCOMBATIBLE': 70,
+    'CLUTCH': 60,
+    'RACHA DE FUEGO': 65,
+    'CAMPEÓN DE TORNEO': 85,
+    'MVP DE LA CALLE': 90,
+};
 
-/* ---------- Badges (alias canónicos) ---------- */
+const TIERS = {
+    kings:    { label: 'The Kings',    cls: 'tier-kings',    accent: '#c28a35' }, // oro viejo desgastado
+    hustlers: { label: 'The Hustlers', cls: 'tier-hustlers', accent: '#d8d8d8' }, // acero cepillado
+    asphalt:  { label: 'The Asphalt',  cls: 'tier-asphalt',  accent: '#a7a7a2' }, // hormigón poroso
+};
+
+/* ---------- Tiers urbanos por POSICIÓN (estatus callejero) ----------
+   Top 1-3     = The Kings    (único acento ocre/oro viejo permitido)
+   Puestos 4-50 = The Hustlers (acero industrial cepillado)
+   Puestos 51+  = The Asphalt  (hormigón poroso crudo)                       */
+function tierByPosition(position) {
+    if (position <= 3)  return TIERS.kings;
+    if (position <= 50) return TIERS.hustlers;
+    return TIERS.asphalt;
+}
+
+/* Alias para calcular el tier por posición de un usuario concreto. */
+function tierByRank(rank) {
+    return tierByPosition(rank);
+}
+
+/* ---------- Badges (lore callejero · medallas octogonales) ---------- */
 const BADGE_META = {
-    'Participante fundador': { emoji: '⛓️',   cls: 'badge-founder' },
-    'Primer Hooper':         { emoji: '👟',   cls: 'badge-first' },
-    'Campeón del torneo':    { emoji: '👑',   cls: 'badge-champion' },
-    'Leyenda':               { emoji: '🚧',   cls: 'badge-legend' },
-    'Derrotó a Leo':         { emoji: '💀',   cls: 'badge-leo' },
+    'CIMIENTOS':         { emoji: '🧱', cls: 'badge-founder',   title: 'CIMIENTOS',         description: 'Una insignia de origen: la que reconoce a quien abrió la puerta y dejó la primera huella en la calle.' },
+    'SANGRE NUEVA':      { emoji: '⚡', cls: 'badge-first',     title: 'SANGRE NUEVA',      description: 'Para quien llegó con hambre, sin permiso y con la intención de hacerse notar desde el primer día.' },
+    'DUEÑO DE LA PISTA': { emoji: '👑', cls: 'badge-champion',  title: 'DUEÑO DE LA PISTA', description: 'Se reconoce a quien entra en la cancha y hace que el juego se incline a su ritmo.' },
+    'ROMPE-ÍDOLOS':      { emoji: '💀', cls: 'badge-leo',       title: 'ROMPE-ÍDOLOS',      description: 'Para el hooper que no se inclina ante la figura, el nombre ni la presión del momento.' },
+    'LEYENDA':           { emoji: '🕯️', cls: 'badge-legend',    title: 'LEYENDA',           description: 'La marca de quien ya no solo juega: se vuelve parte del relato de las noches y del barrio.' },
+    '1V1 INCOMBATIBLE':  { emoji: '🏀', cls: 'badge-ones',      title: '1V1 INCOMBATIBLE',  description: 'Reconoce la lectura, la distancia y la precisión de quien corta la salida antes de que el juego respire.' },
+    'CLUTCH':            { emoji: '⏱️', cls: 'badge-clutch',    title: 'CLUTCH',            description: 'Para el instante exacto en el que una decisión cambia el partido y deja el silencio en la pista.' },
+    'RACHA DE FUEGO':    { emoji: '🔥', cls: 'badge-streak',    title: 'RACHA DE FUEGO',    description: 'Una recompensa para quien no se detiene, y convierte cada aparición en una amenaza real.' },
+    'CAMPEÓN DE TORNEO': { emoji: '🏆', cls: 'badge-tournament', title: 'CAMPEÓN DE TORNEO', description: 'Se otorga a quien cerró el torneo con autoridad, presencia y la última palabra en la noche.' },
+    'MVP DE LA CALLE':   { emoji: '⭐', cls: 'badge-mvp',       title: 'MVP DE LA CALLE',   description: 'La insignia de quien pesa en los momentos difíciles y deja la cancha más viva que cuando entró.' },
+};
+
+/* Alias legacy → nuevos títulos (para migrar cuentas antiguas sin perder insignias). */
+const BADGE_ALIASES = {
+    'Participante fundador': 'CIMIENTOS',
+    'Primer Hooper':         'SANGRE NUEVA',
+    'Campeón del torneo':    'CAMPEÓN DE TORNEO',
+    'Derrotó a Leo':         'ROMPE-ÍDOLOS',
+    'Leyenda':               'LEYENDA',
+    'MVP':                   'MVP DE LA CALLE',
+    'Racha de fuego':        'RACHA DE FUEGO',
 };
 
 /* ---------- Persistencia ---------- */
@@ -68,7 +122,7 @@ function loadUsers() {
     if (!raw) {
         // Seed inicial. El admin canónico se garantiza en ensureAdminUser().
         users = [
-            { id: 2, username: 'Rook', password: 'rook1234', city: 'Barcelona', photo: '', wins: 9, losses: 7, tournaments: 2, matches: 16, joinedAt: '2026-06-02', badges: ['Participante fundador'] }
+            { id: 2, username: 'Rook', password: 'rook1234', city: 'Barcelona', photo: '', wins: 9, losses: 0, uniqueGames: 3, tournaments: 2, matches: 16, joinedAt: '2026-06-02', badges: ['CIMIENTOS'] }
         ];
     } else {
         try { users = JSON.parse(raw); }
@@ -77,13 +131,14 @@ function loadUsers() {
 
     users = migrateUsers(users);
     ensureAdminUser(users);
+    recomputeAllRep(users);   // REP siempre automatizada al cargar
     saveUsers(users);
     return users;
 }
 
 // Rellena campos nuevos en usuarios antiguos para no perder datos.
-// Migración pts → rep: si venía de la versión anterior (sin rep),
-// recalcula un REP coherente con su historial W/L a partir de 1000.
+// Migración: 'losses' legacy → se descarta (ya no existe la métrica),
+// introduce 'uniqueGames' (JU) y renombra insignias con el nuevo lore.
 function migrateUsers(users) {
     if (!Array.isArray(users)) return [];
 
@@ -100,19 +155,22 @@ function migrateUsers(users) {
         if (typeof u.tournaments !== 'number') u.tournaments = 0;
         if (typeof u.matches     !== 'number') u.matches     = 0;
         if (typeof u.wins        !== 'number') u.wins        = 0;
+        // 'losses' ya no se usa como métrica activa, pero se conserva por compat.
         if (typeof u.losses      !== 'number') u.losses      = 0;
+        // NUEVO: Juego Único (JU).
+        if (typeof u.uniqueGames !== 'number') u.uniqueGames = 0;
         if (typeof u.streak      !== 'number') u.streak      = 0;
         if (!Array.isArray(u.badges)) u.badges = [];
 
-        if (typeof u.photo   !== 'string') u.photo   = '';
-        if (typeof u.city    !== 'string') u.city    = '';
+        if (typeof u.photo    !== 'string') u.photo    = '';
+        if (typeof u.city     !== 'string') u.city     = '';
         if (typeof u.joinedAt !== 'string') u.joinedAt = new Date().toISOString();
 
-        // Rep: si no existe (viene de la versión pts), derivar de W/L.
-        if (typeof u.rep !== 'number') {
-            // Aproximación: cada victoria suma ~12, cada derrota resta ~10.
-            u.rep = ELO_START + Math.round(u.wins * 12 - u.losses * 10);
-        }
+        // Migrar insignias legacy a los nuevos títulos del lore callejero.
+        u.badges = u.badges.map((b) => BADGE_ALIASES[b] || b);
+
+        // 'rep' se recalcula siempre en recomputeAllRep(); aquí solo saneamos.
+        if (typeof u.rep !== 'number') u.rep = REP_BASE;
     });
     return users;
 }
@@ -127,15 +185,39 @@ function ensureAdminUser(users) {
             password: DEFAULT_ADMIN_PASSWORD,
             city: 'Madrid',
             photo: '',
-            wins: 12, losses: 4, tournaments: 3, matches: 16,
-            rep: 1480, streak: 0,
+            wins: 12, losses: 0, uniqueGames: 4, tournaments: 3, matches: 16,
+            rep: REP_BASE, streak: 0,
             joinedAt: '2026-06-01',
-            badges: ['Participante fundador', 'Primer Hooper', 'Campeón del torneo', 'Leyenda']
+            badges: ['CIMIENTOS', 'SANGRE NUEVA', 'DUEÑO DE LA PISTA', 'LEYENDA']
         });
     } else {
         // Refuerza credenciales por si una versión vieja las vació.
         users[idx].password = DEFAULT_ADMIN_PASSWORD;
     }
+}
+
+/* ---------- REP automatizada (respeto callejero) ---------- */
+// Calcula la reputación de un hooper en base exclusivamente a sus
+// estadísticas: victorias, juegos únicos e insignias. Nunca se
+// persiste un valor escrito a mano.
+function getBadgeRepValue(badge) {
+    return BADGE_REP_VALUES[badge] || REP_PER_BADGE;
+}
+
+function computeRep(user) {
+    const wins   = Math.max(0, user.wins || 0);
+    const ju     = Math.max(0, user.uniqueGames || 0);
+    const matches = Math.max(0, user.matches || 0);
+    const losses = Math.max(0, user.losses || 0);
+    const badgeRep = Array.isArray(user.badges)
+        ? user.badges.reduce((sum, badge) => sum + getBadgeRepValue(badge), 0)
+        : 0;
+    return Math.max(0, REP_BASE + wins * REP_PER_WIN + ju * REP_PER_JU + matches * REP_PER_MATCH + badgeRep - losses * REP_PER_LOSS);
+}
+
+// Recalcula y asigna la REP de todos los usuarios en una pasada.
+function recomputeAllRep(users) {
+    users.forEach((u) => { u.rep = computeRep(u); });
 }
 
 function saveUsers(users) { localStorage.setItem(STORAGE_KEY, JSON.stringify(users)); }
@@ -171,44 +253,34 @@ function migrateEvents(events) {
 }
 
 
-/* ---------- ELO / Tiers ---------- */
+/* ---------- Tiers / Racha ---------- */
 
-function expectedScore(repA, repB) {
-    return 1 / (1 + Math.pow(10, (repB - repA) / ELO_D));
-}
-
-// Aplica un enfrentamiento (ganador vs perdedor) al rep y racha de ambos.
-// Devuelve el delta aplicado al ganador (para feedback).
-function applyMatchElo(winner, loser) {
-    const eW = expectedScore(winner.rep, loser.rep);
-    const eL = expectedScore(loser.rep, winner.rep);
-
-    const deltaW = ELO_K * (1 - eW);
-    const deltaL = ELO_K * (0 - eL);
-
-    winner.rep = Math.round(winner.rep + deltaW);
-    loser.rep  = Math.round(loser.rep  + deltaL);
+// Aplica un enfrentamiento (ganador vs perdedor). Como ya no hay ELO,
+// solo se actualizan W, partidos jugados, racha y (opcionalmente) JU.
+// La REP se recalcula automáticamente vía computeRep().
+// Devuelve el delta de REP aplicado al ganador.
+function applyMatch(winner, loser, opts = {}) {
+    const repWBefore = winner.rep;
 
     winner.wins   += 1;
-    loser.losses  += 1;
     winner.matches = (winner.matches || 0) + 1;
     loser.matches  = (loser.matches  || 0) + 1;
+    loser.losses   = (loser.losses   || 0) + 1;
+
+    // Juego Único (JU): bandera de estilo salvaje, independiente del marcador.
+    if (opts.winnerUnique) winner.uniqueGames = (winner.uniqueGames || 0) + 1;
+    if (opts.loserUnique)  loser.uniqueGames  = (loser.uniqueGames  || 0) + 1;
 
     winner.streak = (winner.streak || 0) >= 0 ? winner.streak + 1 : 1;
     loser.streak  = 0;
 
-    return deltaW;
+    winner.rep = computeRep(winner);
+    loser.rep  = computeRep(loser);
+
+    return winner.rep - repWBefore;
 }
 
-function tierFor(rep) {
-    let t = TIERS[0];
-    for (const tier of TIERS) {
-        if (rep >= tier.min) t = tier;
-    }
-    return t;
-}
-
-// Racha legible: 💨 xN a partir de STREAK_FIRE; “—” si está en cero.
+// Racha legible: 💨 xN a partir de STREAK_FIRE; "—" si está en cero.
 function streakLabel(streak) {
     if (!streak || streak <= 0) return '<span class="streak-cold">—</span>';
     if (streak >= STREAK_FIRE)  return `<span class="streak-hot">💨 x${streak}</span>`;
@@ -222,6 +294,10 @@ function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (ch) => (
         { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
     ));
+}
+
+function getBadgeMeta(badge) {
+    return BADGE_META[badge] || { emoji: '·', cls: 'badge-custom', title: badge, description: 'Insignia especial para quien deja marca en la pista.' };
 }
 
 function formatDate(dateString) {
@@ -345,14 +421,15 @@ function updateRanking() {
     users.forEach((user, index) => {
         const position = index + 1;
         const positionLabel = position < 10 ? `0${position}` : String(position);
-        const isTop = position === 1;
-        const tier  = tierFor(user.rep || 0);
+        // Tier por posición (estatus callejero), no por valor de REP.
+        const tier = tierByPosition(position);
 
         const row = document.createElement('tr');
         row.classList.add('ranking-row');
-        row.dataset.username = user.username;
-        if (isTop) row.classList.add('is-top');
+        row.dataset.username = user.username;   // ← dato canónico para el modal
         row.classList.add(tier.cls);
+        // El título accesible refuerza a qué hooper abre la placa.
+        row.setAttribute('title', `Abrir placa de ${user.username}`);
 
         row.innerHTML = `
             <td><span class="rank-position">${positionLabel}</span></td>
@@ -363,18 +440,33 @@ function updateRanking() {
                 </div>
             </td>
             <td>${user.wins}</td>
-            <td class="muted-cell">${user.losses}</td>
+            <td class="ju-cell">${user.uniqueGames || 0}</td>
+            <td>${user.matches || 0}</td>
+            <td>${user.losses || 0}</td>
             <td><span class="score-cell">${user.rep || 0}</span></td>
             <td class="streak-cell">${streakLabel(user.streak || 0)}</td>
         `;
 
-        row.addEventListener('click', () => openProfileModal(user.username));
+        // BUGFIX: capturamos el username EXACTO de la fila (no del usuario
+        // logueado) y abrimos el modal contra ese dato. Evita que el modal
+        // pinte siempre los datos del usuario en sesión.
+        row.addEventListener('click', () => {
+            const targetUsername = row.dataset.username;
+            if (targetUsername) openProfileModal(targetUsername);
+        });
         tbody.appendChild(row);
     });
 }
 
 
 /* ---------- Render: Perfil (sidebar) ---------- */
+
+// Calcula el tier por posición de un usuario concreto dentro del ranking.
+function tierOfUser(user, allUsers) {
+    const sorted = sortUsers(allUsers);
+    const pos = sorted.findIndex((u) => u.username === user.username) + 1;
+    return tierByPosition(pos || 999);
+}
 
 function renderProfile() {
     const profileView = document.getElementById('profile-view');
@@ -389,9 +481,12 @@ function renderProfile() {
         return;
     }
 
-    const tier = tierFor(user.rep || 0);
+    const tier = tierOfUser(user, users);
     const badgesHtml = (user.badges && user.badges.length)
-        ? user.badges.map((b) => `<span>${escapeHtml(b)}</span>`).join('')
+        ? user.badges.map((b) => {
+            const meta = getBadgeMeta(b);
+            return `<button type="button" class="profile-badge-chip ${meta.cls}" data-badge="${escapeHtml(b)}" title="${escapeHtml(meta.title || b)}"><span class="profile-badge-emoji">${escapeHtml(meta.emoji || '·')}</span><span class="profile-badge-label">${escapeHtml(meta.title || b)}</span></button>`;
+        }).join('')
         : '<span class="is-empty">Sin insignias</span>';
 
     profileView.innerHTML = `
@@ -408,10 +503,22 @@ function renderProfile() {
             <div><span>Torneos</span><strong>${user.tournaments || 0}</strong></div>
             <div><span>Partidos</span><strong>${user.matches || 0}</strong></div>
             <div><span>Victorias</span><strong>${user.wins}</strong></div>
-            <div><span>Derrotas</span><strong>${user.losses}</strong></div>
+            <div><span>Juego Único</span><strong>${user.uniqueGames || 0}</strong></div>
         </div>
         <div class="profile-badges">${badgesHtml}</div>
+        <div id="profile-badge-detail" class="badge-detail-card">Pulsa una insignia para ver su significado y el motivo de la recompensa.</div>
     `;
+
+    profileView.querySelectorAll('.profile-badge-chip').forEach((button) => {
+        button.addEventListener('click', () => {
+            const badge = button.dataset.badge;
+            const meta = getBadgeMeta(badge);
+            const detail = profileView.querySelector('#profile-badge-detail');
+            if (detail) {
+                detail.innerHTML = `<strong>${escapeHtml(meta.title || badge)}</strong><span>${escapeHtml(meta.description || 'Insignia especial del registro de hoopers.')}</span>`;
+            }
+        });
+    });
 }
 
 
@@ -469,6 +576,20 @@ function buildUserOptions(excludeUsername = null) {
         .join('');
 }
 
+function updateBadgePreview() {
+    const select = document.getElementById('admin-badge-select');
+    const icon = document.getElementById('admin-badge-preview-icon');
+    const title = document.getElementById('admin-badge-preview-title');
+    const text = document.getElementById('admin-badge-preview-text');
+    if (!select || !icon || !title || !text) return;
+
+    const badge = select.value;
+    const meta = getBadgeMeta(badge);
+    icon.textContent = meta.emoji || '🏀';
+    title.textContent = meta.title || badge;
+    text.textContent = meta.description || 'Insignia especial del registro de hoopers.';
+}
+
 function updateAdminSelects() {
     const userOptions = buildUserOptions();
 
@@ -487,6 +608,8 @@ function updateAdminSelects() {
         const all = loadUsers().map((u) => `<option value="${escapeHtml(u.username)}">${escapeHtml(u.username)}</option>`).join('');
         el.innerHTML = all || '<option disabled>— Sin hoopers —</option>';
     });
+
+    updateBadgePreview();
 }
 
 
@@ -548,8 +671,8 @@ async function handleRegister(event) {
 
     users.push({
         id: Date.now(), username, password, city, photo,
-        wins: 0, losses: 0, tournaments: 0, matches: 0,
-        rep: ELO_START, streak: 0,
+        wins: 0, losses: 0, uniqueGames: 0, tournaments: 0, matches: 0,
+        rep: REP_BASE, streak: 0,
         joinedAt: new Date().toISOString(), badges: []
     });
     saveUsers(users);
@@ -630,8 +753,8 @@ async function handleAdminCreate(event) {
 
     users.push({
         id: Date.now(), username, password, city, photo,
-        wins: 0, losses: 0, tournaments: 0, matches: 0,
-        rep: ELO_START, streak: 0,
+        wins: 0, losses: 0, uniqueGames: 0, tournaments: 0, matches: 0,
+        rep: REP_BASE, streak: 0,
         joinedAt: new Date().toISOString(), badges: []
     });
     saveUsers(users);
@@ -646,10 +769,9 @@ function handleAdminStats(event) {
 
     const username    = document.getElementById('admin-user-select').value;
     const wins        = Math.max(0, Number(document.getElementById('admin-wins').value || 0));
-    const losses      = Math.max(0, Number(document.getElementById('admin-losses').value || 0));
+    const uniqueGames = Math.max(0, Number(document.getElementById('admin-unique-games').value || 0));
     const tournaments = Math.max(0, Number(document.getElementById('admin-tournaments').value || 0));
     const matches     = Math.max(0, Number(document.getElementById('admin-matches').value || 0));
-    const rep         = Math.max(0, Number(document.getElementById('admin-rep').value || 0));
 
     if (!username) { showFeedback('Selecciona un hooper.', 'error'); return; }
 
@@ -657,18 +779,20 @@ function handleAdminStats(event) {
     const target = users.find((u) => u.username === username);
     if (!target) return;
 
-    target.wins = wins;
-    target.losses = losses;
+    target.wins        = wins;
+    target.uniqueGames = uniqueGames;
     target.tournaments = tournaments;
-    target.matches = matches;
-    target.rep = rep;
+    target.matches     = matches;
+    // REP nunca se edita a mano: se deriva de W + JU + Insignias.
+    target.rep = computeRep(target);
     saveUsers(users);
 
-    showFeedback(`Stats de ${username} actualizadas.`, 'ok');
+    showFeedback(`Stats de ${username} actualizadas. REP recalculada: ${target.rep}.`, 'ok');
     updateAllViews();
 }
 
-// Registrar Enfrentamiento: aplica ELO a ganador y perdedor.
+// Registrar Enfrentamiento: aplica W + (opcional) JU a ganador y perdedor.
+// La REP se recalcula automáticamente vía applyMatch().
 function handleAdminMatch(event) {
     event.preventDefault();
     if (!isAdmin()) return;
@@ -688,25 +812,35 @@ function handleAdminMatch(event) {
     const loser  = users.find((u) => u.username === loserName);
     if (!winner || !loser) return;
 
+    // Juego Único (JU): partidos salvajes, independiente del marcador.
+    const winnerUnique = document.getElementById('admin-match-unique-winner')?.checked || false;
+    const loserUnique  = document.getElementById('admin-match-unique-loser')?.checked  || false;
+
     const repWBefore = winner.rep;
     const repLBefore = loser.rep;
-    applyMatchElo(winner, loser);
+    applyMatch(winner, loser, { winnerUnique, loserUnique });
     const deltaW = winner.rep - repWBefore;
     const deltaL = loser.rep  - repLBefore;
 
-    // Insignia especial: si el perdedor era Leo.
-    if (loserName === DEFAULT_ADMIN && !winner.badges.includes('Derrotó a Leo')) {
-        winner.badges.push('Derrotó a Leo');
+    // Insignia especial: si el perdedor era Leo → ROMPE-ÍDOLOS.
+    if (loserName === DEFAULT_ADMIN && !winner.badges.includes('ROMPE-ÍDOLOS')) {
+        winner.badges.push('ROMPE-ÍDOLOS');
+        winner.rep = computeRep(winner); // la nueva insignia sube la REP
     }
 
     saveUsers(users);
+
+    // Reset de los toggles de JU.
+    document.getElementById('admin-match-unique-winner').checked = false;
+    document.getElementById('admin-match-unique-loser').checked  = false;
 
     const fmt = (n) => (n >= 0 ? `+${n}` : `${n}`);
     showFeedback(`Enfrentamiento registrado. ${winnerName} ${fmt(Math.round(deltaW))} REP · ${loserName} ${fmt(Math.round(deltaL))} REP.`, 'ok');
     updateAllViews();
 }
 
-// Otorga o revoca una insignia.
+// Otorga o revoca una insignia. Tras cualquier cambio se recalcula
+// la REP de forma automática (las insignias aportan +50 REP cada una).
 function handleBadge(action) {
     const username = document.getElementById('admin-badge-user').value;
     const badge    = document.getElementById('admin-badge-select').value;
@@ -721,8 +855,9 @@ function handleBadge(action) {
     if (action === 'grant') {
         if (!target.badges.includes(badge)) {
             target.badges.push(badge);
+            target.rep = computeRep(target);
             saveUsers(users);
-            showFeedback(`Insignia «${badge}» otorgada a ${username}.`, 'ok');
+            showFeedback(`Insignia «${badge}» otorgada a ${username}. (+${getBadgeRepValue(badge)} REP)`, 'ok');
         } else {
             showFeedback(`${username} ya tiene esa insignia.`, 'error');
         }
@@ -730,8 +865,9 @@ function handleBadge(action) {
         const before = target.badges.length;
         target.badges = target.badges.filter((b) => b !== badge);
         if (target.badges.length !== before) {
+            target.rep = computeRep(target);
             saveUsers(users);
-            showFeedback(`Insignia «${badge}» revocada a ${username}.`, 'ok');
+            showFeedback(`Insignia «${badge}» revocada a ${username}. (REP recalculada)`, 'ok');
         } else {
             showFeedback(`${username} no tenía esa insignia.`, 'error');
         }
@@ -921,8 +1057,13 @@ function handleCloseTournament(event) {
     });
     if (winner) {
         const w = users.find((x) => x.username === winner);
-        if (w && !w.badges.includes('Campeón del torneo')) w.badges.push('Campeón del torneo');
+        if (w) {
+            if (!w.badges.includes('DUEÑO DE LA PISTA')) w.badges.push('DUEÑO DE LA PISTA');
+            if (!w.badges.includes('CAMPEÓN DE TORNEO')) w.badges.push('CAMPEÓN DE TORNEO');
+        }
     }
+    // REP recalculada (por si alguien ganó la insignia de campeón).
+    recomputeAllRep(users);
 
     saveUsers(users);
     saveEvents(events);
@@ -942,34 +1083,48 @@ function openProfileModal(username) {
     if (!dialog) return;
 
     const photo = user.photo || getDefaultAvatar();
-    const tier  = tierFor(user.rep || 0);
+    const tier  = tierOfUser(user, users);   // tier por posición, no por REP
 
     document.getElementById('profile-modal-photo').src = photo;
     document.getElementById('profile-modal-photo').alt = `Foto de ${user.username}`;
     document.getElementById('profile-modal-name').textContent  = user.username;
     document.getElementById('profile-modal-city').textContent  = user.city || 'Ubicación desconocida';
-    document.getElementById('profile-modal-rep').textContent   = user.rep || 0;
+    document.getElementById('profile-modal-rep').textContent    = user.rep || 0;
     document.getElementById('profile-modal-streak').textContent = user.streak || 0;
-    document.getElementById('profile-modal-wins').textContent  = user.wins || 0;
-    document.getElementById('profile-modal-losses').textContent = user.losses || 0;
+    document.getElementById('profile-modal-wins').textContent   = user.wins || 0;
+    document.getElementById('profile-modal-unique').textContent = user.uniqueGames || 0;
 
     const tierEl = document.getElementById('profile-modal-tier');
     tierEl.textContent = `${tier.label} · ${user.rep || 0} REP`;
     tierEl.className = `profile-modal-tier ${tier.cls}`;
 
-    // Insignias octogonales.
+    // Insignias octogonales físicas (medallas de metal fundido).
     const badgesWrap = document.getElementById('profile-modal-badges');
+    const detailEl = document.getElementById('profile-modal-badge-detail');
     if (user.badges && user.badges.length) {
         badgesWrap.innerHTML = user.badges.map((b) => {
-            const meta = BADGE_META[b] || { emoji: '·', cls: 'badge-custom' };
+            const meta = getBadgeMeta(b);
             return `
-                <span class="street-badge ${meta.cls}" title="${escapeHtml(b)}">
-                    <span class="street-badge-emoji">${meta.emoji}</span>
-                    <span class="street-badge-label">${escapeHtml(b)}</span>
-                </span>`;
+                <button type="button" class="street-badge ${meta.cls}" data-badge="${escapeHtml(b)}" title="${escapeHtml(meta.title || b)}">
+                    <span class="street-badge-emoji">${escapeHtml(meta.emoji || '·')}</span>
+                    <span class="street-badge-label">${escapeHtml(meta.title || b)}</span>
+                </button>`;
         }).join('');
+        if (detailEl) {
+            detailEl.innerHTML = '<span class="badge-detail-hint">Pulsa una insignia para ver su significado.</span>';
+        }
+        badgesWrap.querySelectorAll('.street-badge').forEach((button) => {
+            button.addEventListener('click', () => {
+                const badge = button.dataset.badge;
+                const meta = getBadgeMeta(badge);
+                if (detailEl) {
+                    detailEl.innerHTML = `<strong>${escapeHtml(meta.title || badge)}</strong><span>${escapeHtml(meta.description || 'Insignia especial del registro de hoopers.')}</span>`;
+                }
+            });
+        });
     } else {
         badgesWrap.innerHTML = '<span class="profile-badges-empty">Sin insignias todavía.</span>';
+        if (detailEl) detailEl.innerHTML = '<span class="badge-detail-hint">Sin insignias todavía.</span>';
     }
 
     if (typeof dialog.showModal === 'function') {
@@ -987,33 +1142,6 @@ function closeProfileModal() {
 }
 
 
-/* ---------- Balón 3D (Hero) ---------- */
-
-let heroBall = null;
-
-function initHeroBasketball() {
-    const container = document.getElementById('hero-basketball');
-    if (!container) return;
-    try {
-        heroBall = new ConcreteBasketball('#hero-basketball');
-    } catch (err) {
-        // WebGL no disponible: el fondo se queda con sus gradientes CSS.
-        console.warn('[Feelow] No se pudo iniciar el balón 3D:', err);
-    }
-
-    // Pausar cuando el hero sale del viewport (ahorro de GPU).
-    const hero = document.querySelector('.feelow-hero');
-    if (hero && 'IntersectionObserver' in window) {
-        const io = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (heroBall) heroBall.setVisible(entry.isIntersecting);
-            });
-        }, { threshold: 0.05 });
-        io.observe(hero);
-    }
-}
-
-
 /* ---------- Orquestación ---------- */
 
 function updateAllViews() {
@@ -1027,7 +1155,28 @@ function updateAllViews() {
     toggleAuthViews();
 }
 
+function initBackgroundMotion() {
+    const root = document.documentElement;
+    if (!root) return;
+
+    const updateMotion = (x, y) => {
+        root.style.setProperty('--bg-shift-x', `${x}px`);
+        root.style.setProperty('--bg-shift-y', `${y}px`);
+    };
+
+    window.addEventListener('pointermove', (event) => {
+        const x = (event.clientX / window.innerWidth - 0.5) * 10;
+        const y = (event.clientY / window.innerHeight - 0.5) * 8;
+        updateMotion(x, y);
+    });
+
+    window.addEventListener('pointerleave', () => updateMotion(0, 0));
+    window.addEventListener('blur', () => updateMotion(0, 0));
+}
+
 function init() {
+    initBackgroundMotion();
+
     // Auth
     document.getElementById('register-form')   ?.addEventListener('submit', handleRegister);
     document.getElementById('login-form')      ?.addEventListener('submit', handleLogin);
@@ -1045,6 +1194,7 @@ function init() {
     document.getElementById('admin-badge-revoke')?.addEventListener('click', () => handleBadge('revoke'));
 
     document.getElementById('admin-edit-user-select')?.addEventListener('change', loadEditUser);
+    document.getElementById('admin-badge-select')?.addEventListener('change', updateBadgePreview);
     document.getElementById('tournament-close-select')?.addEventListener('change', loadTournamentSelects);
 
     // Torneos
@@ -1065,14 +1215,9 @@ function init() {
         if (e.key === 'Escape') closeProfileModal();
     });
 
-    // Resize global del balón 3D.
-    window.addEventListener('resize', () => { if (heroBall) heroBall.resize(); });
-
     // Inicializar almacenes
     loadUsers();      // fuerza seed + admin + migración
     if (!localStorage.getItem(EVENTS_KEY)) saveEvents([]);
-
-    initHeroBasketball();
     updateAllViews();
 }
 

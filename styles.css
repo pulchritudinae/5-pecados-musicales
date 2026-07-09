@@ -2,6 +2,8 @@
   --bg: #050505;
   --bg-2: #0b0b0b;
   --ink: #f4eee3;
+  --bg-shift-x: 0px;
+  --bg-shift-y: 0px;
   --muted: #b8afa2;
   --line: rgba(244, 238, 227, 0.16);
   --gold: #c28a35;
@@ -55,9 +57,8 @@ html {
 body {
   margin: 0;
   background:
-    radial-gradient(ellipse at 12% -4%, rgba(194, 138, 53, 0.17), transparent 30rem),
-    radial-gradient(ellipse at 92% 14%, rgba(0, 168, 117, 0.08), transparent 28rem),
-    linear-gradient(180deg, #020202 0%, var(--bg) 42%, #080807 100%);
+    linear-gradient(circle at 50% -20%, rgba(212, 139, 43, 0.14) 0%, rgba(11, 11, 11, 1) 58%),
+    url('3d/feelow-hero-background.png') center top/cover no-repeat;
   color: var(--ink);
   font-family: var(--font-body);
   letter-spacing: 0;
@@ -79,6 +80,19 @@ body::before {
     linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
   background-size: 4.5rem 4.5rem;
   mask-image: linear-gradient(to bottom, black, transparent 74%);
+  z-index: -1;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(212, 139, 43, 0.12), transparent 28rem),
+    url('https://grainy-gradients.vercel.app/noise.svg');
+  mix-blend-mode: screen;
+  opacity: 0.34;
   z-index: -1;
 }
 
@@ -2371,11 +2385,96 @@ body.admin-mode .stat-control input[type="range"] {
 /* ---- Contenedor de la app ---- */
 .feelow-container {
   position: relative;
+  isolation: isolate;
   max-width: 1240px;
   margin: 0 auto;
   padding: 0 1.5rem 4rem;
   font-family: var(--font-body);
   color: var(--ink);
+}
+
+.street-basket-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(8, 8, 8, 0.74), rgba(18, 18, 18, 0.72) 42%, rgba(2, 2, 2, 0.86)),
+    url('3d/feelow-hero-background.png') center center/cover no-repeat;
+  background-blend-mode: overlay;
+}
+
+.street-basket-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 100%);
+  background-size: auto, 3rem 3rem;
+  opacity: 0.2;
+  mix-blend-mode: screen;
+}
+
+.street-basket-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(86px);
+  opacity: 0.7;
+  transform: translate3d(var(--bg-shift-x, 0px), var(--bg-shift-y, 0px), 0);
+  transition: transform 200ms ease-out;
+}
+
+.street-basket-glow-a {
+  width: 26rem;
+  height: 26rem;
+  left: -6rem;
+  top: 8rem;
+  background: rgba(194, 138, 53, 0.16);
+}
+
+.street-basket-glow-b {
+  width: 24rem;
+  height: 24rem;
+  right: -2rem;
+  top: 28rem;
+  background: rgba(244, 238, 227, 0.07);
+  animation-duration: 18s;
+}
+
+.street-basket-court {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0 15%, rgba(255, 255, 255, 0.045) 15% 15.3%, transparent 15.3% 100%),
+    linear-gradient(0deg, transparent 0 32%, rgba(255, 255, 255, 0.035) 32% 32.3%, transparent 32.3% 100%),
+    linear-gradient(90deg, transparent 0 50%, rgba(255, 255, 255, 0.03) 50% 50.3%, transparent 50.3% 100%);
+  background-size: 100% 100%, 8rem 8rem, 100% 100%;
+  opacity: 0.24;
+  transform: perspective(800px) rotateX(58deg) scale(1.15) translate3d(var(--bg-shift-x, 0px), var(--bg-shift-y, 0px), 0);
+  transform-origin: center top;
+  mix-blend-mode: screen;
+}
+
+.street-basket-lines {
+  position: absolute;
+  inset: 12% 10% 8%;
+  border: 1px solid rgba(244, 238, 227, 0.14);
+  border-radius: 2rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transform: perspective(1000px) rotateX(44deg) translate3d(var(--bg-shift-x, 0px), var(--bg-shift-y, 0px), 0);
+  opacity: 0.4;
+  transition: transform 220ms ease-out;
+}
+
+.street-basket-pulse {
+  position: absolute;
+  inset: 20% 14%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transform: translate3d(var(--bg-shift-x, 0px), var(--bg-shift-y, 0px), 0);
+  transition: transform 220ms ease-out;
 }
 
 /* ---- Hero ---- */
@@ -2389,8 +2488,8 @@ body.admin-mode .stat-control input[type="range"] {
   padding: 4rem 1.5rem 3rem;
   border-bottom: 1px solid var(--line);
   background:
-    radial-gradient(ellipse 60% 80% at 50% 30%, color-mix(in srgb, var(--world-accent), transparent 80%), transparent 70%),
-    linear-gradient(180deg, #080808 0%, #050505 100%);
+    radial-gradient(ellipse 60% 80% at 50% 30%, rgba(255, 255, 255, 0.05), transparent 70%),
+    linear-gradient(180deg, #111111 0%, #060606 100%);
 }
 
 .feelow-hero::before {
@@ -2445,6 +2544,87 @@ body.admin-mode .stat-control input[type="range"] {
   letter-spacing: 0.42em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.feelow-basketball-art {
+  position: relative;
+  z-index: 0;
+  width: min(29rem, 74vw);
+  margin-bottom: 1.4rem;
+  pointer-events: none;
+  filter: drop-shadow(0 34px 80px rgba(0, 0, 0, 0.7));
+  transform: perspective(1000px) rotateX(4deg) rotateY(-8deg);
+}
+
+.feelow-basketball-plate {
+  position: relative;
+  padding: 1.4rem;
+  border: 1px solid rgba(244, 238, 227, 0.16);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(248, 239, 215, 0.22), transparent 32%),
+    linear-gradient(145deg, rgba(26, 26, 26, 0.96), rgba(8, 8, 8, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.86),
+    0 16px 36px rgba(0, 0, 0, 0.38);
+}
+
+.feelow-basketball-plate::before {
+  content: "";
+  position: absolute;
+  inset: 0.75rem;
+  border: 1px solid rgba(244, 238, 227, 0.08);
+  pointer-events: none;
+}
+
+.feelow-basketball-plate::after {
+  content: "";
+  position: absolute;
+  inset: 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.feelow-ball-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.08), transparent 28%),
+    radial-gradient(circle at 50% 45%, rgba(0,0,0,0.35), transparent 40%);
+}
+
+.feelow-ball-image img {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: 120%;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  object-position: 88% 48%;
+  transform: translate3d(0, 0, 0);
+}
+
+.feelow-ball-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 38% 22%, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 62%);
+  mix-blend-mode: screen;
+}
+
+.basketball-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  transform: translateZ(0);
 }
 
 .feelow-back-link {
@@ -2758,18 +2938,10 @@ input[type="file"] { display: none; }
   background: color-mix(in srgb, var(--world-accent), transparent 93%);
 }
 
-.brutalist-table tbody tr.is-top td {
-  color: var(--ink);
-}
-
 .rank-position {
   font-family: var(--font-display);
   font-size: 1.15rem;
   color: var(--muted);
-}
-
-.brutalist-table tbody tr.is-top .rank-position {
-  color: color-mix(in srgb, var(--world-accent), var(--ink) 18%);
 }
 
 .rank-photo-cell {
@@ -2864,18 +3036,42 @@ input[type="file"] { display: none; }
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin-bottom: 1.3rem;
+  margin-bottom: 0.9rem;
 }
 
-.profile-badges span {
-  padding: 0.4rem 0.7rem;
+.profile-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.7rem;
   border: 1px solid color-mix(in srgb, var(--world-accent), transparent 55%);
-  background: color-mix(in srgb, var(--world-accent), transparent 90%);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--world-accent), transparent 92%), color-mix(in srgb, var(--world-accent), transparent 97%));
+  color: color-mix(in srgb, var(--world-accent), var(--ink) 14%);
   font-family: var(--font-label);
   font-size: 0.66rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--world-accent), var(--ink) 14%);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.profile-badge-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+.profile-badge-chip:focus-visible {
+  outline: 1px solid rgba(244, 238, 227, 0.58);
+  outline-offset: 3px;
+}
+
+.profile-badge-emoji {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.profile-badge-label {
+  white-space: nowrap;
 }
 
 .profile-badges .is-empty {
@@ -2883,6 +3079,33 @@ input[type="file"] { display: none; }
   border-color: var(--line);
   background: transparent;
   color: rgba(184, 175, 162, 0.5);
+}
+
+.badge-detail-card {
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(244, 238, 227, 0.16);
+  background: linear-gradient(145deg, rgba(244, 238, 227, 0.04), rgba(0, 0, 0, 0.18));
+  color: var(--muted);
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  letter-spacing: 0.08em;
+}
+
+.badge-detail-card strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.96rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.badge-detail-card span {
+  display: block;
+  color: #cfc8bb;
 }
 
 /* ---- Panel admin ---- */
@@ -2906,6 +3129,61 @@ input[type="file"] { display: none; }
 
 .admin-box .stats-inputs input,
 .admin-box .stats-inputs .stat-field { flex: 1; }
+
+.admin-badge-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.8rem 0.85rem;
+  margin-top: 0.35rem;
+  border: 1px solid rgba(244, 238, 227, 0.14);
+  background: linear-gradient(145deg, rgba(244, 238, 227, 0.045), rgba(0, 0, 0, 0.24));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.admin-badge-preview-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border: 1px solid rgba(244, 238, 227, 0.16);
+  background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(0,0,0,0.28));
+  font-size: 1.12rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.admin-badge-preview-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.admin-badge-preview-copy strong {
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.admin-badge-preview-copy .preview-label {
+  display: inline-flex;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-label);
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-badge-preview-copy span {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
 
 .stat-field {
   display: flex;
@@ -3228,11 +3506,13 @@ input[type="file"] { display: none; }
 }
 
 /* =========================================================
-   FEELOW HOOPERS v2 — Estética Leo (estricto grises)
-   Balón 3D · REP/ELO · Tiers · Rachas · Modal · Badges
+   FEELOW HOOPERS v2 — Estética Leo (estricto grises + oro viejo)
+   Balón 3D · REP automatizada · Tiers por posición · JU · Badges
    ========================================================= */
 
-/* ---- Paleta estricta Leo: solo grises, negro, blanco, asfalto ---- */
+/* ---- Paleta estricta Leo: negro, grises, blanco marfil ----
+   El ÚNICO acento permitido es una pátina ocre/oro viejo (#c28a35),
+   reservada en exclusiva a la élite absoluta (The Kings).         */
 .leo-world {
   --leo-black:    #050505;
   --leo-coal:     #0c0c0c;
@@ -3240,6 +3520,7 @@ input[type="file"] { display: none; }
   --leo-asfalto:  #a7a7a2;
   --leo-hormigon: #d8d8d8;
   --leo-acero:    #ffffff;
+  --leo-gold:     #c28a35;   /* oro viejo desgastado (élite) */
 }
 
 /* ---- Override Leo: feedback y danger en gris puro (sin rojo) ---- */
@@ -3279,6 +3560,67 @@ input[type="file"] { display: none; }
   --leo-acc: var(--leo-asfalto);
 }
 
+/* =========================================================
+   ATMÓSFERA URBANA DE FONDO (Street Artwork)
+   Textura de hormigón texturizado, graffitis monocromos
+   difuminados y silueta lejana de canasta de streetball.
+   Máximo 5% de opacidad. No ensucia la legibilidad.
+   ========================================================= */
+
+/* Capa 1: textura de hormigón poroso sobre body */
+.leo-world::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: soft-light;
+  background:
+    /* Puntos microscópicos que simulan poros del hormigón */
+    radial-gradient(circle 1px at 15% 20%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(circle 1px at 45% 65%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(circle 1px at 78% 35%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(circle 1px at 22% 82%, rgba(255,255,255,0.45) 0%, transparent 100%),
+    radial-gradient(circle 1px at 65% 12%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(circle 1px at 88% 78%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    /* Trazos difuminados de graffiti monocromo */
+    linear-gradient(152deg, transparent 42%, rgba(200,200,195,0.08) 43%, transparent 44.5%),
+    linear-gradient(68deg, transparent 28%, rgba(180,180,175,0.06) 29.5%, transparent 31%),
+    linear-gradient(195deg, transparent 58%, rgba(160,160,155,0.05) 59%, transparent 60.5%),
+    /* Mancha de spray difusa */
+    radial-gradient(ellipse 12rem 8rem at 72% 88%, rgba(140,140,135,0.06), transparent),
+    radial-gradient(ellipse 8rem 14rem at 8% 45%, rgba(150,150,145,0.04), transparent);
+  background-size:
+    5rem 5rem, 7rem 7rem, 6rem 6rem, 8rem 8rem, 4rem 4rem, 9rem 9rem,
+    100% 100%, 100% 100%, 100% 100%,
+    100% 100%, 100% 100%;
+}
+
+/* Capa 2: silueta lejana de canasta de streetball (CSS puro) */
+.leo-world::after {
+  content: "";
+  position: fixed;
+  bottom: 8%;
+  right: -2%;
+  width: 18rem;
+  height: 26rem;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  /* Silueta abstracta: tablero + aro + red */
+  background:
+    /* Tablero rectangular */
+    linear-gradient(to right, transparent 38%, rgba(200,200,195,0.6) 39%, rgba(200,200,195,0.6) 61%, transparent 62%),
+    /* Aro horizontal */
+    linear-gradient(to bottom, transparent 52%, rgba(200,200,195,0.5) 53%, rgba(200,200,195,0.5) 55%, transparent 56%),
+    /* Soporte vertical */
+    linear-gradient(to right, transparent 48%, rgba(200,200,195,0.3) 49%, rgba(200,200,195,0.3) 51%, transparent 52%);
+  transform: perspective(400px) rotateY(-8deg) rotateX(2deg);
+  filter: blur(2px);
+}
+
 /* ---- Contenedor del balón 3D (fondo del Hero) ---- */
 .feelow-hero { isolation: isolate; }
 
@@ -3286,21 +3628,22 @@ input[type="file"] { display: none; }
   position: absolute;
   inset: 0;
   z-index: 0;
-  pointer-events: none;     /* no captura el scroll */
-  opacity: 0.42;
-  filter: grayscale(1) contrast(1.05) brightness(0.9);
-  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, #000 0%, transparent 78%);
-          mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, #000 0%, transparent 78%);
+  pointer-events: none;     /* no captura el scroll ni la interacción */
+  opacity: 0.85;
+  filter: grayscale(1) contrast(1.12) brightness(1.02);
+  -webkit-mask-image: radial-gradient(ellipse 62% 72% at 50% 46%, #000 0%, #000 62%, transparent 92%);
+          mask-image: radial-gradient(ellipse 62% 72% at 50% 46%, #000 0%, #000 62%, transparent 92%);
 }
 
 .feelow-hero-canvas canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
+  pointer-events: none;     /* refuerzo: el canvas tampoco captura el puntero */
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feelow-hero-canvas { opacity: 0.3; }
+  .feelow-hero-canvas { opacity: 0.6; }
 }
 
 /* ---- Ranking: filas clickeables agresivas ---- */
@@ -3322,19 +3665,56 @@ input[type="file"] { display: none; }
   color: #ffffff;
 }
 
-/* ---- Tiers: coloreado del REP en escala de grises ---- */
-.brutalist-table tr.tier-grava    .score-cell { color: var(--leo-grava); }
-.brutalist-table tr.tier-asfalto  .score-cell { color: var(--leo-asfalto); }
-.brutalist-table tr.tier-hormigon .score-cell { color: var(--leo-hormigon); }
-.brutalist-table tr.tier-acero    .score-cell {
-  color: var(--leo-acero);
-  text-shadow: 0 0 12px rgba(255, 255, 255, 0.55), 0 0 2px rgba(255,255,255,0.9);
+/* ---- Tiers por POSICIÓN (estatus callejero) ----
+   Top 1-3   = The Kings    → único acento ocre/oro viejo desgastado.
+   Puestos 4-50 = The Hustlers → placa de acero industrial cepillado.
+   Puestos 51+  = The Asphalt   → bloque de hormigón poroso crudo.       */
+
+/* The Kings — oro viejo, texto blanco puro con brillo sutil */
+.brutalist-table tr.tier-kings {
+  position: relative;
+}
+.brutalist-table tr.tier-kings td {
+  border-top: 1px solid rgba(194, 138, 53, 0.28);
+  border-bottom: 1px solid rgba(194, 138, 53, 0.18) !important;
+}
+.brutalist-table tr.tier-kings .score-cell {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(194, 138, 53, 0.45), 0 0 2px rgba(255, 245, 220, 0.55);
+}
+.brutalist-table tr.tier-kings .rank-position {
+  color: var(--leo-gold);
+  text-shadow: 0 0 10px rgba(194, 138, 53, 0.5);
+}
+.brutalist-table tr.tier-kings .rank-name {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
+}
+.brutalist-table tr.tier-kings .ranking-photo {
+  border-color: rgba(194, 138, 53, 0.6);
+  box-shadow: 0 0 8px rgba(194, 138, 53, 0.35);
 }
 
-/* La barra de posición también se tiñe según tier (leve) */
-.brutalist-table tr.tier-acero .rank-position {
-  color: var(--leo-acero);
-  text-shadow: 0 0 10px rgba(255,255,255,0.45);
+/* The Hustlers — acero industrial cepillado / hierro negro */
+.brutalist-table tr.tier-hustlers .score-cell {
+  color: #dcdcdc;
+}
+.brutalist-table tr.tier-hustlers .rank-position { color: #9a9a9a; }
+.brutalist-table tr.tier-hustlers .rank-name { color: #e8e8e8; }
+.brutalist-table tr.tier-hustlers .ranking-photo { border-color: rgba(216, 216, 216, 0.4); }
+
+/* The Asphalt — hormigón poroso crudo */
+.brutalist-table tr.tier-asphalt .score-cell { color: var(--leo-asfalto); }
+.brutalist-table tr.tier-asphalt .rank-position { color: #5a5a57; }
+.brutalist-table tr.tier-asphalt .rank-name { color: #b0b0ab; }
+.brutalist-table tr.tier-asphalt .ranking-photo { border-color: rgba(167, 167, 162, 0.3); }
+
+/* Celda de Juego Único (JU) */
+.brutalist-table .ju-cell {
+  font-family: var(--font-label);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #cfcabf;
 }
 
 /* ---- Celda de racha ---- */
@@ -3389,11 +3769,20 @@ input[type="file"] { display: none; }
   text-transform: uppercase;
 }
 
-.profile-tier-tag.tier-grava    { color: var(--leo-grava);    border-color: rgba(102,102,102,0.45); }
-.profile-tier-tag.tier-asfalto  { color: var(--leo-asfalto);  border-color: rgba(167,167,162,0.45); }
-.profile-tier-tag.tier-hormigon { color: var(--leo-hormigon); border-color: rgba(216,216,216,0.5); }
-.profile-tier-tag.tier-acero    { color: var(--leo-acero);    border-color: rgba(255,255,255,0.6);
-                                   text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+/* Tiers por posición en el perfil (sidebar) */
+.profile-tier-tag.tier-kings {
+  color: var(--leo-gold);
+  border-color: rgba(194, 138, 53, 0.6);
+  text-shadow: 0 0 8px rgba(194, 138, 53, 0.45);
+}
+.profile-tier-tag.tier-hustlers {
+  color: #d8d8d8;
+  border-color: rgba(216, 216, 216, 0.5);
+}
+.profile-tier-tag.tier-asphalt {
+  color: var(--leo-asfalto);
+  border-color: rgba(167, 167, 162, 0.45);
+}
 
 /* =========================================================
    MODAL — Placa de metal oscuro
@@ -3562,14 +3951,20 @@ input[type="file"] { display: none; }
   background: rgba(244,238,227,0.025);
 }
 
-.profile-modal-tier.tier-grava    { color: var(--leo-grava);    border-color: rgba(102,102,102,0.5); }
-.profile-modal-tier.tier-asfalto  { color: var(--leo-asfalto);  border-color: rgba(167,167,162,0.5); }
-.profile-modal-tier.tier-hormigon { color: var(--leo-hormigon); border-color: rgba(216,216,216,0.55); }
-.profile-modal-tier.tier-acero {
-  color: var(--leo-acero);
-  border-color: rgba(255,255,255,0.65);
-  text-shadow: 0 0 10px rgba(255,255,255,0.55);
-  background: rgba(255,255,255,0.04);
+/* Tiers del modal por posición */
+.profile-modal-tier.tier-kings {
+  color: var(--leo-gold);
+  border-color: rgba(194, 138, 53, 0.55);
+  text-shadow: 0 0 10px rgba(194, 138, 53, 0.5);
+  background: rgba(194, 138, 53, 0.06);
+}
+.profile-modal-tier.tier-hustlers {
+  color: #d8d8d8;
+  border-color: rgba(216, 216, 216, 0.5);
+}
+.profile-modal-tier.tier-asphalt {
+  color: var(--leo-asfalto);
+  border-color: rgba(167, 167, 162, 0.45);
 }
 
 .profile-modal-badges {
@@ -3578,6 +3973,13 @@ input[type="file"] { display: none; }
   gap: 0.6rem;
   justify-content: center;
   width: 100%;
+  margin-bottom: 0.6rem;
+}
+
+#profile-modal-badge-detail {
+  width: 100%;
+  min-height: 3.4rem;
+  margin-top: 0.75rem;
 }
 
 .profile-badges-empty {
@@ -3589,7 +3991,7 @@ input[type="file"] { display: none; }
 }
 
 /* =========================================================
-   STREET BADGES — Medallas octogonales físicas (CSS)
+   STREET BADGES — Medallas octogonales físicas (lore callejero)
    ========================================================= */
 
 .street-badge {
@@ -3599,6 +4001,8 @@ input[type="file"] { display: none; }
   height: var(--sb-size);
   display: grid;
   place-items: center;
+  border: none;
+  padding: 0;
   clip-path: polygon(
     30% 0%, 70% 0%,
     100% 30%, 100% 70%,
@@ -3618,6 +4022,11 @@ input[type="file"] { display: none; }
 
 .street-badge:hover { transform: translateY(-2px) scale(1.04); }
 
+.street-badge:focus-visible {
+  outline: 2px solid rgba(244, 238, 227, 0.42);
+  outline-offset: 4px;
+}
+
 .street-badge-emoji {
   font-size: 1.5rem;
   line-height: 1;
@@ -3629,17 +4038,17 @@ input[type="file"] { display: none; }
   bottom: -1.6rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 110px;
+  width: 120px;
   text-align: center;
   font-family: var(--font-label);
-  font-size: 0.52rem;
-  letter-spacing: 0.12em;
+  font-size: 0.48rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #6a6a6a;
   white-space: nowrap;
 }
 
-/* Anillo biselado extra con un pseudo-elemento (no afecta al clip-path) */
+/* Anillo biselado extra con un pseudo-elemento */
 .street-badge::after {
   content: "";
   position: absolute;
@@ -3655,52 +4064,209 @@ input[type="file"] { display: none; }
   pointer-events: none;
 }
 
-/* Variantes de insignia (estricto grises, salvo Campeón) */
+/* ---- Variantes de insignia (lore callejero) ---- */
 
-/* ⛓️ Fundador — acero mate */
-.street-badge.badge-founder .street-badge-emoji { color: #d8d8d8; }
+/* 🧱 CIMIENTOS — bloque de hormigón macizo, acero mate */
+.street-badge.badge-founder {
+  background:
+    radial-gradient(circle at 45% 30%, #3a3836 0%, #1e1c1a 55%, #080706 100%);
+  box-shadow:
+    inset 0 2px 1px rgba(200, 195, 180, 0.2),
+    inset 0 -3px 4px rgba(0,0,0,0.85),
+    inset 0 0 0 1px rgba(80, 76, 66, 0.5),
+    0 6px 14px rgba(0,0,0,0.75);
+}
+.street-badge.badge-founder .street-badge-emoji { color: #d0ccc2; }
 
-/* 👟 Primer Hooper — asfalto desgastado */
+/* ⚡ SANGRE NUEVA — marca de tiza cruzada, asfalto desgastado */
 .street-badge.badge-first {
-  background: radial-gradient(circle at 50% 35%, #3a3a3a 0%, #1c1c1c 60%, #070707 100%);
+  background:
+    radial-gradient(circle at 50% 35%, #3a3a3a 0%, #1c1c1c 60%, #070707 100%);
+}
+.street-badge.badge-first .street-badge-emoji {
+  color: #e0ddd5;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2))
+          drop-shadow(0 1px 2px rgba(0,0,0,0.8));
 }
 
-/* 👑 Campeón — único con borde levemente ocre/dorado */
+/* 👑 DUEÑO DE LA PISTA — corona heráldica, único con acento oco viejo */
 .street-badge.badge-champion {
   background:
     radial-gradient(circle at 50% 35%, #4a4538 0%, #2a2620 55%, #0c0a07 100%);
   box-shadow:
-    inset 0 2px 1px rgba(220, 190, 120, 0.35),
+    inset 0 2px 1px rgba(220, 190, 120, 0.4),
     inset 0 -3px 4px rgba(0,0,0,0.8),
-    inset 0 0 0 1px rgba(120, 96, 40, 0.5),
-    0 6px 16px rgba(0,0,0,0.7);
+    inset 0 0 0 1px rgba(120, 96, 40, 0.55),
+    0 6px 16px rgba(0,0,0,0.7),
+    0 0 12px rgba(194, 138, 53, 0.2);
 }
 .street-badge.badge-champion .street-badge-emoji {
-  filter: drop-shadow(0 0 6px rgba(220, 180, 90, 0.45));
+  filter: drop-shadow(0 0 8px rgba(220, 180, 90, 0.55));
 }
 
-/* 🚧 Leyenda — hormigón claro */
-.street-badge.badge-legend {
-  background: radial-gradient(circle at 50% 35%, #4a4a48 0%, #2a2a28 60%, #0a0a0a 100%);
-}
-.street-badge.badge-legend .street-badge-emoji { color: #e8e8e4; }
-
-/* 💀 Derrotó a Leo — sombra blanca estilo tiza */
+/* 💀 ROMPE-ÍDOLOS — calavera grabada en piedra, relieve blanco brillante */
 .street-badge.badge-leo {
-  background: radial-gradient(circle at 50% 35%, #202020 0%, #0c0c0c 60%, #000 100%);
+  background:
+    radial-gradient(circle at 50% 35%, #1a1a1a 0%, #0a0a0a 60%, #000 100%);
 }
 .street-badge.badge-leo .street-badge-emoji {
   color: #ffffff;
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.7))
-          drop-shadow(0 0 2px rgba(255,255,255,0.9));
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.7))
+          drop-shadow(0 0 3px rgba(255,255,255,0.9))
+          drop-shadow(0 1px 2px rgba(0,0,0,0.9));
+}
+
+/* 🚧 LEYENDA — valla metálica de zona restringida, hormigón claro */
+.street-badge.badge-legend {
+  background:
+    radial-gradient(circle at 50% 28%, #5f5e59 0%, #2f2e2b 58%, #0b0b0a 100%);
+  box-shadow:
+    inset 0 2px 1px rgba(234, 225, 206, 0.24),
+    inset 0 -3px 4px rgba(0,0,0,0.82),
+    inset 0 0 0 1px rgba(136, 129, 116, 0.38),
+    0 6px 16px rgba(0,0,0,0.72);
+}
+.street-badge.badge-legend .street-badge-emoji {
+  color: #f4e8cc;
+  filter: drop-shadow(0 0 8px rgba(244, 232, 204, 0.28));
 }
 
 /* Insignia custom fallback */
 .street-badge.badge-custom .street-badge-emoji { color: #b8b8b8; }
 
+.street-badge.badge-ones {
+  background:
+    radial-gradient(circle at 50% 30%, #3e3a2f 0%, #211d18 58%, #090808 100%);
+}
+.street-badge.badge-ones .street-badge-emoji { color: #f4ebd8; }
+
+.street-badge.badge-clutch {
+  background:
+    radial-gradient(circle at 50% 32%, #4b3d2a 0%, #261d16 58%, #080707 100%);
+}
+.street-badge.badge-clutch .street-badge-emoji { color: #f2d493; }
+
+.street-badge.badge-streak {
+  background:
+    radial-gradient(circle at 50% 32%, #45413e 0%, #232120 58%, #080807 100%);
+}
+.street-badge.badge-streak .street-badge-emoji { color: #ffb66b; }
+
+.street-badge.badge-tournament {
+  background:
+    radial-gradient(circle at 50% 32%, #4d4b41 0%, #23211d 58%, #070707 100%);
+}
+.street-badge.badge-tournament .street-badge-emoji { color: #f0e9dc; }
+
+.street-badge.badge-mvp {
+  background:
+    radial-gradient(circle at 50% 32%, #4a493e 0%, #23211f 58%, #080808 100%);
+}
+.street-badge.badge-mvp .street-badge-emoji { color: #f7d977; }
+
 /* =========================================================
-   ADMIN: etiquetas de campo y modo grises estricto
+   ADMIN: etiquetas de campo, REP bloqueado y Juego Único
    ========================================================= */
+
+/* Filtro B/N cinematográfico de alto contraste en TODAS las
+   fotos de perfil (ranking, sidebar, modal, admin). */
+.ranking-photo,
+.profile-photo,
+.profile-modal-photo,
+.admin-edit-photo-preview .profile-photo {
+  filter: grayscale(100%) contrast(1.15);
+}
+
+/* ---- REP bloqueado (solo lectura, calculada por la calle) ---- */
+.rep-locked-label {
+  font-family: var(--font-label);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #555;
+  margin-top: 0.3rem;
+}
+
+#admin-rep:disabled,
+#admin-rep[readonly] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #030303;
+  border-color: rgba(244, 238, 227, 0.06);
+  color: #444;
+  text-decoration: line-through;
+}
+
+.rep-locked-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: var(--font-label);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  color: #3a3a3a;
+  font-style: italic;
+}
+
+/* ---- Toggle de Juego Único (JU) en enfrentamientos ---- */
+.unique-game-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0;
+  cursor: pointer;
+  user-select: none;
+  color: var(--muted);
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: color 0.16s ease;
+}
+
+.unique-game-toggle:hover { color: var(--ink); }
+
+.unique-game-toggle input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border: 1px solid rgba(244, 238, 227, 0.25);
+  background: #080808;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.unique-game-toggle input[type="checkbox"]:checked {
+  border-color: rgba(194, 138, 53, 0.55);
+  background: rgba(194, 138, 53, 0.12);
+}
+
+.unique-game-toggle input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--leo-gold);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ---- Chips de badge en sidebar del perfil ---- */
+.profile-badge-chip {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgba(244, 238, 227, 0.15);
+  background: rgba(244, 238, 227, 0.03);
+  font-family: var(--font-label);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #b0ada5;
+}
 
 .admin-field-label {
   font-family: var(--font-label);
@@ -3861,6 +4427,18 @@ input[type="file"] { display: none; }
   to {
     opacity: 0.82;
     transform: scale(1.04);
+  }
+}
+
+@keyframes streetGlowDrift {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.96);
+    opacity: 0.55;
+  }
+
+  to {
+    transform: translate3d(1.4rem, -1.2rem, 0) scale(1.06);
+    opacity: 0.78;
   }
 }
 
