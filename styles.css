@@ -88,11 +88,8 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 50% 18%, rgba(212, 139, 43, 0.12), transparent 28rem),
-    url('https://grainy-gradients.vercel.app/noise.svg');
-  mix-blend-mode: screen;
-  opacity: 0.34;
+  background: none;
+  opacity: 0;
   z-index: -1;
 }
 
@@ -2406,15 +2403,14 @@ body.admin-mode .stat-control input[type="range"] {
 }
 
 .street-basket-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 100%);
-  background-size: auto, 3rem 3rem;
-  opacity: 0.2;
-  mix-blend-mode: screen;
+  display: none;
+}
+
+.street-basket-glow,
+.street-basket-court,
+.street-basket-lines,
+.street-basket-pulse {
+  display: none;
 }
 
 .street-basket-glow {
@@ -2546,79 +2542,6 @@ body.admin-mode .stat-control input[type="range"] {
   color: var(--muted);
 }
 
-.feelow-basketball-art {
-  position: relative;
-  z-index: 0;
-  width: min(29rem, 74vw);
-  margin-bottom: 1.4rem;
-  pointer-events: none;
-  filter: drop-shadow(0 34px 80px rgba(0, 0, 0, 0.7));
-  transform: perspective(1000px) rotateX(4deg) rotateY(-8deg);
-}
-
-.feelow-basketball-plate {
-  position: relative;
-  padding: 1.4rem;
-  border: 1px solid rgba(244, 238, 227, 0.16);
-  background:
-    radial-gradient(circle at 30% 22%, rgba(248, 239, 215, 0.22), transparent 32%),
-    linear-gradient(145deg, rgba(26, 26, 26, 0.96), rgba(8, 8, 8, 0.96));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.86),
-    0 16px 36px rgba(0, 0, 0, 0.38);
-}
-
-.feelow-basketball-plate::before {
-  content: "";
-  position: absolute;
-  inset: 0.75rem;
-  border: 1px solid rgba(244, 238, 227, 0.08);
-  pointer-events: none;
-}
-
-.feelow-basketball-plate::after {
-  content: "";
-  position: absolute;
-  inset: 1.1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-.feelow-ball-image {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.08), transparent 28%),
-    radial-gradient(circle at 50% 45%, rgba(0,0,0,0.35), transparent 40%);
-}
-
-.feelow-ball-image img {
-  position: absolute;
-  inset: 0;
-  width: auto;
-  height: 120%;
-  min-width: 100%;
-  min-height: 100%;
-  object-fit: cover;
-  object-position: 88% 48%;
-  transform: translate3d(0, 0, 0);
-}
-
-.feelow-ball-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 38% 22%, rgba(255, 255, 255, 0.16), transparent 28%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 62%);
-  mix-blend-mode: screen;
-}
 
 .basketball-svg {
   width: 100%;
