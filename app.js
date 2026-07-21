@@ -59,29 +59,24 @@ if (!prefersReducedMotion) {
     root.setProperty("--slab-grey-y", `${(y * -16).toFixed(2)}px`);
   });
 
-  document.querySelectorAll(".avatar-feature").forEach((feature) => {
-    const lightKey = Object.keys(avatarLights).find((key) => feature.classList.contains(key));
+  const bindAvatarCursor = (element) => {
+    const lightKey = Object.keys(avatarLights).find((key) => element.classList.contains(key));
 
-    feature.addEventListener("pointerenter", () => {
+    if (!lightKey) {
+      return;
+    }
+
+    element.addEventListener("pointerenter", () => {
       document.documentElement.style.setProperty("--cursor-color", avatarLights[lightKey]);
       document.documentElement.style.setProperty("--cursor-opacity", "1");
     });
 
-    feature.addEventListener("pointerleave", () => {
+    element.addEventListener("pointerleave", () => {
       document.documentElement.style.setProperty("--cursor-opacity", "0");
     });
-  });
+  };
 
-  document.querySelectorAll("[data-cursor-color]").forEach((item) => {
-    item.addEventListener("pointerenter", () => {
-      document.documentElement.style.setProperty("--cursor-color", item.dataset.cursorColor);
-      document.documentElement.style.setProperty("--cursor-opacity", "1");
-    });
-
-    item.addEventListener("pointerleave", () => {
-      document.documentElement.style.setProperty("--cursor-opacity", "0");
-    });
-  });
+  document.querySelectorAll(".avatar-feature, .map-card").forEach(bindAvatarCursor);
 }
 
 if (!prefersReducedMotion && "IntersectionObserver" in window) {

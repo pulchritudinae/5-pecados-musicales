@@ -19,13 +19,47 @@
   --pearl-warm: #e8e0d0;
   --smoke-crystal: #9a9a94;
   --marble-text-gradient: linear-gradient(100deg, #0b6b4a 0%, #e8e0d0 22%, #9a9a94 40%, #0a0a0a 58%, #a01018 78%, #e8e0d0 100%);
+  --marble-title-static: linear-gradient(
+    108deg,
+    var(--ander) 0%,
+    color-mix(in srgb, var(--ander), var(--asher) 42%) 11%,
+    var(--asher) 24%,
+    color-mix(in srgb, var(--asher), var(--leo) 48%) 36%,
+    var(--leo) 46%,
+    color-mix(in srgb, var(--leo), var(--kim) 52%) 56%,
+    var(--kim) 66%,
+    #161a20 73%,
+    color-mix(in srgb, #161a20, var(--bodhi) 55%) 82%,
+    var(--bodhi) 91%,
+    var(--asher) 100%
+  );
+  --marble-kicker-static: linear-gradient(
+    92deg,
+    var(--ander) 0%,
+    var(--asher) 26%,
+    var(--leo) 48%,
+    var(--kim) 64%,
+    var(--bodhi) 84%,
+    var(--asher) 100%
+  );
+  --avatar-spectrum-static: linear-gradient(90deg, var(--ander), var(--asher), var(--leo), var(--kim), var(--bodhi));
   --border-flow-gradient: linear-gradient(90deg, var(--ander), var(--asher), var(--leo), var(--kim), var(--bodhi), var(--ander));
+  --entry-border: rgba(194, 138, 53, 0.28);
   --font-display: "Bodoni 72", Didot, "Baskerville", Cambria, Georgia, serif;
   --font-title: Georgia, "Times New Roman", serif;
   --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-label: Inter, ui-sans-serif, system-ui, sans-serif;
   --text-gradient-soft: linear-gradient(96deg, #f7efe3 0%, #ddd0ba 46%, #f4eee3 78%);
-  --text-gradient-spectrum: linear-gradient(100deg, #dceee4 0%, #f6efe4 25%, #c8c8c2 48%, #8796a0 68%, #bd5b61 88%, #d1a35a 100%);
+  --text-gradient-spectrum: linear-gradient(
+    100deg,
+    var(--ander) 0%,
+    var(--asher) 24%,
+    var(--leo) 46%,
+    var(--kim) 64%,
+    #141820 74%,
+    var(--bodhi) 90%,
+    var(--asher) 100%
+  );
   --pointer-x: 0.5;
   --pointer-y: 0.5;
   --hero-x: 0px;
@@ -108,9 +142,8 @@ body::before {
   transform: translate(-50%, -50%);
   filter: blur(0.45rem);
   transition:
-    opacity 180ms ease,
-    background 180ms ease;
-  animation: cursorRotate 8s linear infinite;
+    opacity 220ms ease,
+    background 320ms ease;
 }
 
 main,
@@ -250,9 +283,9 @@ main,
   box-shadow:
     0 0 5rem rgba(11, 107, 74, 0.12),
     inset 0 0 2.5rem rgba(255, 255, 255, 0.04);
-  background: linear-gradient(#000, #000) padding-box, var(--border-flow-gradient) border-box;
-  background-size: 200% 100%;
-  animation: gateSpin 20s linear infinite, borderFlow 5s linear infinite;
+  border: 1px solid var(--entry-border);
+  background: transparent;
+  animation: gateSpin 20s linear infinite;
 }
 
 .orbit-one {
@@ -263,20 +296,18 @@ main,
 .orbit-two {
   width: min(48rem, 68vw);
   height: min(48rem, 68vw);
-  border: 1px solid transparent;
-  background: linear-gradient(#000, #000) padding-box, var(--border-flow-gradient) border-box;
-  background-size: 200% 100%;
-  animation-duration: 28s, 8s;
+  border: 1px solid color-mix(in srgb, var(--entry-border), transparent 35%);
+  background: transparent;
+  animation-duration: 28s;
   animation-direction: reverse;
 }
 
 .orbit-three {
   width: min(31rem, 48vw);
   height: min(31rem, 48vw);
-  border: 1px solid transparent;
-  background: linear-gradient(#000, #000) padding-box, var(--border-flow-gradient) border-box;
-  background-size: 200% 100%;
-  animation-duration: 16s, 4s;
+  border: 1px solid color-mix(in srgb, var(--entry-border), transparent 55%);
+  background: transparent;
+  animation-duration: 16s;
 }
 
 .gate-door {
@@ -296,8 +327,7 @@ main,
   top: 0;
   bottom: 0;
   width: 50.4%;
-  border: 1px solid transparent;
-  border-image: var(--border-flow-gradient) 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background:
     linear-gradient(118deg, transparent 0 29%, color-mix(in srgb, var(--vein), transparent 12%) 30%, transparent 35%),
     linear-gradient(37deg, transparent 0 55%, color-mix(in srgb, var(--vein), transparent 42%) 56%, transparent 60%),
@@ -308,7 +338,6 @@ main,
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
     inset 0 0 5rem rgba(0, 0, 0, 0.38);
   transition: transform 980ms cubic-bezier(0.22, 1, 0.36, 1);
-  animation: borderFlow 8s linear infinite;
 }
 
 .gate-left {
@@ -338,12 +367,10 @@ main,
   bottom: -5%;
   width: 0.2rem;
   transform: translateX(-50%);
-  background: var(--border-flow-gradient);
-  background-size: 300% 100%;
-  animation: borderFlow 3s linear infinite;
+  background: linear-gradient(180deg, rgba(194, 138, 53, 0.15), rgba(244, 238, 227, 0.55), rgba(194, 138, 53, 0.15));
   box-shadow:
-    0 0 1.2rem rgba(11, 107, 74, 0.6),
-    0 0 4rem rgba(160, 16, 24, 0.4);
+    0 0 1.2rem rgba(194, 138, 53, 0.35),
+    0 0 3rem rgba(0, 0, 0, 0.45);
   transition:
     width 680ms ease,
     opacity 680ms ease;
@@ -355,14 +382,7 @@ main,
 }
 
 .gate-color {
-  position: absolute;
-  top: 50%;
-  width: 0.22rem;
-  height: 46%;
-  border-radius: 999px;
-  transform: translateY(-50%);
-  opacity: 0.72;
-  box-shadow: 0 0 1.25rem currentColor;
+  display: none;
 }
 
 .gate-color.ander {
@@ -859,11 +879,9 @@ h2,
 .section-kicker {
   margin: 0;
   color: transparent;
-  background: linear-gradient(90deg, #0b6b4a, #e8e0d0, #9a9a94, #a01018, #e8e0d0);
-  background-size: 300% 100%;
+  background: var(--marble-kicker-static);
   background-clip: text;
   -webkit-background-clip: text;
-  animation: marbleTextFlow 6s ease-in-out infinite alternate;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -906,11 +924,9 @@ h2,
   line-height: 0.9;
   letter-spacing: 0;
   color: transparent;
-  background: linear-gradient(100deg, #e8e0d0 0%, #0b6b4a 18%, #9a9a94 35%, #f4eee3 50%, #5e7180 68%, #a01018 85%, #e8e0d0 100%);
-  background-size: 200% 100%;
+  background: var(--marble-title-static);
   background-clip: text;
   -webkit-background-clip: text;
-  animation: marbleTextFlow 8s ease-in-out infinite alternate;
   text-shadow:
     0 0 2rem rgba(194, 138, 53, 0.18),
     0 1.25rem 4rem rgba(0, 0, 0, 0.7);
@@ -998,9 +1014,7 @@ section {
   background:
     radial-gradient(circle at 84% 18%, rgba(11, 107, 74, 0.08), transparent 22rem),
     rgba(255, 255, 255, 0.025);
-  border-block: 1px solid transparent;
-  border-image: var(--border-flow-gradient) 1;
-  animation: borderFlow 10s linear infinite;
+  border-block: 1px solid rgba(244, 238, 227, 0.1);
 }
 
 .intro-grid,
@@ -1022,11 +1036,9 @@ h2 {
   line-height: 1.04;
   letter-spacing: 0;
   color: transparent;
-  background: linear-gradient(96deg, #e8e0d0 0%, #0b6b4a 25%, #9a9a94 45%, #e8e0d0 65%, #a01018 85%, #e8e0d0 100%);
-  background-size: 200% 100%;
+  background: var(--marble-title-static);
   background-clip: text;
   -webkit-background-clip: text;
-  animation: marbleTextFlow 8s ease-in-out infinite alternate;
   text-shadow:
     0 0 2.5rem rgba(194, 138, 53, 0.12),
     0 1rem 3rem rgba(0, 0, 0, 0.58);
@@ -1039,11 +1051,8 @@ h2::after {
   height: 0.12rem;
   margin-top: 1.1rem;
   border-radius: 999px;
-  background:
-    linear-gradient(90deg, var(--ander), var(--asher), var(--leo), var(--kim), var(--bodhi));
+  background: var(--avatar-spectrum-static);
   box-shadow: 0 0 2rem rgba(11, 107, 74, 0.4);
-  background-size: 200% 100%;
-  animation: borderFlow 4s linear infinite;
 }
 
 .manifesto-title {
@@ -1061,11 +1070,9 @@ h2::after {
   display: block;
   padding-block: 0.02em;
   color: transparent;
-  background: linear-gradient(94deg, #e8e0d0 0%, #0b6b4a 20%, #9a9a94 40%, #f4eee3 60%, #a01018 80%, #e8e0d0 100%);
-  background-size: 200% 100%;
+  background: var(--marble-title-static);
   background-clip: text;
   -webkit-background-clip: text;
-  animation: marbleTextFlow 10s ease-in-out infinite alternate;
   filter:
     drop-shadow(0 0 1.1rem rgba(194, 138, 53, 0.08))
     drop-shadow(0 1rem 2.2rem rgba(0, 0, 0, 0.3));
@@ -1073,12 +1080,9 @@ h2::after {
 
 .manifesto-title .manifesto-line + .manifesto-line {
   margin-top: 0.05em;
-  background: linear-gradient(94deg, #e8e0d0 0%, #0b6b4a 20%, #9a9a94 40%, #f4eee3 60%, #a01018 80%, #e8e0d0 100%);
-  background-size: 200% 100%;
+  background: var(--marble-title-static);
   background-clip: text;
   -webkit-background-clip: text;
-  animation: marbleTextFlow 10s ease-in-out infinite alternate;
-  animation-delay: -3s;
 }
 
 .manifesto-title::before {
@@ -1088,9 +1092,7 @@ h2::after {
   top: 0.08em;
   bottom: 0.08em;
   width: 1px;
-  background: var(--border-flow-gradient);
-  background-size: 200% 100%;
-  animation: borderFlow 5s linear infinite;
+  background: linear-gradient(180deg, var(--ander), var(--kim), var(--bodhi));
   box-shadow: 0 0 1rem rgba(194, 138, 53, 0.18);
   opacity: 0.6;
 }
@@ -1107,7 +1109,7 @@ h2::after {
 
 .intro-copy p::first-letter,
 .section-lead::first-letter {
-  color: var(--gold);
+  color: var(--asher);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.8em;
   line-height: 0.8;
@@ -1269,11 +1271,9 @@ h2::after {
   font-size: clamp(2.8rem, 7vw, 7rem);
   line-height: 0.92;
   color: transparent;
-  background: linear-gradient(96deg, #e8e0d0, #0b6b4a 25%, #9a9a94 50%, #a01018 75%, #e8e0d0);
-  background-size: 200% 100%;
+  background: var(--marble-title-static);
   background-clip: text;
   -webkit-background-clip: text;
-  animation: marbleTextFlow 9s ease-in-out infinite alternate;
 }
 
 .avatar-map {
@@ -1373,24 +1373,19 @@ h2::after {
   margin-bottom: clamp(3rem, 6vw, 5rem);
   padding: 0.25rem 0;
   color: transparent;
-  background: linear-gradient(100deg, #0b6b4a 0%, #e8e0d0 22%, #9a9a94 40%, #0a0a0a 58%, #a01018 78%, #e8e0d0 100%);
-  background-size: 200% 100%;
+  background: var(--marble-title-static);
   background-clip: text;
   -webkit-background-clip: text;
   filter:
     drop-shadow(0 0 1.8rem rgba(194, 138, 53, 0.18))
     drop-shadow(0 1.5rem 3rem rgba(0, 0, 0, 0.42));
-  animation: sinsTitleFlow 7s ease-in-out infinite alternate;
 }
 
 .sins-title::after {
   width: 100%;
   height: 0.16rem;
   margin-top: 1rem;
-  background:
-    linear-gradient(90deg, var(--ander), var(--asher), var(--leo), var(--kim), var(--bodhi));
-  background-size: 200% 100%;
-  animation: borderFlow 5s linear infinite;
+  background: var(--avatar-spectrum-static);
   box-shadow:
     0 0 1.6rem rgba(11, 107, 74, 0.4),
     0 0 2.4rem rgba(199, 15, 24, 0.3);
@@ -1941,9 +1936,7 @@ body.admin-mode .stats-head::after {
   padding: clamp(1.3rem, 3vw, 2rem) clamp(1rem, 4vw, 3rem);
   border-block: 1px solid rgba(244, 238, 227, 0.12);
   color: transparent;
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--ander), #f4eee3 58%), #f4eee3 25%, color-mix(in srgb, var(--leo), #f4eee3 62%) 50%, color-mix(in srgb, var(--kim), #f4eee3 58%) 72%, color-mix(in srgb, var(--bodhi), #f4eee3 54%));
-  background-size: 160% 100%;
+  background: var(--marble-kicker-static);
   background-clip: text;
   -webkit-background-clip: text;
   font-family: var(--font-display);
@@ -1952,7 +1945,6 @@ body.admin-mode .stats-head::after {
   line-height: 1.18;
   text-align: center;
   text-shadow: 0 0 2rem rgba(194, 138, 53, 0.12);
-  animation: latinInscription 8s ease-in-out infinite alternate;
 }
 
 .latin-subtitle::before,
@@ -1962,9 +1954,7 @@ body.admin-mode .stats-head::after {
   top: 50%;
   width: min(8rem, 18vw);
   height: 1px;
-  background: var(--border-flow-gradient);
-  background-size: 200% 100%;
-  animation: borderFlow 4s linear infinite;
+  background: linear-gradient(90deg, transparent, rgba(194, 138, 53, 0.45), transparent);
 }
 
 .latin-subtitle::before {
@@ -2000,11 +1990,9 @@ body.admin-mode .stats-head::after {
 
 .workflow-grid span {
   color: transparent;
-  background: linear-gradient(90deg, #0b6b4a, #e8e0d0, #9a9a94, #a01018, #e8e0d0);
-  background-size: 300% 100%;
+  background: var(--marble-kicker-static);
   background-clip: text;
   -webkit-background-clip: text;
-  animation: marbleTextFlow 6s ease-in-out infinite alternate;
   font-size: 0.78rem;
   font-weight: 900;
 }
@@ -2015,9 +2003,7 @@ body.admin-mode .stats-head::after {
   font-size: 1.55rem;
   font-weight: 500;
   color: transparent;
-  background: linear-gradient(96deg, #e8e0d0 0%, #0b6b4a 25%, #9a9a94 45%, #e8e0d0 65%, #a01018 85%, #e8e0d0 100%);
-  background-size: 200% 100%;
-  animation: marbleTextFlow 8s ease-in-out infinite alternate;
+  background: var(--marble-title-static);
   background-clip: text;
   -webkit-background-clip: text;
 }
@@ -2061,8 +2047,59 @@ body.admin-mode .stats-head::after {
 
 .archive-links a::after {
   content: "↗";
-  color: var(--champagne);
+  color: var(--asher);
   font-size: 1rem;
+}
+
+.hero-action-btns.archive-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 0;
+}
+
+.hero-action-btns.archive-links a {
+  flex: 1 1 14rem;
+  min-height: 3.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.78rem;
+}
+
+.hero-text-block .eyebrow {
+  font-family: var(--font-label);
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  color: transparent;
+  background: var(--marble-kicker-static);
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
+}
+
+.hero-text-block h1 {
+  font-family: "Playfair Display", var(--font-display), serif;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1.1;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: transparent;
+  background: var(--marble-title-static);
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
+}
+
+.hero-text-block p {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  line-height: 1.6;
+  color: rgba(244, 238, 227, 0.85);
+  margin-bottom: 2rem;
+  max-width: 600px;
 }
 
 .contact-links a[href^="mailto"]::after {
@@ -2473,33 +2510,6 @@ body.admin-mode .stats-head::after {
   }
 }
 
-@keyframes sinsTitleFlow {
-  from {
-    background-position: 0% 50%;
-    filter:
-      drop-shadow(0 0 1.4rem rgba(194, 138, 53, 0.14))
-      drop-shadow(0 1.5rem 3rem rgba(0, 0, 0, 0.42));
-  }
-
-  to {
-    background-position: 100% 50%;
-    filter:
-      drop-shadow(0 0 2rem rgba(0, 168, 117, 0.08))
-      drop-shadow(0 0 2.4rem rgba(199, 15, 24, 0.1))
-      drop-shadow(0 1.5rem 3rem rgba(0, 0, 0, 0.42));
-  }
-}
-
-@keyframes latinInscription {
-  from {
-    background-position: 0% 50%;
-  }
-
-  to {
-    background-position: 100% 50%;
-  }
-}
-
 @keyframes shardDrift {
   from {
     translate: 0 0;
@@ -2535,19 +2545,6 @@ body.admin-mode .stats-head::after {
 @keyframes borderFlow {
   0% { background-position: 0% 50%; }
   100% { background-position: 300% 50%; }
-}
-
-@keyframes marbleTextFlow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-
-@keyframes cursorRotate {
-  0% { background: radial-gradient(circle, var(--emerald-deep) 0%, transparent 62%); }
-  25% { background: radial-gradient(circle, var(--pearl-warm) 0%, transparent 62%); }
-  50% { background: radial-gradient(circle, var(--smoke-crystal) 0%, transparent 62%); }
-  75% { background: radial-gradient(circle, var(--crimson-ruby) 0%, transparent 62%); }
-  100% { background: radial-gradient(circle, var(--emerald-deep) 0%, transparent 62%); }
 }
 
 @media (max-width: 960px) {
