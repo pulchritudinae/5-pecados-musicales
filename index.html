@@ -6,6 +6,514 @@
     <title>5PM | Cinco Pecados Musicales</title>
     <meta name="description" content="Web visual y conceptual para 5PM, Cinco Pecados Musicales." />
     <link rel="stylesheet" href="styles/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <style>
+      /* Desplazamiento suave para anclas */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Efecto flotante genérico */
+      .floating-img {
+        animation: float-text 6s ease-in-out infinite;
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+      @keyframes float-text {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+      .floating-img-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .hero-title-image {
+        animation: float-text 6s ease-in-out infinite;
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+      .hero-title-wrapper {
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      /* Firma Pulchritudinae */
+      .eyebrow.signature-name {
+        font-family: 'Dancing Script', cursive;
+        font-size: 0.7rem;
+        font-weight: 400;
+        background: linear-gradient(180deg, #bf953f 0%, #fcf6b5 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 5px rgba(212, 175, 55, 0.4);
+        letter-spacing: 0.08em;
+        margin-bottom: 0.8rem;
+        line-height: 1.2;
+      }
+
+      .acceder-archivo-img {
+        max-width: 380px;
+        width: 100%;
+        margin: 0 auto 2rem auto;
+        display: block;
+        animation: float-text 6s ease-in-out infinite;
+      }
+
+      /* Contenedor decorativo para Pecados */
+      .pecados-decoration {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 2.5rem;
+      }
+      .pecados-section-img {
+        max-width: 280px;
+        width: 100%;
+        margin: 0 auto;
+        display: block;
+        animation: float-text 6s ease-in-out infinite;
+      }
+      .pecados-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 1rem;
+        gap: 0;
+      }
+      .divider-line {
+        height: 2px;
+        flex: 1;
+        background: linear-gradient(90deg, #00a875, #d8d2c4, #a7a7a2, #3a4a52, #c70f18);
+      }
+      .divider-gem {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: conic-gradient(#00a875, #d8d2c4, #a7a7a2, #3a4a52, #c70f18, #00a875);
+        box-shadow: 0 0 12px rgba(0,168,117,0.5), 0 0 25px rgba(199,15,24,0.4);
+        margin: 0 8px;
+      }
+
+      /* Tarjetas de personajes (funkos) */
+      .funko-palette {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+        margin-top: 2.5rem;
+        perspective: 800px;
+      }
+      @media (max-width: 768px) {
+        .funko-palette {
+          gap: 0.8rem;
+        }
+      }
+
+      .funko-capsule {
+        position: relative;
+        width: 110px;
+        height: 145px;
+        border-radius: 14px;
+        background: linear-gradient(145deg, rgba(30,30,30,0.8) 0%, rgba(10,10,10,0.9) 100%);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transform-style: preserve-3d;
+        will-change: transform;
+        animation: card-float 5s ease-in-out infinite;
+        padding: 12px 8px;
+        overflow: hidden;
+      }
+      .funko-capsule:nth-child(1) { animation-delay: 0s; }
+      .funko-capsule:nth-child(2) { animation-delay: 0.6s; }
+      .funko-capsule:nth-child(3) { animation-delay: 1.2s; }
+      .funko-capsule:nth-child(4) { animation-delay: 1.8s; }
+      .funko-capsule:nth-child(5) { animation-delay: 2.4s; }
+
+      @keyframes card-float {
+        0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+        50% { transform: translateY(-6px) rotateX(1deg) rotateY(1deg); }
+      }
+
+      @media (max-width: 768px) {
+        .funko-capsule {
+          width: 75px;
+          height: 100px;
+          border-radius: 10px;
+          padding: 8px 5px;
+        }
+      }
+
+      /* Barrido de luz exterior */
+      .funko-capsule::before {
+        content: '';
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        right: -4px;
+        bottom: -4px;
+        border-radius: 18px;
+        background: linear-gradient(90deg, transparent 0%, var(--avatar-color) 50%, transparent 100%);
+        background-size: 200% 100%;
+        opacity: 0.2;
+        transition: opacity 0.4s ease;
+        z-index: -1;
+        animation: sweep-light 3s linear infinite;
+        filter: blur(6px);
+      }
+      @media (max-width: 768px) {
+        .funko-capsule::before {
+          border-radius: 12px;
+        }
+      }
+      .funko-capsule:hover::before {
+        opacity: 0.8;
+        animation-duration: 1.5s;
+      }
+
+      @keyframes sweep-light {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* Brillo interior */
+      .funko-capsule::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 50%);
+        opacity: 0.4;
+        transition: opacity 0.4s ease;
+        z-index: 1;
+        pointer-events: none;
+      }
+      @media (max-width: 768px) {
+        .funko-capsule::after {
+          border-radius: 10px;
+        }
+      }
+      .funko-capsule:hover::after {
+        opacity: 0.7;
+      }
+
+      .capsule-inner {
+        position: relative;
+        width: 100%;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .capsule-inner img {
+        width: 95%;
+        height: 95%;
+        object-fit: contain;
+        filter: drop-shadow(0 6px 8px rgba(0,0,0,0.6));
+        transition: transform 0.4s ease, filter 0.4s ease;
+      }
+      .funko-capsule:hover .capsule-inner img {
+        transform: scale(1.1);
+        filter: drop-shadow(0 10px 14px rgba(0,0,0,0.8)) brightness(0.75);
+      }
+
+      /* Overlay del nombre */
+      .name-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(6px);
+        border: 1px solid var(--avatar-color);
+        box-shadow: inset 0 0 30px rgba(0,0,0,0.9), 0 0 25px var(--avatar-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        border-radius: 14px;
+        overflow: hidden;
+        line-height: 1.3;
+      }
+      @media (max-width: 768px) {
+        .name-overlay {
+          border-radius: 10px;
+        }
+      }
+      .funko-capsule:hover .name-overlay {
+        opacity: 1;
+      }
+
+      /* Texto con barrido de luz en bucle */
+      .reveal-text {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #ffffff;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        background: linear-gradient(90deg, var(--avatar-color) 0%, #ffffff 50%, var(--avatar-color) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 200% 100%;
+        background-position: 100% 0;
+        display: inline-block;
+      }
+      .funko-capsule:hover .reveal-text {
+        opacity: 1;
+        transform: translateY(0);
+        animation: shimmer-text 1.8s linear infinite;
+      }
+
+      @keyframes shimmer-text {
+        0% { background-position: 100% 0; }
+        100% { background-position: -100% 0; }
+      }
+
+      @media (max-width: 768px) {
+        .reveal-text {
+          font-size: 0.65rem;
+        }
+      }
+
+      /* Colores por personaje */
+      .funko-capsule.ander { --avatar-color: #00a875; }
+      .funko-capsule.asher { --avatar-color: #d8d2c4; }
+      .funko-capsule.leo   { --avatar-color: #a7a7a2; }
+      .funko-capsule.kim   { --avatar-color: #3a4a52; }
+      .funko-capsule.bodhi { --avatar-color: #c70f18; }
+
+      .funko-capsule:hover {
+        transform: translateY(-10px) rotateX(4deg) rotateY(3deg) scale(1.05);
+        box-shadow: 0 20px 35px rgba(0,0,0,0.8), 0 0 35px var(--avatar-color);
+        z-index: 5;
+        animation: none;
+      }
+
+      /* Sección de avatares: zigzag simétrico */
+      .avatar-feature {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 2rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+      .avatar-feature:nth-child(odd) {
+        flex-direction: row;
+      }
+      .avatar-feature:nth-child(even) {
+        flex-direction: row-reverse;
+      }
+      .avatar-copy {
+        flex: 1 1 50%;
+        padding: 1rem;
+      }
+      .carousel-shell {
+        flex: 1 1 50%;
+        max-width: 50%;
+      }
+
+      /* NOMBRES DE AVATARES (H3 Y SUBTÍTULO) */
+      .avatar-feature.ander { --avatar-color: #00a875; }
+      .avatar-feature.asher { --avatar-color: #d8d2c4; }
+      .avatar-feature.leo   { --avatar-color: #a7a7a2; }
+      .avatar-feature.kim   { --avatar-color: #3a4a52; }
+      .avatar-feature.bodhi { --avatar-color: #c70f18; }
+
+      .avatar-feature h3,
+      .avatar-feature .avatar-role {
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      /* Ander (verde) */
+      .avatar-feature.ander h3,
+      .avatar-feature.ander .avatar-role {
+        color: #00a875;
+        text-shadow: 0 0 6px rgba(0,168,117,0.4);
+      }
+
+      /* Asher (blanco hueso) */
+      .avatar-feature.asher h3,
+      .avatar-feature.asher .avatar-role {
+        color: #ffffff;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.7), 0 0 10px rgba(0,0,0,0.5);
+      }
+
+      /* Leo (gris) */
+      .avatar-feature.leo h3,
+      .avatar-feature.leo .avatar-role {
+        color: #a7a7a2;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 8px rgba(0,0,0,0.4);
+      }
+
+      /* Kim (negro) */
+      .avatar-feature.kim {
+        background-color: #0a0a0a;
+      }
+      .avatar-feature.kim h3,
+      .avatar-feature.kim .avatar-role {
+        color: #111111;
+        text-shadow: 0 0 12px rgba(255,255,255,0.6);
+      }
+
+      /* Bodhi (rojo) */
+      .avatar-feature.bodhi h3,
+      .avatar-feature.bodhi .avatar-role {
+        color: #c70f18;
+        text-shadow: 0 0 6px rgba(199,15,24,0.5);
+      }
+
+      /* Stats: barras coloreadas según el avatar */
+      .avatar-stats input[type="range"] {
+        background: transparent;
+        height: 6px;
+        border-radius: 3px;
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+      }
+      .avatar-stats input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px;
+        border-radius: 3px;
+        background: linear-gradient(to right, var(--avatar-color) 0%, var(--avatar-color) var(--stat-percent), rgba(255,255,255,0.2) var(--stat-percent), rgba(255,255,255,0.2) 100%);
+      }
+      .avatar-stats input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 0 6px var(--avatar-color);
+        margin-top: -4px;
+      }
+      .avatar-stats output {
+        color: var(--avatar-color);
+        font-weight: 600;
+      }
+
+      /* Firma conceptual */
+      .workflow-section {
+        background-color: #0a0a0a;
+        padding: 1rem 0;
+      }
+      .concept-signature {
+        text-align: center;
+        font-family: 'Dancing Script', cursive;
+        font-size: 0.8rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        background: linear-gradient(90deg, #00a875 0%, #d8d2c4 25%, #a7a7a2 50%, #3a4a52 75%, #c70f18 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        opacity: 0.85;
+        margin: 0;
+      }
+
+      /* CURSOR PERSONALIZADO */
+      @media (hover: hover) and (pointer: fine) {
+        body, a, button, input[type="range"], .funko-capsule {
+          cursor: none !important;
+        }
+      }
+
+      .cursor-core, .cursor-glow, .cursor-ring, .cursor-dots {
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 9999;
+        will-change: left, top, background-color, box-shadow, border-color;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+      .cursor-core {
+        width: 10px;
+        height: 10px;
+        background: #d4af37;
+        border-radius: 50%;
+        margin-left: -5px;
+        margin-top: -5px;
+        box-shadow: 0 0 10px #d4af37;
+      }
+      .cursor-glow {
+        width: 30px;
+        height: 30px;
+        margin-left: -15px;
+        margin-top: -15px;
+        background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 70%);
+      }
+      .cursor-ring {
+        width: 50px;
+        height: 50px;
+        margin-left: -25px;
+        margin-top: -25px;
+        border: 1.5px solid rgba(212,175,55,0.4);
+        border-radius: 50%;
+        background: transparent;
+      }
+      .cursor-dots {
+        width: 50px;
+        height: 50px;
+        margin-left: -25px;
+        margin-top: -25px;
+        border-radius: 50%;
+        background: transparent;
+      }
+      .cursor-dot {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(var(--dot-angle)) translateY(-25px);
+        --dot-angle: 0deg;
+        transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.35s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+      }
+      .cursor-dot:nth-child(1) { --dot-angle: 0deg;   background: #00a875; }
+      .cursor-dot:nth-child(2) { --dot-angle: 72deg;  background: #d8d2c4; }
+      .cursor-dot:nth-child(3) { --dot-angle: 144deg; background: #a7a7a2; }
+      .cursor-dot:nth-child(4) { --dot-angle: 216deg; background: #3a4a52; }
+      .cursor-dot:nth-child(5) { --dot-angle: 288deg; background: #c70f18; }
+
+      .cursor-dot.active {
+        transform: translate(-50%, -50%) rotate(0deg) translateY(0px) scale(3);
+        opacity: 1;
+        box-shadow: 0 0 15px currentColor;
+        z-index: 10;
+      }
+      .cursor-dot.inactive-dimmed {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--dot-angle)) translateY(-25px) scale(0);
+      }
+
+      @media (max-width: 768px), (pointer: coarse) {
+        .cursor-core, .cursor-glow, .cursor-ring, .cursor-dots { display: none; }
+      }
+    </style>
   </head>
   <body>
     <section class="entry-gate" aria-labelledby="entry-title">
@@ -33,14 +541,23 @@
     <header class="site-header" aria-label="Navegacion principal">
       <a class="brand-mark" href="#inicio" aria-label="Volver al inicio">5PM</a>
       <nav class="nav-links" aria-label="Secciones">
-        <a href="#manifiesto">Manifiesto</a>
-        <a href="#avatares">Avatares</a>
-        <a href="#flujo">Ritual</a>
-        <a href="#archivo">Contacto</a>
+        <a href="#archivo">Archivo</a>
+        <a href="#avatares">Pecados</a>
+        <a href="#flujo">Concepción</a>
+        <a href="#contacto">Contacto</a>
       </nav>
     </header>
 
-    <div class="cursor-light" aria-hidden="true"></div>
+    <div class="cursor-core" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"></div>
+    <div class="cursor-dots" aria-hidden="true">
+      <span class="cursor-dot"></span>
+      <span class="cursor-dot"></span>
+      <span class="cursor-dot"></span>
+      <span class="cursor-dot"></span>
+      <span class="cursor-dot"></span>
+    </div>
     <div class="ambient-depth" aria-hidden="true">
       <span class="ambient-shard shard-green"></span>
       <span class="ambient-shard shard-white"></span>
@@ -82,16 +599,23 @@
         <div class="hero-layout-grid">
 
           <div class="hero-text-block">
-            <p class="eyebrow">En el universo de</p>
-            <h1 id="hero-title">Cinco Pecados Musicales</h1>
+            <p class="eyebrow signature-name">Pulchritudinae</p>
+
+            <div class="hero-title-wrapper">
+              <img 
+                src="./images/StyleText_Cinco_Pecados_Musicales.png" 
+                alt="Cinco Pecados Musicales" 
+                class="hero-title-image"
+                id="hero-title"
+              />
+            </div>
+
             <p class="hero-copy">
-              Cinco avatares nacen como una expresión libremente ligada al sistema,
-              al ciclo, a la industria. Cada uno con sus propios objetivos, inquietudes,
-              filosofías, valores y, sobre todo, gustos musicales.
+              Cinco identidades conviven dentro de un mismo universo creativo. Cada una posee su propia voz, su estética, su forma de entender el mundo y una relación distinta con la música. Sus caminos son independientes, pero juntos construyen una narrativa común.
             </p>
             <div class="hero-action-btns archive-links" aria-label="Accesos rapidos">
-              <a href="#avatares">Explorar avatares</a>
-              <a href="#manifiesto">Explorar universo 5PM</a>
+              <a href="#avatares">Explorar pecados</a>
+              <a href="#archivo">Explorar universo 5PM</a>
             </div>
           </div>
 
@@ -111,66 +635,84 @@
         </div>
       </section>
 
-      <section class="intro-band" id="manifiesto" aria-labelledby="manifesto-title">
-        <div class="section-kicker">Manifiesto</div>
+      <section class="intro-band" id="archivo" aria-labelledby="manifesto-title">
+        <div class="section-kicker">Archivo</div>
         <div class="intro-grid">
           <h2 id="manifesto-title" class="manifesto-title">
             <span class="manifesto-line">La música también puede ser Pecado</span>
             <span class="manifesto-line">si se toma demasiado en serio.</span>
           </h2>
           <div class="intro-copy">
-            <p>
-              5PM no es una banda, ni una mascara, ni una sola voz. Es una grieta
-              abierta en el marmol: cinco formas de caer dentro de la musica y salir
-              convertido en personaje.
-            </p>
-            <div class="marble-palette" aria-label="Paleta de marmoles del proyecto">
-              <a class="palette-chip green" href="ander.html" data-cursor-color="rgba(0, 168, 117, 0.56)">Ander</a>
-              <a class="palette-chip white" href="asher.html" data-cursor-color="rgba(216, 210, 196, 0.5)">Asher</a>
-              <a class="palette-chip grey"  href="leo.html"   data-cursor-color="rgba(167, 167, 162, 0.48)">Leo</a>
-              <a class="palette-chip black" href="kim.html"   data-cursor-color="rgba(94, 113, 128, 0.5)">Kim</a>
-              <a class="palette-chip red"   href="bodhi.html" data-cursor-color="rgba(199, 15, 24, 0.58)">Bodhi</a>
+            <div class="floating-img-wrapper">
+              <img 
+                src="./images/StyleText_Acceder_al_archivo_.png" 
+                alt="Acceder al archivo" 
+                class="acceder-archivo-img"
+              />
+            </div>
+            <!-- Tarjetas de personajes con nombres en dos líneas -->
+            <div class="funko-palette" aria-label="Acceso rápido a los avatares">
+              <a class="funko-capsule ander" href="ander.html" data-cursor-color="rgba(0,168,117,0.6)">
+                <div class="capsule-inner">
+                  <img src="./images/ander-funko.png" alt="Ander Popu" />
+                </div>
+                <div class="name-overlay">
+                  <span class="reveal-text">Ander<br>Popu</span>
+                </div>
+              </a>
+              <a class="funko-capsule asher" href="asher.html" data-cursor-color="rgba(216,210,196,0.6)">
+                <div class="capsule-inner">
+                  <img src="./images/asher-funko.png" alt="Asher Coda" />
+                </div>
+                <div class="name-overlay">
+                  <span class="reveal-text">Asher<br>Coda</span>
+                </div>
+              </a>
+              <a class="funko-capsule leo" href="leo.html" data-cursor-color="rgba(167,167,162,0.6)">
+                <div class="capsule-inner">
+                  <img src="./images/leo-funko.png" alt="Leo Feelow" />
+                </div>
+                <div class="name-overlay">
+                  <span class="reveal-text">Leo<br>Feelow</span>
+                </div>
+              </a>
+              <a class="funko-capsule kim" href="kim.html" data-cursor-color="rgba(58,74,82,0.6)">
+                <div class="capsule-inner">
+                  <img src="./images/kim-funko.png" alt="Kim Tehk" />
+                </div>
+                <div class="name-overlay">
+                  <span class="reveal-text">Kim<br>Tehk</span>
+                </div>
+              </a>
+              <a class="funko-capsule bodhi" href="bodhi.html" data-cursor-color="rgba(199,15,24,0.6)">
+                <div class="capsule-inner">
+                  <img src="./images/bodhi-funko.png" alt="Bodhi Folk" />
+                </div>
+                <div class="name-overlay">
+                  <span class="reveal-text">Bodhi<br>Folk</span>
+                </div>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="map-section" aria-labelledby="map-title">
-        <h2 id="map-title" class="intro-title">Introducción</h2>
-        <div class="avatar-map" aria-label="Mapa de avatares">
-          <article class="map-card ander">
-            <span class="map-index">01</span>
-            <h3>Ander Popu</h3>
-            <p>La necesidad de pertenecer, el alma de la fiesta, lo que canta todo el mundo.</p>
-          </article>
-          <article class="map-card asher">
-            <span class="map-index">02</span>
-            <h3>Asher Coda</h3>
-            <p>La belleza del silencio, cultura y devoción.</p>
-          </article>
-          <article class="map-card leo">
-            <span class="map-index">03</span>
-            <h3>Leo Feelow</h3>
-            <p>El cuerpo como respuesta, exploración y movimiento como única realidad.</p>
-          </article>
-          <article class="map-card kim">
-            <span class="map-index">04</span>
-            <h3>Kim Tehk</h3>
-            <p>El alma oscura, la herida de la creación, bucle infinito.</p>
-          </article>
-          <article class="map-card bodhi">
-            <span class="map-index">05</span>
-            <h3>Bodhi Folk</h3>
-            <p>Mercenario a sueldo, de donde sueldo pasión y memoria.</p>
-          </article>
-        </div>
-      </section>
-
       <section class="avatar-section" id="avatares" aria-labelledby="avatars-title">
-        <div class="section-kicker">Avatares</div>
-        <h2 id="avatars-title" class="sins-title">Los Pecados Musicales</h2>
+        <div class="pecados-decoration">
+          <img 
+            src="./images/StyleText_Pecados_.png" 
+            alt="Pecados" 
+            class="pecados-section-img"
+            id="avatars-title"
+          />
+          <div class="pecados-divider">
+            <span class="divider-line"></span>
+            <span class="divider-gem"></span>
+            <span class="divider-line"></span>
+          </div>
+        </div>
 
-        <article class="avatar-feature ander" id="ander" data-carousel data-panels="5">
+        <article class="avatar-feature ander" id="ander" data-carousel data-panels="5" data-cursor-color="rgba(0,168,117,0.4)">
           <div class="avatar-copy">
             <p class="avatar-number">01</p>
             <h3>Ander Popu</h3>
@@ -221,11 +763,10 @@
               <div class="dots" aria-label="Paneles del carrusel"></div>
               <button class="icon-button next" type="button" aria-label="Panel siguiente">›</button>
             </div>
-            <img class="funko-cameo" src="./images/ander-funko.png" alt="Miniatura de Ander Popu" />
           </div>
         </article>
 
-        <article class="avatar-feature asher" id="asher" data-carousel data-panels="5">
+        <article class="avatar-feature asher" id="asher" data-carousel data-panels="5" data-cursor-color="rgba(216,210,196,0.4)">
           <div class="avatar-copy">
             <p class="avatar-number">02</p>
             <h3>Asher Coda</h3>
@@ -275,11 +816,10 @@
               <div class="dots" aria-label="Paneles del carrusel"></div>
               <button class="icon-button next" type="button" aria-label="Panel siguiente">›</button>
             </div>
-            <img class="funko-cameo" src="./images/asher-funko.png" alt="Miniatura de Asher Coda" />
           </div>
         </article>
 
-        <article class="avatar-feature leo" id="leo" data-carousel data-panels="5">
+        <article class="avatar-feature leo" id="leo" data-carousel data-panels="5" data-cursor-color="rgba(167,167,162,0.4)">
           <div class="avatar-copy">
             <p class="avatar-number">03</p>
             <h3>Leo Feelow</h3>
@@ -330,11 +870,10 @@
               <div class="dots" aria-label="Paneles del carrusel"></div>
               <button class="icon-button next" type="button" aria-label="Panel siguiente">›</button>
             </div>
-            <img class="funko-cameo" src="./images/leo-funko.png" alt="Miniatura de Leo Feelow" />
           </div>
         </article>
 
-        <article class="avatar-feature kim" id="kim" data-carousel data-panels="5">
+        <article class="avatar-feature kim" id="kim" data-carousel data-panels="5" data-cursor-color="rgba(58,74,82,0.5)">
           <div class="avatar-copy">
             <p class="avatar-number">04</p>
             <h3>Kim Tehk</h3>
@@ -384,11 +923,10 @@
               <div class="dots" aria-label="Paneles del carrusel"></div>
               <button class="icon-button next" type="button" aria-label="Panel siguiente">›</button>
             </div>
-            <img class="funko-cameo" src="./images/kim-funko.png" alt="Miniatura de Kim Tehk" />
           </div>
         </article>
 
-        <article class="avatar-feature bodhi" id="bodhi" data-carousel data-panels="5">
+        <article class="avatar-feature bodhi" id="bodhi" data-carousel data-panels="5" data-cursor-color="rgba(199,15,24,0.4)">
           <div class="avatar-copy">
             <p class="avatar-number">05</p>
             <h3>Bodhi Folk</h3>
@@ -438,18 +976,16 @@
               <div class="dots" aria-label="Paneles del carrusel"></div>
               <button class="icon-button next" type="button" aria-label="Panel siguiente">›</button>
             </div>
-            <img class="funko-cameo" src="./images/bodhi-funko.png" alt="Miniatura de Bodhi Folk" />
           </div>
         </article>
       </section>
 
+      <!-- Firma conceptual -->
       <section class="workflow-section" id="flujo" aria-labelledby="workflow-title">
-        <div class="section-kicker">Ritual</div>
-        <h2 id="workflow-title">Cinco modos de entender la música</h2>
-        <p class="latin-subtitle">Quinque modi proiectionis, quinque formae evocationis.</p>
+        <p class="concept-signature">Quinque modi proiectionis, quinque formae evocationis</p>
       </section>
 
-      <section class="archive-section" id="archivo" aria-labelledby="archive-title">
+      <section class="archive-section" id="contacto" aria-labelledby="archive-title">
         <div class="section-kicker">Contacto</div>
         <div class="archive-layout">
           <h2 id="archive-title">Si la grieta te llama, responde.</h2>
@@ -486,9 +1022,7 @@
     <script>
       (function() {
         const sliders = document.querySelectorAll('.avatar-stats input[type="range"]');
-
         sliders.forEach(s => s.disabled = false);
-
         sliders.forEach(slider => {
           const avatar = slider.dataset.avatar;
           const stat = slider.dataset.stat;
@@ -498,7 +1032,6 @@
             slider.value = saved;
           }
         });
-
         function updateBar(slider) {
           const min = parseInt(slider.min);
           const max = parseInt(slider.max);
@@ -506,7 +1039,6 @@
           const percent = ((val - min) / (max - min)) * 100;
           slider.style.setProperty('--stat-percent', percent + '%');
         }
-
         function updateOverall(avatar) {
           const personalidad = document.querySelector(`input[data-avatar="${avatar}"][data-stat="personalidad"]`).value;
           const personaje = document.querySelector(`input[data-avatar="${avatar}"][data-stat="personaje"]`).value;
@@ -517,27 +1049,23 @@
             overallOutput.textContent = overall;
           }
         }
-
         function updateOutput(slider) {
           const output = slider.parentElement.querySelector('output');
           if (output) {
             output.textContent = slider.value;
           }
         }
-
         function saveToLocal(slider) {
           const avatar = slider.dataset.avatar;
           const stat = slider.dataset.stat;
           const key = `5pm_${avatar}_${stat}`;
           localStorage.setItem(key, slider.value);
         }
-
         sliders.forEach(slider => {
           updateBar(slider);
           updateOutput(slider);
         });
         ['ander', 'asher', 'leo', 'kim', 'bodhi'].forEach(avatar => updateOverall(avatar));
-
         sliders.forEach(slider => {
           slider.addEventListener('input', function() {
             updateOutput(this);
@@ -549,6 +1077,168 @@
             }
           });
         });
+      })();
+    </script>
+
+    <script>
+      (function() {
+        const core = document.querySelector('.cursor-core');
+        const glow = document.querySelector('.cursor-glow');
+        const ring = document.querySelector('.cursor-ring');
+        const dotsContainer = document.querySelector('.cursor-dots');
+        const dots = document.querySelectorAll('.cursor-dot');
+        if (!core || !glow || !ring || !dotsContainer) return;
+
+        const COLOR_MAP = {
+          'rgb(0, 168, 117)': 0,
+          'rgb(216, 210, 196)': 1,
+          'rgb(167, 167, 162)': 2,
+          'rgb(58, 74, 82)': 3,
+          'rgb(199, 15, 24)': 4
+        };
+
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let coreX = mouseX, coreY = mouseY;
+        let glowX = mouseX, glowY = mouseY;
+        let ringX = mouseX, ringY = mouseY;
+        let currentColor = null;
+        let activeDotIndex = -1;
+        let rafId = null;
+
+        const CORE_EASING = 0.35;
+        const GLOW_EASING = 0.18;
+        const RING_EASING = 0.09;
+
+        const edgeThreshold = 120;
+        const maxScrollSpeed = 24;
+        let scrollInterval = null;
+        let autoScrollActive = true;
+        let isOverHeader = false;   // Zona de seguridad del header
+
+        function updateCursor() {
+          coreX += (mouseX - coreX) * CORE_EASING;
+          coreY += (mouseY - coreY) * CORE_EASING;
+          glowX += (mouseX - glowX) * GLOW_EASING;
+          glowY += (mouseY - glowY) * GLOW_EASING;
+          ringX += (mouseX - ringX) * RING_EASING;
+          ringY += (mouseY - ringY) * RING_EASING;
+
+          core.style.left = coreX + 'px';
+          core.style.top = coreY + 'px';
+          glow.style.left = glowX + 'px';
+          glow.style.top = glowY + 'px';
+          ring.style.left = ringX + 'px';
+          ring.style.top = ringY + 'px';
+          dotsContainer.style.left = ringX + 'px';
+          dotsContainer.style.top = ringY + 'px';
+
+          rafId = requestAnimationFrame(updateCursor);
+        }
+
+        function handleScroll() {
+          // No se activa si el cursor está sobre el header o si se pausó por un clic
+          if (!autoScrollActive || isOverHeader) return;
+
+          const topDistance = mouseY;
+          const bottomDistance = window.innerHeight - mouseY;
+          let speed = 0;
+
+          if (topDistance < edgeThreshold) {
+            speed = -maxScrollSpeed * Math.pow(1 - topDistance / edgeThreshold, 1.5);
+          } else if (bottomDistance < edgeThreshold) {
+            speed = maxScrollSpeed * Math.pow(1 - bottomDistance / edgeThreshold, 1.5);
+          }
+
+          if (Math.abs(speed) > 0.2) {
+            window.scrollBy({ top: speed, behavior: 'auto' });
+          }
+        }
+
+        function onMouseMove(e) {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+
+          const el = document.elementFromPoint(e.clientX, e.clientY);
+          if (el) {
+            // Actualizar zona de seguridad del header
+            isOverHeader = el.closest('.site-header') !== null;
+
+            // Cambio de color del cursor
+            const coloredEl = el.closest('[data-cursor-color]');
+            if (coloredEl) {
+              const color = coloredEl.getAttribute('data-cursor-color');
+              if (color && color !== currentColor) {
+                setCursorColor(color);
+              }
+            } else if (currentColor !== null) {
+              resetCursorColor();
+            }
+          }
+        }
+
+        function extractRgbFromRgba(rgbaString) {
+          const match = rgbaString.match(/[\d\.]+/g);
+          if (match && match.length >= 3) {
+            return `rgb(${match[0]}, ${match[1]}, ${match[2]})`;
+          }
+          return null;
+        }
+
+        function resetCursorColor() {
+          core.style.background = '#d4af37';
+          core.style.boxShadow = '0 0 10px #d4af37';
+          glow.style.background = 'radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 70%)';
+          ring.style.borderColor = 'rgba(212,175,55,0.4)';
+          currentColor = null;
+          
+          dots.forEach((dot, index) => {
+            dot.classList.remove('active', 'inactive-dimmed');
+          });
+          activeDotIndex = -1;
+        }
+
+        function setCursorColor(rgbaColor) {
+          const rgbColor = extractRgbFromRgba(rgbaColor);
+          if (!rgbColor) return;
+
+          currentColor = rgbaColor;
+          core.style.background = rgbaColor;
+          core.style.boxShadow = `0 0 12px ${rgbaColor}`;
+          glow.style.background = `radial-gradient(circle, ${rgbaColor.replace(/[\d\.]+\)$/, '0.5)')} 0%, transparent 70%)`;
+          ring.style.borderColor = rgbaColor.replace(/[\d\.]+\)$/, '0.7)');
+
+          const newDotIndex = COLOR_MAP[rgbColor];
+          if (newDotIndex !== undefined && newDotIndex !== activeDotIndex) {
+            if (activeDotIndex >= 0) {
+              dots[activeDotIndex].classList.remove('active', 'inactive-dimmed');
+            }
+            dots.forEach((dot, i) => {
+              if (i === newDotIndex) {
+                dot.classList.add('active');
+                dot.classList.remove('inactive-dimmed');
+              } else {
+                dot.classList.remove('active');
+                dot.classList.add('inactive-dimmed');
+              }
+            });
+            activeDotIndex = newDotIndex;
+          }
+        }
+
+        // Pausar auto-scroll al hacer clic en enlaces internos
+        document.addEventListener('click', (e) => {
+          const link = e.target.closest('a[href^="#"]');
+          if (link) {
+            autoScrollActive = false;
+            setTimeout(() => { autoScrollActive = true; }, 800);
+          }
+        });
+
+        scrollInterval = setInterval(handleScroll, 16);
+
+        document.addEventListener('pointermove', onMouseMove, { passive: true });
+        rafId = requestAnimationFrame(updateCursor);
       })();
     </script>
   </body>
