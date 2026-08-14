@@ -3805,9 +3805,10 @@ input[type="file"] { display: none; }
   width: 92px;
   height: 92px;
   object-fit: cover;
-  filter: grayscale(1) contrast(1.05);
+  filter: none;
   border: 1px solid rgba(244,238,227,0.1);
 }
+
 
 .profile-modal-name {
   margin: 1.2rem 0 0.3rem;
@@ -4091,13 +4092,12 @@ input[type="file"] { display: none; }
    ADMIN: etiquetas de campo, REP bloqueado y Juego Único
    ========================================================= */
 
-/* Filtro B/N cinematográfico de alto contraste en TODAS las
-   fotos de perfil (ranking, sidebar, modal, admin). */
+/* Filtro B/N DESACTIVADO — ahora las fotos se muestran en color */
 .ranking-photo,
 .profile-photo,
 .profile-modal-photo,
 .admin-edit-photo-preview .profile-photo {
-  filter: grayscale(100%) contrast(1.15);
+  filter: none;
 }
 
 /* ---- REP bloqueado (solo lectura, calculada por la calle) ---- */

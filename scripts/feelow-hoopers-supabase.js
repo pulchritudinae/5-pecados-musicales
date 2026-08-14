@@ -1,5 +1,5 @@
 // =========================================================
-// FEELOW HOOPERS v6 — Correcciones finales (sobre base v5)
+// FEELOW HOOPERS v4.2 — Pulido completo
 // =========================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -7,7 +7,7 @@ const SUPABASE_URL = 'https://olcakitusgghaiphdtgh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2FraXR1c2dnaGFpcGhkdGdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMzg3MjgsImV4cCI6MjEwMTYxNDcyOH0.Iud3mLFAn6xzrcxuQlNYKG6TtkYLnPvxJ_iIuKyzSck';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const PHOTO_TARGET_PX = 256;
+const PHOTO_TARGET_PX = 512;
 const STREAK_FIRE = 3;
 
 const BADGE_SVG = {
@@ -93,7 +93,6 @@ function animateNumber(el, from, to, duration = 600) {
 }
 
 // FOTOS EN COLOR: limpia filter Y mix-blend-mode de la imagen Y DE TODOS SUS ANCESTROS
-// (el grayscale estaba en un contenedor padre de styles.css, no en el <img>)
 function forceColorPhotos() {
     document.querySelectorAll('img').forEach(img => {
         img.style.setProperty('filter', 'none', 'important');
@@ -128,7 +127,7 @@ async function getCompressedPhoto(file) {
                 const c = document.createElement('canvas');
                 c.width = w; c.height = h;
                 c.getContext('2d').drawImage(img, 0, 0, w, h);
-                res(c.toDataURL('image/jpeg', 0.82));
+                res(c.toDataURL('image/jpeg', 0.88));
             };
             img.onerror = () => rej(new Error('Imagen corrupta.'));
             img.src = dataUrl;
@@ -304,17 +303,19 @@ function updateSpotlight(top) {
     if (rep) rep.textContent = `${top.rep || 0} REP`;
     forceColorPhotos();
 }
+
+// TICKER ARREGLADO: nombres con clase ticker-user + espacio no colapsable
 function updateTicker(users) {
     const track = document.getElementById('tickerTrack');
     if (!track || !users || !users.length) return;
     const items = [];
     const medals = [GLYPH.crown, GLYPH.star, GLYPH.ball];
-    users.slice(0, 3).forEach((u, i) => items.push(`${medals[i]} <b>${escapeHtml(u.username)}</b> domina con ${u.rep || 0} REP`));
-    users.filter(u => u.streak >= STREAK_FIRE).slice(0, 2).forEach(u => items.push(`${GLYPH.flame} <b>${escapeHtml(u.username)}</b> encadena ${u.streak} victorias`));
+    users.slice(0, 3).forEach((u, i) => items.push(`${medals[i]}<b class="ticker-user">${escapeHtml(u.username)}</b>\u00A0domina con ${u.rep || 0} REP`));
+    users.filter(u => u.streak >= STREAK_FIRE).slice(0, 2).forEach(u => items.push(`${GLYPH.flame}<b class="ticker-user">${escapeHtml(u.username)}</b>\u00A0encadena ${u.streak} victorias`));
     const active = [...users].sort((a, b) => (b.matches || 0) - (a.matches || 0))[0];
-    if (active && active.matches > 0) items.push(`${GLYPH.ball} <b>${escapeHtml(active.username)}</b> es el más activo: ${active.matches} partidos`);
-    users.filter(u => u.badges && u.badges.includes('LEYENDA')).slice(0, 1).forEach(u => items.push(`${GLYPH.candle} <b>${escapeHtml(u.username)}</b> ostenta el título de LEYENDA`));
-    if (!items.length) items.push(`${GLYPH.ball} Bienvenido al registro oficial de Feelow Hoopers`);
+    if (active && active.matches > 0) items.push(`${GLYPH.ball}<b class="ticker-user">${escapeHtml(active.username)}</b>\u00A0es el más activo: ${active.matches} partidos`);
+    users.filter(u => u.badges && u.badges.includes('LEYENDA')).slice(0, 1).forEach(u => items.push(`${GLYPH.candle}<b class="ticker-user">${escapeHtml(u.username)}</b>\u00A0ostenta el título de LEYENDA`));
+    if (!items.length) items.push(`${GLYPH.ball}\u00A0Bienvenido al registro oficial de Feelow Hoopers`);
     const half = items.map(i => `<span class="ticker-item">${i}</span>`).join('');
     track.innerHTML = half + half;
 }
@@ -628,7 +629,7 @@ async function loadEditUser() {
     forceColorPhotos();
 }
 
-// MÚSICA v7: carga con fetch+blob (evita error 416 de Range requests)
+// MÚSICA v7: carga con fetch+blob desde catbox (evita error 416)
 function initMusicPlayer() {
     const audio = document.getElementById('bgMusic');
     const toggle = document.getElementById('musicToggle');
@@ -663,7 +664,6 @@ function initMusicPlayer() {
         setTimeout(() => err.remove(), 6000);
     }
 
-    // Carga el MP3 como blob: sin Range requests, sin error 416
     async function loadAudioBlob() {
         if (audioLoaded && audioBlobUrl) return audioBlobUrl;
         if (loadPromise) return loadPromise;
@@ -676,15 +676,8 @@ function initMusicPlayer() {
                 });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const blob = await response.blob();
-
-                // Detección de puntero Git LFS (archivo de pocos bytes que es solo texto)
-                if (blob.size < 5000) {
-                    throw new Error(`Archivo demasiado pequeño (${blob.size} bytes). ¿Subido con Git LFS?`);
-                }
-                if (!blob.type.includes('audio') && blob.type !== '') {
-                    throw new Error(`Tipo incorrecto: ${blob.type}. ¿Es realmente un MP3?`);
-                }
-
+                if (blob.size < 5000) throw new Error(`Archivo demasiado pequeño (${blob.size} bytes). ¿Subido con Git LFS?`);
+                if (!blob.type.includes('audio') && blob.type !== '') throw new Error(`Tipo incorrecto: ${blob.type}. ¿Es realmente un MP3?`);
                 audioBlobUrl = URL.createObjectURL(blob);
                 audioLoaded = true;
                 audio.src = audioBlobUrl;
@@ -707,32 +700,23 @@ function initMusicPlayer() {
         } catch (e) {
             console.warn('No se pudo reproducir:', e);
             const msg = e.message || '';
-            if (msg.includes('pequeño') || msg.includes('LFS')) {
-                showError('♪ MP3 corrupto o puntero LFS');
-            } else if (msg.includes('404')) {
-                showError('♪ MP3 no encontrado');
-            } else if (msg.includes('AbortError') || msg.includes('NotAllowed')) {
-                // Autoplay bloqueado por el navegador - silencio, normal
-            } else {
-                showError('♪ Error al reproducir');
-            }
+            if (msg.includes('pequeño') || msg.includes('LFS')) showError('♪ MP3 corrupto o puntero LFS');
+            else if (msg.includes('404')) showError('♪ MP3 no encontrado');
+            else if (msg.includes('AbortError') || msg.includes('NotAllowed')) { /* normal */ }
+            else showError('♪ Error al reproducir');
         }
     }
 
-    // Desbloqueo al primer clic global (Autoplay Policy)
     const unlockAudio = async () => {
-        if (audio.paused && !audio.muted) {
-            await tryPlay();
-        }
+        if (audio.paused && !audio.muted) await tryPlay();
         window.removeEventListener('pointerdown', unlockAudio);
     };
     window.addEventListener('pointerdown', unlockAudio, { once: true });
 
     toggle.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (audio.paused) {
-            await tryPlay();
-        } else {
+        if (audio.paused) await tryPlay();
+        else {
             audio.pause();
             if (iconPlay) iconPlay.style.display = 'block';
             if (iconPause) iconPause.style.display = 'none';
@@ -748,9 +732,7 @@ function initMusicPlayer() {
     });
 
     audio.addEventListener('timeupdate', () => {
-        if (audio.duration && progress) {
-            progress.style.width = (audio.currentTime / audio.duration * 100) + '%';
-        }
+        if (audio.duration && progress) progress.style.width = (audio.currentTime / audio.duration * 100) + '%';
     });
 
     audio.addEventListener('play', () => {
@@ -763,13 +745,12 @@ function initMusicPlayer() {
         if (iconPause) iconPause.style.display = 'none';
     });
 
-    // Limpieza al cerrar la página
     window.addEventListener('beforeunload', () => {
         if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
     });
 }
 
-// CURSOR GRIS: con corrección de calibrado cuando está dentro del dialog
+// CURSOR GRIS con corrección de calibrado dentro del dialog
 function initCursor() {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     const core = document.querySelector('.fh-cursor-core');
@@ -785,7 +766,6 @@ function initCursor() {
     (function loop() {
         cx += (mx - cx) * 0.35; cy += (my - cy) * 0.35;
         rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-        // Si el cursor vive dentro de un dialog abierto, restamos su posición
         let ox = 0, oy = 0;
         if (core.parentElement && core.parentElement.tagName === 'DIALOG') {
             const r = core.parentElement.getBoundingClientRect();
@@ -795,6 +775,41 @@ function initCursor() {
         ring.style.left = (rx - ox) + 'px'; ring.style.top = (ry - oy) + 'px';
         requestAnimationFrame(loop);
     })();
+}
+
+// LIGHTBOX: ampliar cualquier foto al hacer clic
+function initLightbox() {
+    const lb = document.getElementById('photo-lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    if (!lb || !lbImg) return;
+
+    document.addEventListener('click', (e) => {
+        const img = e.target.closest('.ranking-photo, .profile-photo, .spotlight-photo, .profile-modal-photo');
+        if (!img) return;
+        e.preventDefault();
+        e.stopPropagation();
+        lbImg.src = img.currentSrc || img.src;
+        lbImg.alt = img.alt || 'Foto ampliada';
+        if (typeof lb.showModal === 'function') {
+            if (lb.open) lb.close();
+            lb.showModal();
+        } else {
+            lb.setAttribute('open', '');
+        }
+        const core = document.querySelector('.fh-cursor-core');
+        const ring = document.querySelector('.fh-cursor-ring');
+        if (core && ring) { lb.appendChild(core); lb.appendChild(ring); }
+    }, true);
+
+    lb.addEventListener('close', () => {
+        const core = document.querySelector('.fh-cursor-core');
+        const ring = document.querySelector('.fh-cursor-ring');
+        const profileModal = document.getElementById('profile-modal');
+        const dest = (profileModal && profileModal.open) ? profileModal : document.body;
+        if (core && ring) { dest.appendChild(core); dest.appendChild(ring); }
+    });
+
+    lb.addEventListener('click', () => { if (lb.open) lb.close(); });
 }
 
 function init() {
@@ -823,10 +838,17 @@ function init() {
     document.getElementById('profile-modal-close')?.addEventListener('click', closeProfileModal);
     const modal = document.getElementById('profile-modal');
     if (modal) modal.addEventListener('click', e => { if (e.target === modal) closeProfileModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProfileModal(); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            const lb = document.getElementById('photo-lightbox');
+            if (lb && lb.open) return;
+            closeProfileModal();
+        }
+    });
 
     initMusicPlayer();
     initCursor();
+    initLightbox();
     updateAllViews();
 }
 init();
