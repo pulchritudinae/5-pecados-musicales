@@ -7,6 +7,7 @@
     <meta name="description" content="Registro permanente de los jugadores que han dejado huella en los retos y torneos asociados a Leo Feelow." />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="smoke.css" />
+    <link rel="stylesheet" href="feelow-hoopers-v2.css" />
 </head>
 <body class="character-page leo-world">
     <div class="street-basket-bg" aria-hidden="true">
@@ -15,31 +16,85 @@
         <div class="street-basket-court"></div>
         <div class="street-basket-lines"></div>
         <div class="street-basket-pulse"></div>
+        <span class="dust-particle dust-1"></span>
+        <span class="dust-particle dust-2"></span>
+        <span class="dust-particle dust-3"></span>
+        <span class="dust-particle dust-4"></span>
+        <span class="dust-particle dust-5"></span>
+        <span class="dust-particle dust-6"></span>
     </div>
 
     <header class="world-header">
         <a class="brand-mark" href="index.html">5PM</a>
     </header>
 
+    <!-- Reproductor de música fijo -->
+    <div class="music-player" id="musicPlayer" aria-label="Reproductor de música">
+        <button type="button" class="music-toggle" id="musicToggle" aria-label="Play/Pause">
+            <svg class="music-icon-play" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+            <svg class="music-icon-pause" viewBox="0 0 24 24" width="18" height="18" style="display:none;"><path fill="currentColor" d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+        </button>
+        <div class="music-progress">
+            <div class="music-progress-bar" id="musicProgress"></div>
+        </div>
+        <button type="button" class="music-mute" id="musicMute" aria-label="Silenciar">
+            <svg class="music-icon-sound" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+            <svg class="music-icon-muted" viewBox="0 0 24 24" width="16" height="16" style="display:none;"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        </button>
+    </div>
+    <audio id="bgMusic" loop preload="none">
+        <source src="assets/audio/feelow-theme.mp3" type="audio/mpeg">
+    </audio>
+
     <main class="feelow-container">
+        <!-- HERO MEJORADO -->
         <section class="feelow-hero">
             <div class="feelow-hero-copy">
                 <h1 class="leo-title" data-text="FEELOW HOOPERS">FEELOW HOOPERS</h1>
+                <p class="hero-subtitle">El registro oficial de la calle. Cada W deja huella.</p>
                 <a class="feelow-back-link" href="leo.html"><span class="arrow">←</span> Volver a Leo</a>
             </div>
+
+            <!-- Spotlight del #1 -->
+            <div class="hero-spotlight" id="heroSpotlight">
+                <div class="spotlight-label">Rey de la calle</div>
+                <div class="spotlight-content">
+                    <div class="spotlight-photo-wrap">
+                        <img id="spotlight-photo" src="" alt="" class="spotlight-photo" />
+                    </div>
+                    <div class="spotlight-info">
+                        <strong id="spotlight-name">—</strong>
+                        <span id="spotlight-rep">0 REP</span>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <!-- Ticker de noticias -->
+        <div class="news-ticker" aria-live="polite">
+            <div class="ticker-label">EN DIRECTO</div>
+            <div class="ticker-track" id="tickerTrack">
+                <span class="ticker-item">🏀 Cargando últimas noticias de la calle...</span>
+            </div>
+        </div>
 
         <div class="feelow-feedback" id="feedback" role="status" aria-live="polite"></div>
 
         <section class="feelow-layout-grid">
 
             <div class="feelow-sidebar">
+                <!-- PANEL DE AUTENTICACIÓN -->
                 <article class="feelow-panel auth-panel">
-                    <div class="panel-header-minimal">Acceso</div>
+                    <div class="panel-header-minimal">
+                        Acceso
+                        <span class="info-tooltip" data-tooltip="Inicia sesión o regístrate para entrar en el registro oficial de Feelow Hoopers. Tu alias y tu ciudad quedan grabados.">ⓘ</span>
+                    </div>
 
                     <form id="login-form" class="feelow-form" autocomplete="on">
                         <input type="email" id="login-email" placeholder="Email" required autocomplete="email" />
+                        <span class="field-hint">El email que usaste al registrarte.</span>
                         <input type="password" id="login-password" placeholder="Contraseña" required autocomplete="current-password" />
+                        <span class="field-hint">Tu contraseña. No se puede recuperar.</span>
                         <button type="submit" class="brutalist-btn">Entrar</button>
                     </form>
 
@@ -48,27 +103,66 @@
                     <form id="register-form" class="feelow-form" autocomplete="off">
                         <span class="form-subtitle">Nuevo Hooper</span>
                         <input type="email" id="register-email" placeholder="Email" required />
+                        <span class="field-hint">Necesario para recuperar tu cuenta.</span>
                         <input type="text" id="register-username" placeholder="Nombre de usuario" required />
+                        <span class="field-hint">Tu alias en la calle. Mínimo 3 caracteres.</span>
                         <input type="password" id="register-password" placeholder="Contraseña (mín. 4 caracteres)" required />
+                        <span class="field-hint">Mínimo 4 caracteres. Guárdala bien.</span>
                         <input type="text" id="register-city" placeholder="Ciudad (opcional)" />
+                        <span class="field-hint">Dónde juegas habitualmente.</span>
 
-                        <label for="register-photo" class="custom-file-upload">Subir foto de perfil</label>
-                        <input type="file" id="register-photo" accept="image/*" />
+                        <label for="register-photo" class="custom-file-upload photo-upload-label">
+                            <span class="photo-upload-text">Subir foto de perfil</span>
+                            <span class="photo-upload-preview" id="register-photo-preview"></span>
+                        </label>
+                        <input type="file" id="register-photo" accept="image/*" class="photo-input-hidden" />
+                        <span class="field-hint">Se recortará en círculo. Recomendado 400×400px.</span>
 
                         <button type="submit" class="brutalist-btn outline">Registrarse</button>
                     </form>
                 </article>
 
+                <!-- TU PERFIL (cuando está logueado) -->
                 <article class="feelow-panel profile-panel hidden" id="user-profile">
-                    <div class="panel-header-minimal">Tu perfil</div>
+                    <div class="panel-header-minimal">
+                        Tu perfil
+                        <span class="info-tooltip" data-tooltip="Esta es tu placa pública. Cualquiera puede verla al pulsar tu nombre en el ranking.">ⓘ</span>
+                    </div>
                     <div id="profile-view" class="profile-view"></div>
                     <button type="button" class="brutalist-btn outline" id="logout-btn" style="margin-top: 1rem;">Cerrar sesión</button>
+                </article>
+
+                <!-- NUEVO: EDITAR MI PERFIL (usuario normal) -->
+                <article class="feelow-panel edit-panel hidden" id="edit-my-profile">
+                    <div class="panel-header-minimal">
+                        Editar mi perfil
+                        <span class="info-tooltip" data-tooltip="Cambia tu ciudad, tu contraseña o tu foto de perfil. Los cambios son inmediatos.">ⓘ</span>
+                    </div>
+                    <form id="edit-self-form" class="feelow-form" autocomplete="off">
+                        <input type="text" id="edit-self-city" placeholder="Ciudad" />
+                        <span class="field-hint">Dónde juegas habitualmente.</span>
+
+                        <input type="password" id="edit-self-password" placeholder="Nueva contraseña (opcional)" />
+                        <span class="field-hint">Déjalo vacío si no quieres cambiarla.</span>
+
+                        <label for="edit-self-photo" class="custom-file-upload photo-upload-label">
+                            <span class="photo-upload-text">Cambiar foto</span>
+                            <span class="photo-upload-preview" id="edit-self-photo-preview"></span>
+                        </label>
+                        <input type="file" id="edit-self-photo" accept="image/*" class="photo-input-hidden" />
+
+                        <button type="submit" class="brutalist-btn">Guardar cambios</button>
+                    </form>
                 </article>
             </div>
 
             <div class="feelow-main-content">
+                <!-- RANKING -->
                 <section class="feelow-panel ranking-panel">
-                    <div class="panel-header-minimal">Global Ranking</div>
+                    <div class="panel-header-minimal">
+                        Global Ranking
+                        <span class="info-tooltip" data-tooltip="La clasificación se actualiza en tiempo real. REP = tu reputación en la calle. Cuanto más juegas y ganas, más subes.">ⓘ</span>
+                    </div>
                     <div class="ranking-table-wrap">
                         <table class="brutalist-table">
                             <thead>
@@ -86,14 +180,26 @@
                             <tbody id="ranking-body"></tbody>
                         </table>
                     </div>
-                    <p class="ranking-hint">Pulsa cualquier hooper para abrir su placa.</p>
+                    <p class="ranking-hint">💡 Pulsa cualquier hooper para abrir su placa.</p>
                 </section>
 
-                <section class="feelow-panel ranking-panel">
-                    <div class="panel-header-minimal">Torneos</div>
+                <!-- Separador spray -->
+                <div class="section-divider" aria-hidden="true">
+                    <span class="spray-line"></span>
+                    <span class="spray-dot"></span>
+                    <span class="spray-line"></span>
+                </div>
+
+                <!-- TORNEOS -->
+                <section class="feelow-panel ranking-panel tournaments-section">
+                    <div class="panel-header-minimal">
+                        Torneos
+                        <span class="info-tooltip" data-tooltip="Torneos callejeros organizados por Leo Feelow. Las inscripciones las gestiona el admin. El campeón se lleva dos insignias exclusivas.">ⓘ</span>
+                    </div>
                     <div id="tournaments-list" class="tournaments-grid"></div>
                 </section>
 
+                <!-- ADMIN -->
                 <section id="admin-panel" class="feelow-panel admin-panel hidden">
                     <div class="panel-header-minimal admin-header">Administración Leo Feelow</div>
 
@@ -101,7 +207,10 @@
                     <div class="admin-grid">
 
                         <form id="admin-stats-form" class="feelow-form admin-box">
-                            <h3>Gestión de stats</h3>
+                            <h3>
+                                Gestión de stats
+                                <span class="info-tooltip" data-tooltip="Ajusta manualmente victorias, derrotas y partidos. La REP se recalcula automáticamente con la fórmula oficial.">ⓘ</span>
+                            </h3>
                             <select id="admin-user-select" class="admin-input" aria-label="Usuario"></select>
                             <div class="stats-inputs">
                                 <div class="stat-field">
@@ -136,13 +245,19 @@
                             <select id="admin-edit-user-select" class="admin-input" aria-label="Usuario a editar"></select>
                             <input type="text" id="admin-edit-city" placeholder="Ciudad" />
                             <div id="admin-edit-photo-current" class="admin-edit-photo-preview"></div>
-                            <label for="admin-edit-photo" class="custom-file-upload">Cambiar foto (opcional)</label>
-                            <input type="file" id="admin-edit-photo" accept="image/*" />
+                            <label for="admin-edit-photo" class="custom-file-upload photo-upload-label">
+                                <span class="photo-upload-text">Cambiar foto</span>
+                                <span class="photo-upload-preview" id="admin-edit-photo-preview"></span>
+                            </label>
+                            <input type="file" id="admin-edit-photo" accept="image/*" class="photo-input-hidden" />
                             <button type="submit" class="brutalist-btn outline">Guardar cambios</button>
                         </form>
 
                         <form id="admin-match-form" class="feelow-form admin-box">
-                            <h3>Registrar Enfrentamiento</h3>
+                            <h3>
+                                Registrar Enfrentamiento
+                                <span class="info-tooltip" data-tooltip="Un partido normal suma 1W al ganador y 1L al perdedor. Marca 'Juego Único (JU)' si la jugada fue especialmente memorable.">ⓘ</span>
+                            </h3>
                             <label for="admin-match-winner" class="admin-field-label">Ganador</label>
                             <select id="admin-match-winner" class="admin-input" aria-label="Ganador"></select>
                             <label for="admin-match-loser" class="admin-field-label">Perdedor</label>
@@ -159,22 +274,25 @@
                         </form>
 
                         <form id="admin-badges-form" class="feelow-form admin-box">
-                            <h3>Insignias de la calle</h3>
+                            <h3>
+                                Insignias de la calle
+                                <span class="info-tooltip" data-tooltip="Cada insignia aporta REP extra según su rareza. Se otorgan por hitos o por decisión del admin.">ⓘ</span>
+                            </h3>
                             <select id="admin-badge-user" aria-label="Usuario"></select>
                             <select id="admin-badge-select" aria-label="Insignia">
-                                <option value="CIMIENTOS">CIMIENTOS</option>
-                                <option value="SANGRE NUEVA">SANGRE NUEVA</option>
-                                <option value="DUEÑO DE LA PISTA">DUEÑO DE LA PISTA</option>
-                                <option value="ROMPE-ÍDOLOS">ROMPE-ÍDOLOS</option>
-                                <option value="LEYENDA">LEYENDA</option>
-                                <option value="1V1 INCOMBATIBLE">1V1 INCOMBATIBLE</option>
-                                <option value="CLUTCH">CLUTCH</option>
-                                <option value="RACHA DE FUEGO">RACHA DE FUEGO</option>
-                                <option value="CAMPEÓN DE TORNEO">CAMPEÓN DE TORNEO</option>
-                                <option value="MVP DE LA CALLE">MVP DE LA CALLE</option>
+                                <option value="CIMIENTOS">CIMIENTOS (+55 REP)</option>
+                                <option value="SANGRE NUEVA">SANGRE NUEVA (+40 REP)</option>
+                                <option value="DUEÑO DE LA PISTA">DUEÑO DE LA PISTA (+80 REP)</option>
+                                <option value="ROMPE-ÍDOLOS">ROMPE-ÍDOLOS (+75 REP)</option>
+                                <option value="LEYENDA">LEYENDA (+100 REP)</option>
+                                <option value="1V1 INCOMBATIBLE">1V1 INCOMBATIBLE (+70 REP)</option>
+                                <option value="CLUTCH">CLUTCH (+60 REP)</option>
+                                <option value="RACHA DE FUEGO">RACHA DE FUEGO (+65 REP)</option>
+                                <option value="CAMPEÓN DE TORNEO">CAMPEÓN DE TORNEO (+85 REP)</option>
+                                <option value="MVP DE LA CALLE">MVP DE LA CALLE (+90 REP)</option>
                             </select>
                             <div id="admin-badge-preview" class="admin-badge-preview" aria-live="polite">
-                                <div class="admin-badge-preview-icon" id="admin-badge-preview-icon">🏀</div>
+                                <div class="admin-badge-preview-icon" id="admin-badge-preview-icon"></div>
                                 <div class="admin-badge-preview-copy">
                                     <span class="preview-label">Previsualización</span>
                                     <strong id="admin-badge-preview-title">CIMIENTOS</strong>
@@ -224,6 +342,7 @@
         </section>
     </main>
 
+    <!-- MODAL DE PLACA -->
     <dialog id="profile-modal" class="profile-modal" aria-labelledby="profile-modal-name">
         <article class="profile-modal-plate">
             <button type="button" class="profile-modal-close" id="profile-modal-close" aria-label="Cerrar placa">✕</button>
