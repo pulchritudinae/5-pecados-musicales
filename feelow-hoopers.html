@@ -7,16 +7,6 @@
     <meta name="description" content="Registro permanente de los jugadores que han dejado huella en los retos y torneos asociados a Leo Feelow." />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="smoke.css" />
-
-    <!-- Three.js (Asset Pack del universo 5PM) -->
-    <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-      }
-    }
-    </script>
 </head>
 <body class="character-page leo-world">
     <div class="street-basket-bg" aria-hidden="true">
@@ -48,7 +38,7 @@
                     <div class="panel-header-minimal">Acceso</div>
 
                     <form id="login-form" class="feelow-form" autocomplete="on">
-                        <input type="text" id="login-username" placeholder="Usuario" required autocomplete="username" />
+                        <input type="email" id="login-email" placeholder="Email" required autocomplete="email" />
                         <input type="password" id="login-password" placeholder="Contraseña" required autocomplete="current-password" />
                         <button type="submit" class="brutalist-btn">Entrar</button>
                     </form>
@@ -57,6 +47,7 @@
 
                     <form id="register-form" class="feelow-form" autocomplete="off">
                         <span class="form-subtitle">Nuevo Hooper</span>
+                        <input type="email" id="register-email" placeholder="Email" required />
                         <input type="text" id="register-username" placeholder="Nombre de usuario" required />
                         <input type="password" id="register-password" placeholder="Contraseña (mín. 4 caracteres)" required />
                         <input type="text" id="register-city" placeholder="Ciudad (opcional)" />
@@ -109,16 +100,6 @@
                     <div class="admin-section-title">Gestión de hoopers</div>
                     <div class="admin-grid">
 
-                        <form id="admin-create-form" class="feelow-form admin-box">
-                            <h3>Añadir usuario</h3>
-                            <input type="text" id="admin-create-username" placeholder="Usuario" required />
-                            <input type="password" id="admin-create-password" placeholder="Contraseña (mín. 4)" required />
-                            <input type="text" id="admin-create-city" placeholder="Ciudad" />
-                            <label for="admin-create-photo" class="custom-file-upload">Foto (opcional)</label>
-                            <input type="file" id="admin-create-photo" accept="image/*" />
-                            <button type="submit" class="brutalist-btn outline">Crear</button>
-                        </form>
-
                         <form id="admin-stats-form" class="feelow-form admin-box">
                             <h3>Gestión de stats</h3>
                             <select id="admin-user-select" class="admin-input" aria-label="Usuario"></select>
@@ -145,7 +126,7 @@
                             <div class="stat-field">
                                 <label for="admin-rep" class="rep-locked-label">Reputación (REP) — Automática</label>
                                 <input type="number" id="admin-rep" min="0" value="1000" disabled readonly aria-disabled="true" />
-                                <span class="rep-locked-hint">Calculada por la calle: 1000 + W×30 + JU×15 + Partidos×4 + Insignias − Derrotas×6.</span>
+                                <span class="rep-locked-hint">Calculada automáticamente: 1000 + W×30 + JU×15 + Partidos×4 + Insignias − Derrotas×6.</span>
                             </div>
                             <button type="submit" class="brutalist-btn admin-btn">Actualizar</button>
                         </form>
@@ -154,7 +135,6 @@
                             <h3>Editar usuario</h3>
                             <select id="admin-edit-user-select" class="admin-input" aria-label="Usuario a editar"></select>
                             <input type="text" id="admin-edit-city" placeholder="Ciudad" />
-                            <input type="password" id="admin-edit-password" placeholder="Nueva contraseña (opcional)" />
                             <div id="admin-edit-photo-current" class="admin-edit-photo-preview"></div>
                             <label for="admin-edit-photo" class="custom-file-upload">Cambiar foto (opcional)</label>
                             <input type="file" id="admin-edit-photo" accept="image/*" />
@@ -244,9 +224,6 @@
         </section>
     </main>
 
-    <!-- =========================================================
-         PLACA DE PERFIL (modal brutalista, <dialog> nativo)
-         ========================================================= -->
     <dialog id="profile-modal" class="profile-modal" aria-labelledby="profile-modal-name">
         <article class="profile-modal-plate">
             <button type="button" class="profile-modal-close" id="profile-modal-close" aria-label="Cerrar placa">✕</button>
@@ -270,6 +247,6 @@
         </article>
     </dialog>
 
-    <script type="module" src="scripts/feelow-hoopers.js"></script>
+    <script type="module" src="scripts/feelow-hoopers-supabase.js"></script>
 </body>
 </html>
