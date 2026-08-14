@@ -5,8 +5,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
-const SUPABASE_URL = 'https://olcakitusgghaiphdtgh.supabase.co/rest/v1/';
-const SUPABASE_ANON_KEY = 'sb_publishable_UMAQd1Zry4pbp2wHSFxNwA_MBjD9N2z';
+const SUPABASE_URL = 'https://olcakitusgghaiphdtgh.supabase.co';
+const SUPABASE_ANON_KEY = 'tsb_publishable_UMAQd1Zry4pbp2wHSFxNwA_MBjD9N2z';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
