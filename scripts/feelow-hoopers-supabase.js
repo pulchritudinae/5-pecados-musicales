@@ -1,5 +1,5 @@
 // =========================================================
-// FEELOW HOOPERS v4 — Correcciones finales
+// FEELOW HOOPERS v5 — Correcciones técnicas completas
 // =========================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -14,16 +14,16 @@ const STREAK_FIRE = 3;
 // INSIGNIAS: SVG de línea monocroma (estilo unificado)
 // =========================================================
 const BADGE_SVG = {
-    'CIMIENTOS': `<svg viewBox="0 0 24 24"><path d="M3 7h18v13H3z M3 11.5h18 M3 16h18 M9 7v4.5 M15 11.5v4.5 M9 16v4"/></svg>`,
-    'SANGRE NUEVA': `<svg viewBox="0 0 24 24"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z M8.5 14.5h2l1-2 1.5 3 1-1.5h1.5"/></svg>`,
+    'CIMIENTOS':         `<svg viewBox="0 0 24 24"><path d="M3 7h18v13H3z M3 11.5h18 M3 16h18 M9 7v4.5 M15 11.5v4.5 M9 16v4"/></svg>`,
+    'SANGRE NUEVA':      `<svg viewBox="0 0 24 24"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z M8.5 14.5h2l1-2 1.5 3 1-1.5h1.5"/></svg>`,
     'DUEÑO DE LA PISTA': `<svg viewBox="0 0 24 24"><path d="M4 17l1.2-8 4 3.5L12 6l2.8 6.5 4-3.5L20 17z M4 20h16"/></svg>`,
-    'ROMPE-ÍDOLOS': `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 5.5l2.5 4.5-2 3 3.5 6"/></svg>`,
-    'LEYENDA': `<svg viewBox="0 0 24 24"><path d="M9.5 11h5v9h-5z M12 11V9 M12 3c1.6 2 2 3.6 0 5.4C10 6.6 10.4 5 12 3z M7 20h10"/></svg>`,
-    '1V1 INCOMBATIBLE': `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16 M4.8 8.5c2.2 2 12.2 2 14.4 0 M4.8 15.5c2.2-2 12.2-2 14.4 0"/></svg>`,
-    'CLUTCH': `<svg viewBox="0 0 24 24"><path d="M6 3h12 M6 21h12 M7.5 3c0 4.5 3.5 5.5 4.5 7 1-1.5 4.5-2.5 4.5-7 M7.5 21c0-4.5 3.5-5.5 4.5-7 1 1.5 4.5 2.5 4.5 7"/></svg>`,
-    'RACHA DE FUEGO': `<svg viewBox="0 0 24 24"><path d="M12 3c1 3.5 4.5 5 4.5 9a4.5 4.5 0 0 1-9 0c0-2.2 1.2-4 2.3-5.6.5 1.2 1.4 1.8 1.4 1.8C11.4 6.5 11.6 4.8 12 3z M12 13c-.8 1-1.2 1.8-1.2 2.6a1.2 1.2 0 0 0 2.4 0c0-.8-.4-1.6-1.2-2.6z"/></svg>`,
+    'ROMPE-ÍDOLOS':      `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 5.5l2.5 4.5-2 3 3.5 6"/></svg>`,
+    'LEYENDA':           `<svg viewBox="0 0 24 24"><path d="M9.5 11h5v9h-5z M12 11V9 M12 3c1.6 2 2 3.6 0 5.4C10 6.6 10.4 5 12 3z M7 20h10"/></svg>`,
+    '1V1 INCOMBATIBLE':  `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16 M4.8 8.5c2.2 2 12.2 2 14.4 0 M4.8 15.5c2.2-2 12.2-2 14.4 0"/></svg>`,
+    'CLUTCH':            `<svg viewBox="0 0 24 24"><path d="M6 3h12 M6 21h12 M7.5 3c0 4.5 3.5 5.5 4.5 7 1-1.5 4.5-2.5 4.5-7 M7.5 21c0-4.5 3.5-5.5 4.5-7 1 1.5 4.5 2.5 4.5 7"/></svg>`,
+    'RACHA DE FUEGO':    `<svg viewBox="0 0 24 24"><path d="M12 3c1 3.5 4.5 5 4.5 9a4.5 4.5 0 0 1-9 0c0-2.2 1.2-4 2.3-5.6.5 1.2 1.4 1.8 1.4 1.8C11.4 6.5 11.6 4.8 12 3z M12 13c-.8 1-1.2 1.8-1.2 2.6a1.2 1.2 0 0 0 2.4 0c0-.8-.4-1.6-1.2-2.6z"/></svg>`,
     'CAMPEÓN DE TORNEO': `<svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z M8 5H4.5c0 3.2 1.6 4.8 3.5 5 M16 5h3.5c0 3.2-1.6 4.8-3.5 5 M12 13v3 M9 20h6 M10 16h4l.8 4H9.2z"/></svg>`,
-    'MVP DE LA CALLE': `<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.9-4.6 4.3 1.2 6.2-5.6-3.1-5.6 3.1 1.2-6.2L3 9.7l6.3-.9z"/></svg>`
+    'MVP DE LA CALLE':   `<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.9-4.6 4.3 1.2 6.2-5.6-3.1-5.6 3.1 1.2-6.2L3 9.7l6.3-.9z"/></svg>`
 };
 
 const BADGE_META = {
@@ -41,11 +41,11 @@ const BADGE_META = {
 
 // Glifos monocromos para el ticker (sin emojis)
 const GLYPH = {
-    crown: '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M4 17l1.2-8 4 3.5L12 6l2.8 6.5 4-3.5L20 17z M4 20h16"/></svg>',
-    flame: '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M12 3c1 3.5 4.5 5 4.5 9a4.5 4.5 0 0 1-9 0c0-2.2 1.2-4 2.3-5.6.5 1.2 1.4 1.8 1.4 1.8C11.4 6.5 11.6 4.8 12 3z"/></svg>',
-    ball:  '<svg class="tick-glyph" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16 M4 12h16"/></svg>',
-    candle:'<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M9.5 11h5v9h-5z M12 3c1.6 2 2 3.6 0 5.4C10 6.6 10.4 5 12 3z"/></svg>',
-    star:  '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.9-4.6 4.3 1.2 6.2-5.6-3.1-5.6 3.1 1.2-6.2L3 9.7l6.3-.9z"/></svg>'
+    crown:  '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M4 17l1.2-8 4 3.5L12 6l2.8 6.5 4-3.5L20 17z M4 20h16"/></svg>',
+    flame:  '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M12 3c1 3.5 4.5 5 4.5 9a4.5 4.5 0 0 1-9 0c0-2.2 1.2-4 2.3-5.6.5 1.2 1.4 1.8 1.4 1.8C11.4 6.5 11.6 4.8 12 3z"/></svg>',
+    ball:   '<svg class="tick-glyph" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16 M4 12h16"/></svg>',
+    candle: '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M9.5 11h5v9h-5z M12 3c1.6 2 2 3.6 0 5.4C10 6.6 10.4 5 12 3z"/></svg>',
+    star:   '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.9-4.6 4.3 1.2 6.2-5.6-3.1-5.6 3.1 1.2-6.2L3 9.7l6.3-.9z"/></svg>'
 };
 
 const TIERS = {
@@ -84,7 +84,7 @@ function getDefaultAvatar() {
 }
 function getPhotoElement(u, cls) {
     const p = u.avatar_url || getDefaultAvatar();
-    return `<img class="${cls}" src="${p}" alt="${escapeHtml(u.username)}" loading="lazy" />`;
+    return `<img class="${cls}" src="${p}" alt="${escapeHtml(u.username)}" loading="lazy" style="filter:none;-webkit-filter:none;" />`;
 }
 function animateNumber(el, from, to, duration = 600) {
     if (!el) return;
@@ -99,13 +99,11 @@ function animateNumber(el, from, to, duration = 600) {
     requestAnimationFrame(tick);
 }
 
-// =========================================================
-// FOTOS EN COLOR: fuerza estilo inline (gana a cualquier CSS)
-// =========================================================
+// Fuerza el color en las fotos (gana a cualquier CSS externo)
 function forceColorPhotos() {
     document.querySelectorAll('img').forEach(img => {
-        img.style.filter = 'none';
-        img.style.webkitFilter = 'none';
+        img.style.setProperty('filter', 'none', 'important');
+        img.style.setProperty('-webkit-filter', 'none', 'important');
     });
 }
 
@@ -160,8 +158,9 @@ function setupPhotoPreview(inputId, previewId) {
     input.addEventListener('change', () => {
         const file = input.files[0];
         if (!file) { preview.innerHTML = ''; preview.classList.remove('has-image'); return; }
-        preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Preview" />`;
+        preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Preview" style="filter:none;-webkit-filter:none;" />`;
         preview.classList.add('has-image');
+        forceColorPhotos();
     });
 }
 
@@ -323,11 +322,11 @@ function updateTicker(users) {
     if (!track || !users || !users.length) return;
     const items = [];
     const medals = [GLYPH.crown, GLYPH.star, GLYPH.ball];
-    users.slice(0, 3).forEach((u, i) => items.push(`${medals[i]} <b>${escapeHtml(u.username)}</b>&nbsp;domina con ${u.rep || 0} REP`));
-    users.filter(u => u.streak >= STREAK_FIRE).slice(0, 2).forEach(u => items.push(`${GLYPH.flame} <b>${escapeHtml(u.username)}</b>&nbsp;encadena ${u.streak} victorias`));
+    users.slice(0, 3).forEach((u, i) => items.push(`${medals[i]} <b>${escapeHtml(u.username)}</b> domina con ${u.rep || 0} REP`));
+    users.filter(u => u.streak >= STREAK_FIRE).slice(0, 2).forEach(u => items.push(`${GLYPH.flame} <b>${escapeHtml(u.username)}</b> encadena ${u.streak} victorias`));
     const active = [...users].sort((a, b) => (b.matches || 0) - (a.matches || 0))[0];
-    if (active && active.matches > 0) items.push(`${GLYPH.ball} <b>${escapeHtml(active.username)}</b>&nbsp;es el más activo: ${active.matches} partidos`);
-    users.filter(u => u.badges && u.badges.includes('LEYENDA')).slice(0, 1).forEach(u => items.push(`${GLYPH.candle} <b>${escapeHtml(u.username)}</b>&nbsp;ostenta el título de LEYENDA`));
+    if (active && active.matches > 0) items.push(`${GLYPH.ball} <b>${escapeHtml(active.username)}</b> es el más activo: ${active.matches} partidos`);
+    users.filter(u => u.badges && u.badges.includes('LEYENDA')).slice(0, 1).forEach(u => items.push(`${GLYPH.candle} <b>${escapeHtml(u.username)}</b> ostenta el título de LEYENDA`));
     if (!items.length) items.push(`${GLYPH.ball} Bienvenido al registro oficial de Feelow Hoopers`);
     const half = items.map(i => `<span class="ticker-item">${i}</span>`).join('');
     track.innerHTML = half + half;
@@ -348,11 +347,14 @@ async function renderProfile() {
         ? user.badges.map(b => { const m = getBadgeMeta(b); return `<button type="button" class="profile-badge-chip" data-badge="${escapeHtml(b)}" title="${escapeHtml(m.title || b)}">${getBadgeSvg(b)}</button>`; }).join('')
         : '<span class="is-empty">Sin insignias</span>';
     pv.innerHTML = `
-        <div class="profile-card">${getPhotoElement(user, 'profile-photo')}<div>
-            <h3>${escapeHtml(user.username)}</h3>
-            <p>${user.city ? escapeHtml(user.city) : 'Sin ciudad'}</p>
-            <p class="profile-rep-line"><strong>${user.rep || 0}</strong> REP · <span class="profile-tier-tag ${tier.cls}">${tier.label}</span></p>
-        </div></div>
+        <div class="profile-card">
+            ${getPhotoElement(user, 'profile-photo')}
+            <div>
+                <h3>${escapeHtml(user.username)}</h3>
+                <p>${user.city ? escapeHtml(user.city) : 'Sin ciudad'}</p>
+                <p class="profile-rep-line"><strong>${user.rep || 0}</strong> REP · <span class="profile-tier-tag ${tier.cls}">${tier.label}</span></p>
+            </div>
+        </div>
         <div class="profile-stats">
             <div><span>Torneos</span><strong>${user.tournaments || 0}</strong></div>
             <div><span>Partidos</span><strong>${user.matches || 0}</strong></div>
@@ -390,7 +392,7 @@ async function renderTournaments() {
 }
 
 // =========================================================
-// MODAL PLACA (insignias solo icono, texto en bloque inferior)
+// MODAL PLACA (cursor movido al dialog para Top Layer)
 // =========================================================
 async function openProfileModal(userId) {
     const { data: user } = await supabase.from('hoopers').select('*').eq('id', userId).single();
@@ -400,6 +402,7 @@ async function openProfileModal(userId) {
     const tier = tierByPosition(pos || 999);
     const dialog = document.getElementById('profile-modal');
     if (!dialog) return;
+
     document.getElementById('profile-modal-photo').src = user.avatar_url || getDefaultAvatar();
     document.getElementById('profile-modal-name').textContent = user.username;
     document.getElementById('profile-modal-city').textContent = user.city || '—';
@@ -426,12 +429,34 @@ async function openProfileModal(userId) {
         if (detail) detail.innerHTML = '';
     }
     forceColorPhotos();
-    if (typeof dialog.showModal === 'function') { if (dialog.open) dialog.close(); dialog.showModal(); }
-    else dialog.setAttribute('open', '');
+
+    if (typeof dialog.showModal === 'function') {
+        if (dialog.open) dialog.close();
+        dialog.showModal();
+        // Mover el cursor dentro del modal para que esté en la Top Layer
+        const core = document.querySelector('.fh-cursor-core');
+        const ring = document.querySelector('.fh-cursor-ring');
+        if (core && ring) {
+            dialog.appendChild(core);
+            dialog.appendChild(ring);
+        }
+    } else {
+        dialog.setAttribute('open', '');
+    }
 }
+
 function closeProfileModal() {
     const d = document.getElementById('profile-modal');
-    if (d && d.open) d.close();
+    if (d && d.open) {
+        // Devolver el cursor al body antes de cerrar
+        const core = document.querySelector('.fh-cursor-core');
+        const ring = document.querySelector('.fh-cursor-ring');
+        if (core && ring) {
+            document.body.appendChild(core);
+            document.body.appendChild(ring);
+        }
+        d.close();
+    }
 }
 
 // =========================================================
@@ -617,6 +642,7 @@ async function updateAllViews() {
     await renderProfile();
     await showAdminPanel();
     await toggleAuthViews();
+    forceColorPhotos();
 }
 async function loadEditUser() {
     const sel = document.getElementById('admin-edit-user-select');
@@ -627,13 +653,13 @@ async function loadEditUser() {
     if (!u) return;
     document.getElementById('admin-edit-city').value = u.city || '';
     document.getElementById('admin-edit-photo-current').innerHTML = u.avatar_url
-        ? `<img class="profile-photo" src="${u.avatar_url}" alt="${escapeHtml(u.username)}" />`
+        ? `<img class="profile-photo" src="${u.avatar_url}" alt="${escapeHtml(u.username)}" style="filter:none;-webkit-filter:none;" />`
         : `<div class="admin-edit-photo-empty">Sin foto</div>`;
     forceColorPhotos();
 }
 
 // =========================================================
-// MÚSICA (con manejo de errores y feedback visual)
+// MÚSICA (con desbloqueo al primer clic global)
 // =========================================================
 function initMusicPlayer() {
     const audio = document.getElementById('bgMusic');
@@ -642,15 +668,19 @@ function initMusicPlayer() {
     const progress = document.getElementById('musicProgress');
     const player = document.getElementById('musicPlayer');
     if (!audio || !toggle || !mute || !player) return;
+
     const iconPlay = toggle.querySelector('.music-icon-play');
     const iconPause = toggle.querySelector('.music-icon-pause');
     const iconSound = mute.querySelector('.music-icon-sound');
     const iconMuted = mute.querySelector('.music-icon-muted');
-    
+
     audio.volume = 0.3;
     audio.muted = localStorage.getItem('feelow_music_muted') === 'true';
-    if (audio.muted) { iconSound.style.display = 'none'; iconMuted.style.display = 'block'; }
-    
+    if (audio.muted) {
+        if (iconSound) iconSound.style.display = 'none';
+        if (iconMuted) iconMuted.style.display = 'block';
+    }
+
     // Feedback visual si el MP3 no carga
     audio.addEventListener('error', () => {
         const err = document.createElement('span');
@@ -659,46 +689,62 @@ function initMusicPlayer() {
         player.appendChild(err);
         setTimeout(() => err.remove(), 5000);
     });
-    
-    toggle.addEventListener('click', () => {
+
+    // Desbloqueo al primer clic global en la página
+    const unlockAudio = () => {
+        if (audio.paused && !audio.muted) {
+            audio.play().then(() => {
+                if (iconPlay) iconPlay.style.display = 'none';
+                if (iconPause) iconPause.style.display = 'block';
+            }).catch(() => { /* Autoplay restringido hasta interacción con botón específico */ });
+        }
+        window.removeEventListener('pointerdown', unlockAudio);
+    };
+    window.addEventListener('pointerdown', unlockAudio, { once: true });
+
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (audio.paused) {
             audio.play().then(() => {
-                iconPlay.style.display = 'none';
-                iconPause.style.display = 'block';
+                if (iconPlay) iconPlay.style.display = 'none';
+                if (iconPause) iconPause.style.display = 'block';
             }).catch(err => {
-                console.log('No se pudo reproducir:', err);
+                console.error('Error al reproducir audio:', err);
                 const errEl = document.createElement('span');
                 errEl.className = 'music-error';
-                errEl.textContent = '♪ Error de reproducción';
+                errEl.textContent = '♪ Error';
                 player.appendChild(errEl);
                 setTimeout(() => errEl.remove(), 3000);
             });
         } else {
             audio.pause();
-            iconPlay.style.display = 'block';
-            iconPause.style.display = 'none';
+            if (iconPlay) iconPlay.style.display = 'block';
+            if (iconPause) iconPause.style.display = 'none';
         }
     });
-    
-    mute.addEventListener('click', () => {
+
+    mute.addEventListener('click', (e) => {
+        e.stopPropagation();
         audio.muted = !audio.muted;
         localStorage.setItem('feelow_music_muted', audio.muted);
-        iconSound.style.display = audio.muted ? 'none' : 'block';
-        iconMuted.style.display = audio.muted ? 'block' : 'none';
+        if (iconSound) iconSound.style.display = audio.muted ? 'none' : 'block';
+        if (iconMuted) iconMuted.style.display = audio.muted ? 'block' : 'none';
     });
-    
+
     audio.addEventListener('timeupdate', () => {
-        if (audio.duration) progress.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        if (audio.duration && progress) {
+            progress.style.width = (audio.currentTime / audio.duration * 100) + '%';
+        }
     });
-    
+
     audio.addEventListener('play', () => {
-        iconPlay.style.display = 'none';
-        iconPause.style.display = 'block';
+        if (iconPlay) iconPlay.style.display = 'none';
+        if (iconPause) iconPause.style.display = 'block';
     });
-    
+
     audio.addEventListener('pause', () => {
-        iconPlay.style.display = 'block';
-        iconPause.style.display = 'none';
+        if (iconPlay) iconPlay.style.display = 'block';
+        if (iconPause) iconPause.style.display = 'none';
     });
 }
 

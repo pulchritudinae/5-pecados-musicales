@@ -13,7 +13,7 @@
 
     <style>
     /* =========================================================
-       FEELOW HOOPERS v4 — Correcciones finales
+       FEELOW HOOPERS v5 — Correcciones técnicas completas
        ========================================================= */
     :root {
         --amber: #e8a33d;
@@ -185,9 +185,10 @@
         color: var(--amber);
     }
 
-    /* --- TICKER con máscara de desvanecimiento --- */
+    /* --- TICKER con máscara de desvanecimiento y padding de seguridad --- */
     .news-ticker {
-        display: flex; align-items: center;
+        display: flex;
+        align-items: center;
         background: rgba(0, 0, 0, 0.45);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
@@ -230,7 +231,8 @@
     }
     @keyframes ticker-blink { 0%,100% {opacity:1;} 50% {opacity:0.55;} }
     .ticker-track {
-        display: flex; gap: 4rem;
+        display: flex;
+        gap: 4rem;
         white-space: nowrap;
         animation: ticker-scroll 45s linear infinite;
         font-family: var(--font-mono);
@@ -238,6 +240,8 @@
         color: var(--text-dim);
         letter-spacing: 0.04em;
         overflow: hidden;
+        padding-left: 2rem;
+        will-change: transform;
     }
     .ticker-track b { color: var(--text); font-weight: normal; }
     .ticker-item { flex-shrink: 0; display: inline-flex; align-items: center; }
@@ -443,15 +447,39 @@
     .photo-upload-preview.has-image::before { display: none; }
     .photo-input-hidden { display: none !important; }
 
-    /* --- PERFIL Y MODAL (CORREGIDO) --- */
+    /* --- PERFIL Y MODAL (CORRECCIONES APLICADAS) --- */
     .profile-photo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--amber-soft); }
-    .profile-card { position: relative; }
+    .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        position: relative;
+    }
     .profile-card::after {
         content: '';
         display: block;
         height: 2px;
         margin-top: 1rem;
         background: linear-gradient(to right, rgba(232, 163, 61, 0.4), transparent);
+        position: absolute;
+        bottom: -1rem;
+        left: 0;
+        right: 0;
+    }
+    .profile-card h3 {
+        font-family: var(--font-display) !important;
+        font-size: 1.9rem !important;
+        letter-spacing: 0.08em !important;
+        color: #f4f2ec !important;
+        text-transform: uppercase;
+        margin: 0;
+        line-height: 1;
+    }
+    .profile-card p {
+        margin: 0.2rem 0 0;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--text-dim);
     }
     .profile-modal {
         background: rgba(10, 10, 10, 0.88) !important;
@@ -461,6 +489,13 @@
         border-radius: 10px !important;
         color: var(--text);
         position: relative;
+        max-height: 90vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--amber-soft) transparent;
+    }
+    dialog::backdrop {
+        cursor: none;
     }
     .profile-modal[open] .profile-modal-plate { animation: plate-in 0.4s cubic-bezier(0.34,1.56,0.64,1); }
     @keyframes plate-in { from {opacity:0; transform:scale(0.88);} to {opacity:1; transform:scale(1);} }
@@ -513,14 +548,14 @@
         box-shadow: 0 0 16px rgba(232, 163, 61, 0.4);
     }
     .badge-detail-card {
-        margin-top: 1.5rem;
-        padding: 1rem;
+        margin-top: 1.2rem;
+        padding: 0.9rem 1.1rem;
         background: rgba(232, 163, 61, 0.05);
         border-left: 3px solid var(--amber);
         border-radius: 4px;
         font-family: var(--font-mono);
         font-size: 0.8rem;
-        line-height: 1.6;
+        line-height: 1.5;
         color: var(--text-dim);
     }
     .badge-detail-card strong {
