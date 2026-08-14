@@ -1,5 +1,5 @@
 // =========================================================
-// FEELOW HOOPERS v4.2 — Pulido completo
+// FEELOW HOOPERS v4.3 — Pulido + fotos 800px
 // =========================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -7,7 +7,7 @@ const SUPABASE_URL = 'https://olcakitusgghaiphdtgh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2FraXR1c2dnaGFpcGhkdGdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMzg3MjgsImV4cCI6MjEwMTYxNDcyOH0.Iud3mLFAn6xzrcxuQlNYKG6TtkYLnPvxJ_iIuKyzSck';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const PHOTO_TARGET_PX = 512;
+const PHOTO_TARGET_PX = 800;
 const STREAK_FIRE = 3;
 
 const BADGE_SVG = {
@@ -127,7 +127,7 @@ async function getCompressedPhoto(file) {
                 const c = document.createElement('canvas');
                 c.width = w; c.height = h;
                 c.getContext('2d').drawImage(img, 0, 0, w, h);
-                res(c.toDataURL('image/jpeg', 0.88));
+                res(c.toDataURL('image/jpeg', 0.9));
             };
             img.onerror = () => rej(new Error('Imagen corrupta.'));
             img.src = dataUrl;
