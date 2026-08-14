@@ -550,7 +550,16 @@
 
     .feelow-feedback { font-family: var(--font-mono); }
 
-    @media (max-width: 768px) {
+    /* ===== OVERRIDE DEFINITIVO: fuerza color en TODAS las fotos =====
+   Gana por especificidad a las reglas grayscale de styles.css    */
+body.character-page .ranking-photo,
+body.character-page .profile-photo,
+body.character-page .profile-modal-photo,
+body.character-page .admin-edit-photo-preview .profile-photo,
+body.character-page .spotlight-photo {
+    filter: none !important;
+    -webkit-filter: none !important;
+}@media (max-width: 768px) {
         .spotlight-photo-wrap { width: 80px; height: 80px; }
         .spotlight-info strong { font-size: 1.5rem; }
         .music-player { bottom: 12px; right: 12px; }
@@ -592,7 +601,7 @@
         </button>
     </div>
     <audio id="bgMusic" loop preload="none">
-        <source src="assets/audio/feelow-theme.mp3" type="audio/mpeg">
+        <source src="https://files.catbox.moe/pn2l2l.mp3" type="audio/mpeg">
     </audio>
 
     <main class="feelow-container">

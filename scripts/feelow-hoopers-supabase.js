@@ -628,7 +628,7 @@ async function loadEditUser() {
     forceColorPhotos();
 }
 
-// MÚSICA: preload="none" + carga bajo demanda + desbloqueo al primer clic global
+// MÚSICA v7: carga con fetch+blob (evita error 416 de Range requests)
 function initMusicPlayer() {
     const audio = document.getElementById('bgMusic');
     const toggle = document.getElementById('musicToggle');
@@ -649,42 +649,89 @@ function initMusicPlayer() {
         if (iconMuted) iconMuted.style.display = 'block';
     }
 
-    audio.addEventListener('error', () => {
+    let audioLoaded = false;
+    let audioBlobUrl = null;
+    let loadPromise = null;
+
+    function showError(msg) {
+        const existing = player.querySelector('.music-error');
+        if (existing) existing.remove();
         const err = document.createElement('span');
         err.className = 'music-error';
-        err.textContent = '♪ MP3 no encontrado';
+        err.textContent = msg;
         player.appendChild(err);
-        setTimeout(() => err.remove(), 5000);
-    });
+        setTimeout(() => err.remove(), 6000);
+    }
 
-    // Desbloqueo al primer clic global: carga el audio bajo demanda
-    const unlockAudio = () => {
+    // Carga el MP3 como blob: sin Range requests, sin error 416
+    async function loadAudioBlob() {
+        if (audioLoaded && audioBlobUrl) return audioBlobUrl;
+        if (loadPromise) return loadPromise;
+
+        loadPromise = (async () => {
+            try {
+                const response = await fetch('https://files.catbox.moe/pn2l2l.mp3', {
+                    method: 'GET',
+                    cache: 'force-cache'
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const blob = await response.blob();
+
+                // Detección de puntero Git LFS (archivo de pocos bytes que es solo texto)
+                if (blob.size < 5000) {
+                    throw new Error(`Archivo demasiado pequeño (${blob.size} bytes). ¿Subido con Git LFS?`);
+                }
+                if (!blob.type.includes('audio') && blob.type !== '') {
+                    throw new Error(`Tipo incorrecto: ${blob.type}. ¿Es realmente un MP3?`);
+                }
+
+                audioBlobUrl = URL.createObjectURL(blob);
+                audioLoaded = true;
+                audio.src = audioBlobUrl;
+                return audioBlobUrl;
+            } catch (e) {
+                console.error('Error cargando audio:', e);
+                throw e;
+            }
+        })();
+
+        return loadPromise;
+    }
+
+    async function tryPlay() {
+        try {
+            await loadAudioBlob();
+            await audio.play();
+            if (iconPlay) iconPlay.style.display = 'none';
+            if (iconPause) iconPause.style.display = 'block';
+        } catch (e) {
+            console.warn('No se pudo reproducir:', e);
+            const msg = e.message || '';
+            if (msg.includes('pequeño') || msg.includes('LFS')) {
+                showError('♪ MP3 corrupto o puntero LFS');
+            } else if (msg.includes('404')) {
+                showError('♪ MP3 no encontrado');
+            } else if (msg.includes('AbortError') || msg.includes('NotAllowed')) {
+                // Autoplay bloqueado por el navegador - silencio, normal
+            } else {
+                showError('♪ Error al reproducir');
+            }
+        }
+    }
+
+    // Desbloqueo al primer clic global (Autoplay Policy)
+    const unlockAudio = async () => {
         if (audio.paused && !audio.muted) {
-            try { audio.load(); } catch(e) {}
-            audio.play().then(() => {
-                if (iconPlay) iconPlay.style.display = 'none';
-                if (iconPause) iconPause.style.display = 'block';
-            }).catch(() => {});
+            await tryPlay();
         }
         window.removeEventListener('pointerdown', unlockAudio);
     };
     window.addEventListener('pointerdown', unlockAudio, { once: true });
 
-    toggle.addEventListener('click', (e) => {
+    toggle.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (audio.paused) {
-            try { audio.load(); } catch(e) {}
-            audio.play().then(() => {
-                if (iconPlay) iconPlay.style.display = 'none';
-                if (iconPause) iconPause.style.display = 'block';
-            }).catch(err => {
-                console.error('Error al reproducir audio:', err);
-                const errEl = document.createElement('span');
-                errEl.className = 'music-error';
-                errEl.textContent = '♪ Error';
-                player.appendChild(errEl);
-                setTimeout(() => errEl.remove(), 3000);
-            });
+            await tryPlay();
         } else {
             audio.pause();
             if (iconPlay) iconPlay.style.display = 'block';
@@ -714,6 +761,11 @@ function initMusicPlayer() {
     audio.addEventListener('pause', () => {
         if (iconPlay) iconPlay.style.display = 'block';
         if (iconPause) iconPause.style.display = 'none';
+    });
+
+    // Limpieza al cerrar la página
+    window.addEventListener('beforeunload', () => {
+        if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
     });
 }
 
