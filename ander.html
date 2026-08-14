@@ -16,7 +16,6 @@
             color: #f4eee3;
             overflow-x: hidden;
         }
-
         body { font-family: 'Helvetica Neue', Arial, sans-serif; }
         h1, h2, blockquote, .brand-mark { font-family: 'Playfair Display', serif; }
 
@@ -41,10 +40,6 @@
             display: block;
             border: none;
             outline: none;
-            image-rendering: auto;
-            filter: brightness(0.99) contrast(1.08) saturate(1.09);
-            transform: translateZ(-95px) scale(1.125);
-            transform-origin: center center;
         }
 
         .hero-color-curtain {
@@ -87,6 +82,7 @@
             mix-blend-mode: soft-light;
         }
 
+        /* Polvo animado completo */
         .hero-dust {
             position: absolute;
             inset: -10%;
@@ -95,6 +91,8 @@
             mix-blend-mode: screen;
             opacity: 0.68;
             filter: blur(0.15px) saturate(1.1);
+            will-change: transform;
+            transform: translateZ(0);
             background:
                 radial-gradient(circle at 8% 18%,  rgba(82,255,196,0.88) 0 1.6px, transparent 2.5px),
                 radial-gradient(circle at 21% 62%, rgba(38,232,172,0.86) 0 1.8px, transparent 2.7px),
@@ -121,6 +119,8 @@
             inset: 0;
             pointer-events: none;
             mix-blend-mode: screen;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         .hero-dust::before {
@@ -211,10 +211,9 @@
             filter: drop-shadow(0 0 18px rgba(0, 210, 148, 0.24));
         }
 
-        /* SUBTÍTULO AJUSTADO */
         .world-subtitle {
             margin: 1.05rem auto 0;
-            font-size: clamp(2rem, 4.2vw, 3.4rem); /* +8% aprox */
+            font-size: clamp(2rem, 4.2vw, 3.4rem);
             font-style: italic;
             font-weight: 650;
             letter-spacing: 0.13em;
@@ -243,17 +242,17 @@
 
             text-shadow:
                 0 2px 10px rgba(0,0,0,0.8),
-                0 0 25px rgba(0, 214, 150, 0.35); /* +15% glow aprox */
-            filter: drop-shadow(0 0 9px rgba(80, 240, 185, 0.22)); /* +15% */
+                0 0 25px rgba(0, 214, 150, 0.35);
+            filter: drop-shadow(0 0 9px rgba(80, 240, 185, 0.22));
         }
 
         .world-subtitle::before,
         .world-subtitle::after {
             content: "";
-            width: clamp(78px, 9vw, 152px); /* un poco más largas */
+            width: clamp(78px, 9vw, 152px);
             height: 2px;
             background: linear-gradient(90deg, transparent 0%, #6dffd0 45%, #d8fff1 50%, #6dffd0 55%, transparent 100%);
-            box-shadow: 0 0 16px rgba(0, 220, 154, 0.70); /* +15% glow aprox */
+            box-shadow: 0 0 16px rgba(0, 220, 154, 0.70);
             transform: translateY(2px);
             border-radius: 2px;
         }
@@ -472,6 +471,24 @@
                 width: clamp(40px, 10vw, 60px);
             }
         }
+
+        .world-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 2rem 8%;
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .world-nav-link {
+            text-decoration: none;
+            color: #c2b8ae;
+            transition: color 0.3s;
+        }
+        .world-nav-link:hover { color: #00a875; }
+        .world-nav-link span { display: block; font-size: 0.75rem; text-transform: uppercase; }
+        .world-nav-link strong { font-size: 1.25rem; }
     </style>
 </head>
 <body class="character-page ander-world">
@@ -482,13 +499,16 @@
 
     <main>
         <section class="world-hero" id="hero-scene">
+
             <div id="loader">
                 <div class="loader-text">Encendiendo la pista</div>
                 <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
                 <div id="loading-percent" style="color:#666; font-size:0.8rem; margin-top:0.5rem;">0%</div>
             </div>
 
-            <canvas id="hero-canvas"></canvas>
+            <!-- Secuencia de 121 imágenes (5.04 s a 24fps, extraídas del vídeo original) en canvas -->
+            <canvas id="hero-canvas" aria-hidden="true"></canvas>
+
             <div class="hero-color-curtain"></div>
             <div class="hero-black-veil"></div>
             <div class="hero-readability"></div>
@@ -543,235 +563,184 @@
 
     <script>
         (function() {
-            const frameCount = 27;
-            const images = [];
-            let loadedCount = 0;
-            let isInitialized = false;
-            let currentFrame = -1;
-            let activeFrame = 0;
-            let rafPending = false;
-            let pendingFrame = 0;
-
             const canvas = document.getElementById("hero-canvas");
-            const ctx = canvas.getContext("2d", { alpha: true });
-
+            // alpha:false evita que el navegador componga transparencia en cada frame:
+            // el canvas siempre queda cubierto por completo por la imagen.
+            const ctx = canvas.getContext("2d", { alpha: false });
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            const loader = document.getElementById("loader");
+            const progressFill = document.getElementById("progress-fill");
+            const loadingPercent = document.getElementById("loading-percent");
             const mainTitle = document.getElementById("main-title");
             const heroMainText = document.getElementById("hero-main-text");
             const heroSubtitle = document.getElementById("hero-subtitle");
 
-            const loader = document.getElementById("loader");
-            const progressFill = document.getElementById("progress-fill");
-            const loadingPercent = document.getElementById("loading-percent");
+            // --------------- TUS 121 FRAMES (extraídos del vídeo, 24fps) ---------------
+            const FRAME_COUNT = 121;
+            const FRAME_PATH = (i) => `./images/ander.vid/ander-animacion-${String(i).padStart(3, "0")}.webp`;
+            // --------------------------------------------------------------
 
-            function frameSrc(i) {
-                return `./images/ander.vid/ander-animacion-${String(i).padStart(3, "0")}.jpg`;
-            }
+            const frames = [];
+            let loadedCount = 0;
+            let currentProgress = 0;
+            let renderQueued = false;
+            let lastRenderedIndex = -1;
 
-            function setCanvasSize() {
-                const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                const vw = window.innerWidth;
-                const vh = window.innerHeight;
-
-                canvas.width = Math.floor(vw * dpr);
-                canvas.height = Math.floor(vh * dpr);
-                canvas.style.width = vw + "px";
-                canvas.style.height = vh + "px";
-
-                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = "high";
-            }
-
-            function updateLoader() {
-                const pct = Math.round((loadedCount / frameCount) * 100);
-                progressFill.style.width = `${pct}%`;
-                loadingPercent.textContent = `${pct}%`;
-            }
-
-            function preloadImages() {
-                const promises = [];
-
-                for (let i = 1; i <= frameCount; i++) {
-                    const img = new Image();
-                    img.decoding = "async";
-                    img.src = frameSrc(i);
-                    images.push(img);
-
-                    promises.push(
-                        new Promise((resolve) => {
-                            img.onload = () => {
-                                loadedCount++;
-                                updateLoader();
-                                resolve();
-                            };
-                            img.onerror = () => {
-                                console.warn(`Frame ${i} falló: ${img.src}`);
-                                loadedCount++;
-                                updateLoader();
-                                resolve();
-                            };
-                        })
-                    );
-                }
-
-                return Promise.all(promises);
-            }
-
-            function drawCover(img) {
-                const cw = window.innerWidth;
-                const ch = window.innerHeight;
-                const iw = img.naturalWidth || img.width;
-                const ih = img.naturalHeight || img.height;
-                if (!iw || !ih) return;
-
-                const canvasRatio = cw / ch;
-                const imgRatio = iw / ih;
-
-                let drawW, drawH, offsetX, offsetY;
-
-                if (canvasRatio > imgRatio) {
-                    drawW = cw;
-                    drawH = cw / imgRatio;
-                    offsetX = 0;
-                    offsetY = (ch - drawH) / 2;
-                } else {
-                    drawH = ch;
-                    drawW = ch * imgRatio;
-                    offsetX = (cw - drawW) / 2;
-                    offsetY = 0;
-                }
-
-                const zoom = 1.04;
-                const zW = drawW * zoom;
-                const zH = drawH * zoom;
-                const zX = offsetX - (zW - drawW) / 2;
-                const zY = offsetY - (zH - drawH) / 2;
-
-                ctx.clearRect(0, 0, cw, ch);
-                ctx.drawImage(img, zX, zY, zW, zH);
-
-                ctx.save();
-                ctx.globalAlpha = 0.14;
-                ctx.globalCompositeOperation = "overlay";
-                ctx.drawImage(img, zX - 0.35, zY, zW, zH);
-                ctx.drawImage(img, zX + 0.35, zY, zW, zH);
-                ctx.restore();
-
-                ctx.save();
-                ctx.globalCompositeOperation = "soft-light";
-                ctx.fillStyle = "rgba(0, 168, 117, 0.14)";
-                ctx.fillRect(0, 0, cw, ch);
-                ctx.restore();
-            }
-
-            function renderFrame(index) {
-                const i = Math.max(0, Math.min(frameCount - 1, index));
-                if (i === currentFrame) return;
-
-                const img = images[i];
-                if (!img || !img.complete) return;
-
-                currentFrame = i;
-                activeFrame = i;
-                drawCover(img);
-            }
-
-            function requestRender(index) {
-                pendingFrame = index;
-                if (rafPending) return;
-
-                rafPending = true;
-                requestAnimationFrame(() => {
-                    renderFrame(pendingFrame);
-                    rafPending = false;
-                });
-            }
-
-            async function init() {
-                setCanvasSize();
-                await preloadImages();
-                renderFrame(0);
-
-                gsap.to(loader, {
-                    opacity: 0,
-                    duration: 0.85,
-                    ease: "power2.out",
-                    onComplete: () => {
-                        loader.classList.add('hidden');
-                        loader.style.display = 'none';
+            // --------------- PRECARGA ---------------
+            function preloadFrames() {
+                return new Promise((resolve) => {
+                    const markDone = () => {
+                        loadedCount++;
+                        const pct = Math.round((loadedCount / FRAME_COUNT) * 100);
+                        progressFill.style.width = `${pct}%`;
+                        loadingPercent.textContent = `${pct}%`;
+                        if (loadedCount === FRAME_COUNT) resolve();
+                    };
+                    for (let i = 1; i <= FRAME_COUNT; i++) {
+                        const img = new Image();
+                        img.decoding = "async";
+                        if ("fetchPriority" in img) img.fetchPriority = "high";
+                        img.onload = () => {
+                            // decode() adelanta el trabajo de decodificación a la precarga,
+                            // para que el primer drawImage() de cada frame no tenga que decodificar "al vuelo"
+                            if (img.decode) {
+                                img.decode().catch(() => {}).finally(markDone);
+                            } else {
+                                markDone();
+                            }
+                        };
+                        img.onerror = markDone;
+                        img.src = FRAME_PATH(i);
+                        frames.push(img);
                     }
                 });
+            }
+
+            // --------------- CANVAS RESPONSIVE ---------------
+            function resizeCanvas() {
+                // Tope de 2x: en pantallas con DPR 3 (muchos móviles) no aporta nitidez perceptible
+                // y sí bastante más coste de dibujado por frame.
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                // Al cambiar canvas.width/height el lienzo se limpia solo; forzamos que el
+                // próximo renderFrame() vuelva a pintar aunque el índice de frame no cambie.
+                lastRenderedIndex = -1;
+                canvas.style.width = `${rect.width}px`;
+                canvas.style.height = `${rect.height}px`;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            // Dibuja una imagen simulando object-fit: cover (sin mezclas ni opacidad)
+            function drawCover(img) {
+                if (!img || !img.naturalWidth) return;
+                const cw = canvas.clientWidth;
+                const ch = canvas.clientHeight;
+                const ir = img.naturalWidth / img.naturalHeight;
+                const cr = cw / ch;
+                let dw, dh, dx, dy;
+                if (ir > cr) {
+                    dh = ch;
+                    dw = ch * ir;
+                    dx = (cw - dw) / 2;
+                    dy = 0;
+                } else {
+                    dw = cw;
+                    dh = cw / ir;
+                    dx = 0;
+                    dy = (ch - dh) / 2;
+                }
+                ctx.drawImage(img, dx, dy, dw, dh);
+            }
+
+            // Con 121 frames (24fps reales) no hace falta interpolar entre imágenes:
+            // simplemente se elige el frame más cercano al progreso del scroll.
+            // clearRect() no hace falta: drawCover() siempre cubre el lienzo entero.
+            function renderFrame(progress) {
+                const index = Math.min(FRAME_COUNT - 1, Math.max(0, Math.round(progress * (FRAME_COUNT - 1))));
+                if (index === lastRenderedIndex) return; // el scroll se movió pero seguimos en el mismo frame
+                lastRenderedIndex = index;
+                drawCover(frames[index]);
+            }
+
+            // Agrupa las actualizaciones de scroll en un solo dibujo por frame de animación,
+            // en vez de redibujar en cada micro-evento de scroll
+            function requestRender() {
+                if (renderQueued) return;
+                renderQueued = true;
+                requestAnimationFrame(() => {
+                    renderFrame(currentProgress);
+                    renderQueued = false;
+                });
+            }
+
+            // --------------- SCROLLTRIGGER ---------------
+            function setupScrollTrigger() {
+                if (window._scrollTriggerInitialized) return;
+                window._scrollTriggerInitialized = true;
 
                 gsap.registerPlugin(ScrollTrigger);
                 ScrollTrigger.getAll().forEach(t => t.kill());
 
-                const playhead = { frame: 0 };
+                resizeCanvas();
+                renderFrame(0);
 
-                const tl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: "#hero-scene",
-                        start: "top top",
-                        end: "+=360%",
-                        pin: true,
-                        scrub: 1,
-                        anticipatePin: 1,
-                        invalidateOnRefresh: true
+                const textTl = gsap.timeline({ paused: true });
+                textTl.to(heroMainText, { opacity: 0, y: -58, scale: 0.9, duration: 0.42, ease: "power2.inOut" }, 0.12)
+                       .to(heroSubtitle, { opacity: 1, y: 0, duration: 0.44, ease: "power2.out" }, 0.2)
+                       .to(mainTitle, { y: -70, scale: 0.98, duration: 0.72, ease: "none" }, 0.34)
+                       .to(mainTitle, { opacity: 0, duration: 0.40, ease: "power1.in" }, 0.80);
+
+                ScrollTrigger.create({
+                    trigger: "#hero-scene",
+                    start: "top top",
+                    // Recorrido corto: ~1 pantalla y poco para ver los 5s completos, en vez de 4 pantallas
+                    end: "+=130%",
+                    pin: true,
+                    scrub: 0.6, // más inercia: absorbe los tirones/parones del scroll manual
+                    animation: textTl,
+                    invalidateOnRefresh: true,
+                    onUpdate: (self) => {
+                        currentProgress = self.progress;
+                        requestRender();
                     }
                 });
 
-                tl.to(heroMainText, {
-                    opacity: 0,
-                    y: -58,
-                    scale: 0.9,
-                    duration: 0.42,
-                    ease: "power2.inOut"
-                }, 0.12);
-
-                tl.to(heroSubtitle, {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.44,
-                    ease: "power2.out"
-                }, 0.2);
-
-                tl.to(mainTitle, {
-                    y: -70,
-                    scale: 0.98,
-                    duration: 0.72,
-                    ease: "none"
-                }, 0.34);
-
-                tl.to(mainTitle, {
-                    opacity: 0,
-                    duration: 0.40,
-                    ease: "power1.in"
-                }, 0.80);
-
-                tl.to(playhead, {
-                    frame: frameCount - 1,
-                    duration: 1,
-                    ease: "none",
-                    onUpdate: () => requestRender(Math.round(playhead.frame))
-                }, 0);
-
-                isInitialized = true;
+                window.scrollTo(0, 0);
+                ScrollTrigger.refresh();
             }
 
-            let resizeTick = null;
-            window.addEventListener('resize', () => {
-                if (!isInitialized) return;
-
-                if (resizeTick) cancelAnimationFrame(resizeTick);
-                resizeTick = requestAnimationFrame(() => {
-                    setCanvasSize();
-                    renderFrame(activeFrame);
-                    ScrollTrigger.refresh();
-                });
+            window.addEventListener("resize", () => {
+                if (window._scrollTriggerInitialized) {
+                    resizeCanvas();
+                    renderFrame(currentProgress);
+                }
             });
 
-            init();
+            // --------------- ARRANQUE ---------------
+            const loaderTimeout = setTimeout(() => {
+                console.warn("⚠️ Timeout precargando imágenes – iniciando igualmente.");
+                loader.classList.add("hidden");
+                loader.style.display = "none";
+                setupScrollTrigger();
+            }, 12000);
+
+            preloadFrames().then(() => {
+                clearTimeout(loaderTimeout);
+                gsap.to(loader, {
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        loader.classList.add("hidden");
+                        loader.style.display = "none";
+                    }
+                });
+                setupScrollTrigger();
+            });
         })();
     </script>
 </body>
 </html>
-
