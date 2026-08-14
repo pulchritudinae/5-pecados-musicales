@@ -1,5 +1,5 @@
 // =========================================================
-// FEELOW HOOPERS v3 — Supabase + dirección de arte completa
+// FEELOW HOOPERS v4 — Correcciones finales
 // =========================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -98,9 +98,12 @@ function animateNumber(el, from, to, duration = 600) {
     };
     requestAnimationFrame(tick);
 }
+
+// =========================================================
 // FOTOS EN COLOR: fuerza estilo inline (gana a cualquier CSS)
+// =========================================================
 function forceColorPhotos() {
-    document.querySelectorAll('.ranking-photo, .profile-photo, .profile-modal-photo, .spotlight-photo, .admin-edit-photo-preview img, .photo-upload-preview img').forEach(img => {
+    document.querySelectorAll('img').forEach(img => {
         img.style.filter = 'none';
         img.style.webkitFilter = 'none';
     });
@@ -342,7 +345,7 @@ async function renderProfile() {
     const pos = (all || []).findIndex(u => u.id === user.id) + 1;
     const tier = tierByPosition(pos || 999);
     const badgesHtml = (user.badges && user.badges.length)
-        ? user.badges.map(b => { const m = getBadgeMeta(b); return `<button type="button" class="profile-badge-chip" data-badge="${escapeHtml(b)}"><span>${getBadgeSvg(b)}</span><span>${escapeHtml(m.title || b)}</span></button>`; }).join('')
+        ? user.badges.map(b => { const m = getBadgeMeta(b); return `<button type="button" class="profile-badge-chip" data-badge="${escapeHtml(b)}" title="${escapeHtml(m.title || b)}">${getBadgeSvg(b)}</button>`; }).join('')
         : '<span class="is-empty">Sin insignias</span>';
     pv.innerHTML = `
         <div class="profile-card">${getPhotoElement(user, 'profile-photo')}<div>
@@ -387,7 +390,7 @@ async function renderTournaments() {
 }
 
 // =========================================================
-// MODAL PLACA
+// MODAL PLACA (insignias solo icono, texto en bloque inferior)
 // =========================================================
 async function openProfileModal(userId) {
     const { data: user } = await supabase.from('hoopers').select('*').eq('id', userId).single();
@@ -410,7 +413,7 @@ async function openProfileModal(userId) {
     const bw = document.getElementById('profile-modal-badges');
     const detail = document.getElementById('profile-modal-badge-detail');
     if (user.badges && user.badges.length) {
-        bw.innerHTML = user.badges.map(b => { const m = getBadgeMeta(b); return `<button type="button" class="street-badge" data-badge="${escapeHtml(b)}"><span>${getBadgeSvg(b)}</span><span>${escapeHtml(m.title || b)}</span></button>`; }).join('');
+        bw.innerHTML = user.badges.map(b => { const m = getBadgeMeta(b); return `<button type="button" class="street-badge" data-badge="${escapeHtml(b)}" title="${escapeHtml(m.title || b)}">${getBadgeSvg(b)}</button>`; }).join('');
         if (detail) detail.innerHTML = '<span class="badge-detail-hint">Pulsa una insignia para leer su historia.</span>';
         bw.querySelectorAll('.street-badge').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -630,33 +633,72 @@ async function loadEditUser() {
 }
 
 // =========================================================
-// MÚSICA
+// MÚSICA (con manejo de errores y feedback visual)
 // =========================================================
 function initMusicPlayer() {
     const audio = document.getElementById('bgMusic');
     const toggle = document.getElementById('musicToggle');
     const mute = document.getElementById('musicMute');
     const progress = document.getElementById('musicProgress');
-    if (!audio || !toggle || !mute) return;
+    const player = document.getElementById('musicPlayer');
+    if (!audio || !toggle || !mute || !player) return;
     const iconPlay = toggle.querySelector('.music-icon-play');
     const iconPause = toggle.querySelector('.music-icon-pause');
     const iconSound = mute.querySelector('.music-icon-sound');
     const iconMuted = mute.querySelector('.music-icon-muted');
+    
     audio.volume = 0.3;
     audio.muted = localStorage.getItem('feelow_music_muted') === 'true';
     if (audio.muted) { iconSound.style.display = 'none'; iconMuted.style.display = 'block'; }
-    toggle.addEventListener('click', () => {
-        if (audio.paused) { audio.play().catch(() => {}); iconPlay.style.display = 'none'; iconPause.style.display = 'block'; }
-        else { audio.pause(); iconPlay.style.display = 'block'; iconPause.style.display = 'none'; }
+    
+    // Feedback visual si el MP3 no carga
+    audio.addEventListener('error', () => {
+        const err = document.createElement('span');
+        err.className = 'music-error';
+        err.textContent = '♪ MP3 no encontrado';
+        player.appendChild(err);
+        setTimeout(() => err.remove(), 5000);
     });
+    
+    toggle.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play().then(() => {
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            }).catch(err => {
+                console.log('No se pudo reproducir:', err);
+                const errEl = document.createElement('span');
+                errEl.className = 'music-error';
+                errEl.textContent = '♪ Error de reproducción';
+                player.appendChild(errEl);
+                setTimeout(() => errEl.remove(), 3000);
+            });
+        } else {
+            audio.pause();
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+        }
+    });
+    
     mute.addEventListener('click', () => {
         audio.muted = !audio.muted;
         localStorage.setItem('feelow_music_muted', audio.muted);
         iconSound.style.display = audio.muted ? 'none' : 'block';
         iconMuted.style.display = audio.muted ? 'block' : 'none';
     });
+    
     audio.addEventListener('timeupdate', () => {
         if (audio.duration) progress.style.width = (audio.currentTime / audio.duration * 100) + '%';
+    });
+    
+    audio.addEventListener('play', () => {
+        iconPlay.style.display = 'none';
+        iconPause.style.display = 'block';
+    });
+    
+    audio.addEventListener('pause', () => {
+        iconPlay.style.display = 'block';
+        iconPause.style.display = 'none';
     });
 }
 
