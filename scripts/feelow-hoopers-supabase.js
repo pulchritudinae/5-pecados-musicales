@@ -134,14 +134,16 @@ async function getCurrentUser() {
 
 async function uploadAvatar(username, dataUrl) {
     const fileName = `${username}-${Date.now()}.jpg`;
-    const { data, error } = await supabase.storage.from('avatars').upload(fileName, dataUrlToBlob(dataUrl), { contentType: 'image/jpeg', upsert: false });
-    if (error) throw new Error('No se pudo subir la foto.');
+    const { data, error } = await supabase.storage.from('avatars').upload(fileName, dataUrlToBlob(dataUrl), { contentType: 'image/jpeg', upsert: true });
+    if (error) throw new Error('No se pudo subir la foto: ' + error.message);
     const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(data.path);
     return urlData.publicUrl;
 }
 
+// ✅ CORREGIDO: primero se crea la cuenta, luego se sube la foto (ya con sesión activa)
 async function handleRegister(event) {
     event.preventDefault();
+
     const username = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value;
     const email = document.getElementById('register-email').value.trim();
@@ -152,20 +154,39 @@ async function handleRegister(event) {
     if (password.length < 4) return showFeedback('Contraseña mínimo 4 caracteres.', 'error');
     if (!email || !email.includes('@')) return showFeedback('Email inválido.', 'error');
 
-    let avatarUrl = null;
-    if (photoFile) {
+    // 1. Primero se crea la cuenta (con username y city en metadata)
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                username: username,
+                city: city
+            }
+        }
+    });
+
+    if (error) return showFeedback('Error al crear cuenta: ' + error.message, 'error');
+    if (!data.user) return showFeedback('No se pudo crear la cuenta.', 'error');
+
+    // 2. Con la sesión ya activa, subimos la foto (si la hay)
+    if (photoFile && data.session) {
         try {
             const compressed = await getCompressedPhoto(photoFile);
-            avatarUrl = await uploadAvatar(username, compressed);
-        } catch (err) { return showFeedback(err.message, 'error'); }
+            const avatarUrl = await uploadAvatar(username, compressed);
+            await supabase
+                .from('hoopers')
+                .update({ avatar_url: avatarUrl })
+                .eq('id', data.user.id);
+        } catch (err) {
+            showFeedback('Cuenta creada, pero la foto no se subió: ' + (err.message || 'error'), 'error');
+            event.target.reset();
+            updateAllViews();
+            return;
+        }
     }
 
-    const { error } = await supabase.auth.signUp({
-        email, password,
-        options: { data: { username, avatar_url: avatarUrl, city } }
-    });
-    if (error) return showFeedback('Error: ' + error.message, 'error');
-    showFeedback(`Bienvenido, ${username}.`, 'ok');
+    showFeedback(`Bienvenido, ${username}. Tu cuenta está lista.`, 'ok');
     event.target.reset();
     updateAllViews();
 }
@@ -414,6 +435,25 @@ async function loadTournamentSelects() {
     if (closeSel) closeSel.innerHTML = opts;
 }
 
+// ✅ NUEVO: Carga los participantes del torneo seleccionado para el desplegable de campeón
+async function loadTournamentParticipants() {
+    const tournamentId = document.getElementById('tournament-close-select').value;
+    const select = document.getElementById('tournament-close-participant');
+    if (!select) return;
+    if (!tournamentId) {
+        select.innerHTML = '<option disabled value="">— Elige torneo primero —</option>';
+        return;
+    }
+    const { data } = await supabase
+        .from('tournament_participants')
+        .select('hooper:hoopers(id, username)')
+        .eq('tournament_id', tournamentId);
+    const opts = data && data.length
+        ? data.map(p => `<option value="${p.hooper.id}">${escapeHtml(p.hooper.username)}</option>`).join('')
+        : '<option disabled value="">— Sin participantes —</option>';
+    select.innerHTML = opts;
+}
+
 async function handleCreateTournament(event) {
     event.preventDefault();
     const name = document.getElementById('tournament-name').value.trim();
@@ -506,7 +546,11 @@ function init() {
     document.getElementById('admin-badge-revoke')?.addEventListener('click', () => handleBadge('revoke'));
     document.getElementById('admin-edit-user-select')?.addEventListener('change', loadEditUser);
     document.getElementById('admin-badge-select')?.addEventListener('change', updateBadgePreview);
-    document.getElementById('tournament-close-select')?.addEventListener('change', loadTournamentSelects);
+    // ✅ CORREGIDO: ahora también carga los participantes del torneo al cambiarlo
+    document.getElementById('tournament-close-select')?.addEventListener('change', () => {
+        loadTournamentSelects();
+        loadTournamentParticipants();
+    });
     document.getElementById('tournament-create-form')?.addEventListener('submit', handleCreateTournament);
     document.getElementById('tournament-add-btn')?.addEventListener('click', handleAddParticipant);
     document.getElementById('tournament-close-form')?.addEventListener('submit', handleCloseTournament);
