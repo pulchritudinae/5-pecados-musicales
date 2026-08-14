@@ -5,9 +5,471 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Feelow Hoopers | 5PM</title>
     <meta name="description" content="Registro permanente de los jugadores que han dejado huella en los retos y torneos asociados a Leo Feelow." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="smoke.css" />
-    <link rel="stylesheet" href="feelow-hoopers-v2.css" />
+
+    <style>
+    /* =========================================================
+       FEELOW HOOPERS v3 — Dirección de arte "Asfalto & Ámbar"
+       ========================================================= */
+    :root {
+        --amber: #e8a33d;
+        --amber-hi: #f2c069;
+        --amber-soft: rgba(232, 163, 61, 0.35);
+        --amber-faint: rgba(232, 163, 61, 0.12);
+        --grey-leo: #a7a7a2;
+        --ink: #0c0c0c;
+        --panel: rgba(12, 12, 12, 0.55);
+        --line: rgba(255, 255, 255, 0.09);
+        --text: #e8e6df;
+        --text-dim: #b9b7b0;
+        --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+        --font-mono: 'Share Tech Mono', monospace;
+    }
+
+    /* --- FOTOS EN COLOR (triple seguro) --- */
+    img { filter: none !important; -webkit-filter: none !important; }
+
+    /* --- CURSOR PERSONALIZADO (gris Leo) --- */
+    @media (hover: hover) and (pointer: fine) {
+        body, a, button, input, select, label, textarea { cursor: none !important; }
+    }
+    .fh-cursor-core, .fh-cursor-ring {
+        position: fixed; top: 0; left: 0;
+        pointer-events: none; z-index: 9999;
+        border-radius: 50%;
+    }
+    .fh-cursor-core {
+        width: 8px; height: 8px; margin: -4px 0 0 -4px;
+        background: var(--grey-leo);
+        box-shadow: 0 0 10px rgba(167, 167, 162, 0.8);
+    }
+    .fh-cursor-ring {
+        width: 36px; height: 36px; margin: -18px 0 0 -18px;
+        border: 1px solid rgba(167, 167, 162, 0.45);
+        transition: transform 0.18s ease, border-color 0.2s ease;
+    }
+    .fh-cursor-ring.is-active {
+        transform: scale(1.4);
+        border-color: var(--amber);
+    }
+    @media (max-width: 768px), (pointer: coarse) {
+        .fh-cursor-core, .fh-cursor-ring { display: none; }
+    }
+
+    /* --- TIPOGRAFÍA GLOBAL --- */
+    body.character-page { color: var(--text); }
+
+    .leo-title {
+        font-family: var(--font-display) !important;
+        font-size: clamp(3.2rem, 9vw, 7rem) !important;
+        letter-spacing: 0.14em !important;
+        line-height: 0.95 !important;
+        color: #f4f2ec !important;
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        -webkit-text-fill-color: currentColor !important;
+        text-shadow: 0 3px 0 rgba(0,0,0,0.55), 0 0 40px rgba(232,163,61,0.22) !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+    .hero-subtitle {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-top: 0.6rem;
+    }
+
+    /* --- PANELES TRANSLÚCIDOS (dejan respirar la foto) --- */
+    .feelow-panel {
+        background: var(--panel) !important;
+        backdrop-filter: blur(14px) saturate(1.15);
+        -webkit-backdrop-filter: blur(14px) saturate(1.15);
+        border: 1px solid var(--line) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45) !important;
+        overflow: hidden;
+    }
+    .panel-header-minimal {
+        font-family: var(--font-display) !important;
+        font-size: 1.35rem !important;
+        letter-spacing: 0.2em !important;
+        color: var(--amber) !important;
+        border-bottom: 1px solid var(--line) !important;
+        padding: 0.9rem 1.2rem !important;
+        background: linear-gradient(180deg, rgba(232,163,61,0.07), transparent) !important;
+        text-transform: uppercase;
+    }
+
+    /* --- HERO sin bloque negro --- */
+    .feelow-hero {
+        background: transparent !important;
+        border: none !important;
+        padding: 3rem 1rem 1.5rem !important;
+    }
+
+    /* Spotlight del #1 */
+    .hero-spotlight {
+        margin: 2.2rem auto 0;
+        max-width: 420px;
+        padding: 1.4rem 1.6rem;
+        background: rgba(12, 12, 12, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--amber-soft);
+        border-radius: 8px;
+        box-shadow: 0 0 45px rgba(232, 163, 61, 0.12);
+        animation: spotlight-pulse 5s ease-in-out infinite;
+    }
+    @keyframes spotlight-pulse {
+        0%, 100% { box-shadow: 0 0 30px rgba(232,163,61,0.10); }
+        50% { box-shadow: 0 0 55px rgba(232,163,61,0.22); }
+    }
+    .spotlight-label {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.4em;
+        color: var(--amber);
+        text-transform: uppercase;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    .spotlight-content { display: flex; align-items: center; gap: 1.3rem; justify-content: center; }
+    .spotlight-photo-wrap {
+        width: 104px; height: 104px;
+        border-radius: 50%;
+        padding: 3px;
+        background: conic-gradient(from 0deg, var(--amber), var(--grey-leo), var(--amber));
+        flex-shrink: 0;
+        box-shadow: 0 0 28px rgba(232, 163, 61, 0.35);
+        animation: ring-spin 8s linear infinite;
+    }
+    @keyframes ring-spin { to { transform: rotate(360deg); } }
+    .spotlight-photo {
+        width: 100%; height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--ink);
+        animation: ring-spin 8s linear infinite reverse;
+    }
+    .spotlight-info { display: flex; flex-direction: column; gap: 4px; }
+    .spotlight-info strong {
+        font-family: var(--font-display);
+        font-size: 2rem;
+        letter-spacing: 0.08em;
+        color: #f4f2ec;
+        text-transform: uppercase;
+        line-height: 1;
+    }
+    .spotlight-info span {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--amber);
+    }
+
+    /* --- TICKER sin emojis (glifos SVG) --- */
+    .news-ticker {
+        display: flex; align-items: center;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 9px 0;
+        overflow: hidden;
+        margin: 1.5rem 0 2rem;
+    }
+    .ticker-label {
+        background: var(--amber);
+        color: #0c0c0c;
+        padding: 4px 14px;
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: bold;
+        letter-spacing: 0.2em;
+        margin-right: 18px;
+        flex-shrink: 0;
+        animation: ticker-blink 2.4s ease-in-out infinite;
+    }
+    @keyframes ticker-blink { 0%,100% {opacity:1;} 50% {opacity:0.55;} }
+    .ticker-track {
+        display: flex; gap: 4rem;
+        white-space: nowrap;
+        animation: ticker-scroll 45s linear infinite;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        color: var(--text-dim);
+        letter-spacing: 0.04em;
+    }
+    .ticker-track b { color: var(--text); font-weight: normal; }
+    .ticker-item { flex-shrink: 0; display: inline-flex; align-items: center; }
+    @keyframes ticker-scroll { 0% {transform:translateX(0);} 100% {transform:translateX(-50%);} }
+    .tick-glyph {
+        width: 14px; height: 14px;
+        fill: none; stroke: var(--amber);
+        stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+        margin-right: 8px; flex-shrink: 0;
+    }
+
+    /* --- TABLA RANKING con energía competitiva --- */
+    .brutalist-table th {
+        font-family: var(--font-mono) !important;
+        font-size: 0.66rem !important;
+        letter-spacing: 0.18em !important;
+        color: var(--text-dim) !important;
+        text-transform: uppercase;
+        background: rgba(0,0,0,0.35) !important;
+        border-bottom: 1px solid var(--line) !important;
+    }
+    .brutalist-table td { color: var(--text); font-family: var(--font-mono); font-size: 0.9rem; }
+    .rank-position { font-family: var(--font-display); font-size: 1.25rem; letter-spacing: 0.05em; color: var(--text-dim); }
+    .ranking-row:nth-child(1) .rank-position { color: var(--amber-hi); text-shadow: 0 0 14px rgba(232,163,61,0.5); }
+    .ranking-row:nth-child(2) .rank-position { color: #d8d2c4; }
+    .ranking-row:nth-child(3) .rank-position { color: #b0793f; }
+    .ranking-photo {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--line);
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.5);
+    }
+    .rank-name { font-family: var(--font-display); font-size: 1.05rem; letter-spacing: 0.08em; color: var(--text); text-transform: uppercase; margin-left: 10px; }
+    .score-cell { color: var(--amber) !important; font-weight: bold; }
+    .ranking-row {
+        animation: row-enter 0.45s ease-out backwards;
+        transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .ranking-row:hover {
+        transform: translateX(5px);
+        background: var(--amber-faint) !important;
+        box-shadow: inset 3px 0 0 var(--amber);
+    }
+    .ranking-row:nth-child(1){animation-delay:.05s}.ranking-row:nth-child(2){animation-delay:.1s}
+    .ranking-row:nth-child(3){animation-delay:.15s}.ranking-row:nth-child(4){animation-delay:.2s}
+    .ranking-row:nth-child(5){animation-delay:.25s}.ranking-row:nth-child(6){animation-delay:.3s}
+    .ranking-row:nth-child(7){animation-delay:.35s}.ranking-row:nth-child(8){animation-delay:.4s}
+    @keyframes row-enter { from {opacity:0; transform:translateY(12px);} to {opacity:1; transform:translateY(0);} }
+    .ranking-hint { color: var(--text-dim) !important; font-family: var(--font-mono); font-size: 0.75rem; }
+    .score-cell.glowing { animation: rep-pulse 1.6s ease-out; text-shadow: 0 0 16px rgba(232,163,61,0.9) !important; }
+    @keyframes rep-pulse { 0%{transform:scale(1);} 30%{transform:scale(1.2);} 100%{transform:scale(1);} }
+
+    /* --- TORNEOS: empty state con gráfica --- */
+    .tournament-empty {
+        padding: 3.5rem 1rem !important;
+        text-align: center;
+        color: var(--text-dim) !important;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g fill="none" stroke="%23ffffff" stroke-opacity="0.06" stroke-width="2"><circle cx="50" cy="50" r="38"/><path d="M12 50h76M50 12v76M22 22q28 22 56 0M22 78q28-22 56 0"/></g></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 150px;
+    }
+    .tournament-card {
+        background: rgba(0,0,0,0.35) !important;
+        border: 1px solid var(--line) !important;
+        border-radius: 6px !important;
+        transition: transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.3s, border-color 0.3s;
+    }
+    .tournament-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--amber-soft) !important;
+        box-shadow: 0 14px 35px rgba(232,163,61,0.15);
+    }
+    .tournament-card h3 { font-family: var(--font-display); letter-spacing: 0.1em; font-size: 1.3rem; color: var(--text); text-transform: uppercase; }
+    .tournament-status { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; }
+    .tournament-status.open { color: #7fc79a; animation: status-pulse 2s infinite; }
+    .tournament-status.closed { color: var(--text-dim); }
+    @keyframes status-pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+    /* --- INSIGNIAS: línea monocroma ámbar, estilo unificado --- */
+    .street-badge, .profile-badge-chip {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 7px 12px;
+        background: rgba(0, 0, 0, 0.5) !important;
+        border: 1px solid rgba(232, 163, 61, 0.28) !important;
+        border-radius: 3px !important;
+        font-family: var(--font-mono) !important;
+        font-size: 0.68rem !important;
+        letter-spacing: 0.14em !important;
+        text-transform: uppercase;
+        color: var(--text) !important;
+        transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        box-shadow: 2px 2px 0 rgba(0,0,0,0.45);
+    }
+    .street-badge:hover, .profile-badge-chip:hover {
+        transform: translateY(-2px);
+        border-color: var(--amber) !important;
+        box-shadow: 0 4px 18px rgba(232,163,61,0.25);
+    }
+    .street-badge svg, .profile-badge-chip svg, .admin-badge-preview-icon svg {
+        width: 20px; height: 20px;
+        fill: none; stroke: var(--amber);
+        stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+        flex-shrink: 0;
+    }
+    .admin-badge-preview-icon {
+        width: 64px; height: 64px;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--amber-faint);
+        border: 1px solid var(--amber-soft);
+        border-radius: 4px;
+        flex-shrink: 0;
+        padding: 12px;
+    }
+    .admin-badge-preview-icon svg { width: 100%; height: 100%; }
+
+    /* --- FORMULARIOS Y BOTONES --- */
+    .feelow-form input, .feelow-form select, .admin-input {
+        background: rgba(0, 0, 0, 0.45) !important;
+        border: 1px solid var(--line) !important;
+        color: var(--text) !important;
+        border-radius: 4px !important;
+        padding: 0.65rem 0.85rem !important;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+    }
+    .feelow-form input:focus, .feelow-form select:focus {
+        border-color: var(--amber-soft) !important;
+        outline: none;
+        box-shadow: 0 0 0 3px var(--amber-faint);
+    }
+    .feelow-form input::placeholder { color: #8a8880; }
+    .brutalist-btn {
+        font-family: var(--font-display) !important;
+        letter-spacing: 0.16em !important;
+        font-size: 1.05rem !important;
+        background: linear-gradient(180deg, rgba(232,163,61,0.18), rgba(232,163,61,0.05)) !important;
+        border: 1px solid var(--amber-soft) !important;
+        color: var(--amber) !important;
+        border-radius: 4px !important;
+        padding: 0.55rem 1.4rem !important;
+        transition: all 0.2s ease !important;
+        text-transform: uppercase;
+    }
+    .brutalist-btn:hover {
+        background: var(--amber) !important;
+        color: #0c0c0c !important;
+        box-shadow: 0 0 26px rgba(232,163,61,0.4) !important;
+    }
+    .brutalist-btn.danger { border-color: rgba(199,15,24,0.5) !important; color: #e05561 !important; background: rgba(199,15,24,0.08) !important; }
+    .brutalist-btn.danger:hover { background: #c70f18 !important; color: #fff !important; }
+
+    /* --- HINTS Y TOOLTIPS (contraste corregido) --- */
+    .field-hint { display: block; font-family: var(--font-mono); font-size: 0.7rem; color: #a9a7a0; margin: -4px 0 10px; }
+    .info-tooltip {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--amber-faint);
+        color: var(--amber);
+        font-size: 0.68rem; font-weight: bold;
+        margin-left: 8px; position: relative; vertical-align: middle;
+        cursor: help;
+    }
+    .info-tooltip::after {
+        content: attr(data-tooltip);
+        position: absolute; bottom: 145%; left: 50%; transform: translateX(-50%);
+        background: rgba(10,10,10,0.95);
+        color: var(--text);
+        padding: 10px 14px; border-radius: 4px;
+        border: 1px solid var(--amber-soft);
+        font-family: var(--font-mono);
+        font-size: 0.72rem; font-weight: normal; line-height: 1.5;
+        width: 250px; max-width: 78vw; text-align: left;
+        opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        z-index: 200;
+    }
+    .info-tooltip:hover::after { opacity: 1; }
+
+    /* --- PREVIEW DE FOTO --- */
+    .photo-upload-label {
+        display: flex !important; align-items: center; gap: 12px;
+        padding: 10px 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px dashed rgba(232,163,61,0.35) !important;
+        border-radius: 4px;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .photo-upload-label:hover { background: var(--amber-faint); }
+    .photo-upload-text { flex: 1; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); }
+    .photo-upload-preview {
+        width: 38px; height: 38px; border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--line);
+        overflow: hidden; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .photo-upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-upload-preview::before { content: '+'; color: var(--amber); font-size: 1.1rem; }
+    .photo-upload-preview.has-image::before { display: none; }
+    .photo-input-hidden { display: none !important; }
+
+    /* --- PERFIL Y MODAL --- */
+    .profile-photo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--amber-soft); }
+    .profile-modal {
+        background: rgba(10, 10, 10, 0.88) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--amber-soft) !important;
+        border-radius: 10px !important;
+        color: var(--text);
+    }
+    .profile-modal[open] .profile-modal-plate { animation: plate-in 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes plate-in { from {opacity:0; transform:scale(0.88);} to {opacity:1; transform:scale(1);} }
+    .profile-modal-photo { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 3px solid var(--amber); box-shadow: 0 0 30px rgba(232,163,61,0.3); }
+    .profile-modal-name { font-family: var(--font-display) !important; font-size: 2.4rem !important; letter-spacing: 0.1em; color: #f4f2ec !important; text-transform: uppercase; }
+    .profile-modal-stats div span { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.15em; color: var(--text-dim); text-transform: uppercase; }
+    .profile-modal-stats div strong { font-family: var(--font-display); font-size: 1.5rem; color: var(--amber); }
+    .profile-modal-tier { font-family: var(--font-mono); letter-spacing: 0.2em; text-transform: uppercase; }
+
+    /* --- ADMIN --- */
+    .admin-header { color: var(--amber-hi) !important; }
+    .admin-section-title { font-family: var(--font-mono); letter-spacing: 0.25em; text-transform: uppercase; color: var(--text-dim); font-size: 0.75rem; }
+    .admin-box { background: rgba(0,0,0,0.3) !important; border: 1px solid var(--line) !important; border-radius: 6px !important; }
+    .admin-box h3 { font-family: var(--font-display); letter-spacing: 0.12em; font-size: 1.15rem; color: var(--text); text-transform: uppercase; }
+
+    /* --- SEPARADOR --- */
+    .section-divider { display: flex; align-items: center; gap: 10px; margin: 3rem 1rem; opacity: 0.5; }
+    .spray-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--amber) 30%, var(--amber) 70%, transparent); }
+    .spray-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+
+    /* --- PARTÍCULAS --- */
+    .dust-particle { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: radial-gradient(circle, var(--amber) 0%, transparent 70%); pointer-events: none; animation: dust-float 26s infinite linear; }
+    .dust-1{top:20%;left:10%}.dust-2{top:60%;left:30%;animation-delay:-6s}.dust-3{top:40%;left:70%;animation-delay:-12s}
+    .dust-4{top:80%;left:85%;animation-delay:-17s}.dust-5{top:15%;left:50%;animation-delay:-21s}.dust-6{top:75%;left:20%;animation-delay:-24s}
+    @keyframes dust-float { 0%{transform:translate(0,0);opacity:0;} 10%{opacity:.5;} 90%{opacity:.5;} 100%{transform:translate(90px,-220px);opacity:0;} }
+
+    /* --- REPRODUCTOR --- */
+    .music-player {
+        position: fixed; bottom: 20px; right: 20px; z-index: 998;
+        display: flex; align-items: center; gap: 10px;
+        background: rgba(10,10,10,0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--amber-soft);
+        padding: 8px 14px; border-radius: 30px;
+    }
+    .music-toggle, .music-mute { background: none; border: none; color: var(--amber); display: flex; align-items: center; padding: 4px; transition: transform 0.2s; }
+    .music-toggle:hover, .music-mute:hover { transform: scale(1.15); }
+    .music-progress { width: 80px; height: 3px; background: rgba(255,255,255,0.12); border-radius: 2px; overflow: hidden; }
+    .music-progress-bar { height: 100%; background: linear-gradient(90deg, var(--amber), var(--amber-hi)); width: 0%; }
+
+    /* --- FEEDBACK --- */
+    .feelow-feedback { font-family: var(--font-mono); }
+
+    @media (max-width: 768px) {
+        .spotlight-photo-wrap { width: 80px; height: 80px; }
+        .spotlight-info strong { font-size: 1.5rem; }
+        .music-player { bottom: 12px; right: 12px; }
+        .music-progress { width: 50px; }
+    }
+    </style>
 </head>
 <body class="character-page leo-world">
     <div class="street-basket-bg" aria-hidden="true">
@@ -24,22 +486,22 @@
         <span class="dust-particle dust-6"></span>
     </div>
 
+    <div class="fh-cursor-core" aria-hidden="true"></div>
+    <div class="fh-cursor-ring" aria-hidden="true"></div>
+
     <header class="world-header">
         <a class="brand-mark" href="index.html">5PM</a>
     </header>
 
-    <!-- Reproductor de música fijo -->
     <div class="music-player" id="musicPlayer" aria-label="Reproductor de música">
         <button type="button" class="music-toggle" id="musicToggle" aria-label="Play/Pause">
-            <svg class="music-icon-play" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
-            <svg class="music-icon-pause" viewBox="0 0 24 24" width="18" height="18" style="display:none;"><path fill="currentColor" d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+            <svg class="music-icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="music-icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="display:none;"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
         </button>
-        <div class="music-progress">
-            <div class="music-progress-bar" id="musicProgress"></div>
-        </div>
+        <div class="music-progress"><div class="music-progress-bar" id="musicProgress"></div></div>
         <button type="button" class="music-mute" id="musicMute" aria-label="Silenciar">
-            <svg class="music-icon-sound" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-            <svg class="music-icon-muted" viewBox="0 0 24 24" width="16" height="16" style="display:none;"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+            <svg class="music-icon-sound" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+            <svg class="music-icon-muted" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
         </button>
     </div>
     <audio id="bgMusic" loop preload="none">
@@ -47,21 +509,16 @@
     </audio>
 
     <main class="feelow-container">
-        <!-- HERO MEJORADO -->
         <section class="feelow-hero">
             <div class="feelow-hero-copy">
                 <h1 class="leo-title" data-text="FEELOW HOOPERS">FEELOW HOOPERS</h1>
-                <p class="hero-subtitle">El registro oficial de la calle. Cada W deja huella.</p>
+                <p class="hero-subtitle">El registro oficial de la calle</p>
                 <a class="feelow-back-link" href="leo.html"><span class="arrow">←</span> Volver a Leo</a>
             </div>
-
-            <!-- Spotlight del #1 -->
             <div class="hero-spotlight" id="heroSpotlight">
-                <div class="spotlight-label">Rey de la calle</div>
+                <div class="spotlight-label">— Rey de la calle —</div>
                 <div class="spotlight-content">
-                    <div class="spotlight-photo-wrap">
-                        <img id="spotlight-photo" src="" alt="" class="spotlight-photo" />
-                    </div>
+                    <div class="spotlight-photo-wrap"><img id="spotlight-photo" src="" alt="" class="spotlight-photo" /></div>
                     <div class="spotlight-info">
                         <strong id="spotlight-name">—</strong>
                         <span id="spotlight-rep">0 REP</span>
@@ -70,174 +527,113 @@
             </div>
         </section>
 
-        <!-- Ticker de noticias -->
         <div class="news-ticker" aria-live="polite">
             <div class="ticker-label">EN DIRECTO</div>
             <div class="ticker-track" id="tickerTrack">
-                <span class="ticker-item">🏀 Cargando últimas noticias de la calle...</span>
+                <span class="ticker-item">Cargando la calle...</span>
             </div>
         </div>
 
         <div class="feelow-feedback" id="feedback" role="status" aria-live="polite"></div>
 
         <section class="feelow-layout-grid">
-
             <div class="feelow-sidebar">
-                <!-- PANEL DE AUTENTICACIÓN -->
                 <article class="feelow-panel auth-panel">
-                    <div class="panel-header-minimal">
-                        Acceso
-                        <span class="info-tooltip" data-tooltip="Inicia sesión o regístrate para entrar en el registro oficial de Feelow Hoopers. Tu alias y tu ciudad quedan grabados.">ⓘ</span>
-                    </div>
-
+                    <div class="panel-header-minimal">Acceso<span class="info-tooltip" data-tooltip="Entra o fíchate en el registro oficial. Tu alias y tu ciudad quedan grabados en la calle.">i</span></div>
                     <form id="login-form" class="feelow-form" autocomplete="on">
                         <input type="email" id="login-email" placeholder="Email" required autocomplete="email" />
-                        <span class="field-hint">El email que usaste al registrarte.</span>
+                        <span class="field-hint">El email con el que te fichaste.</span>
                         <input type="password" id="login-password" placeholder="Contraseña" required autocomplete="current-password" />
-                        <span class="field-hint">Tu contraseña. No se puede recuperar.</span>
                         <button type="submit" class="brutalist-btn">Entrar</button>
                     </form>
-
                     <hr class="divider">
-
                     <form id="register-form" class="feelow-form" autocomplete="off">
                         <span class="form-subtitle">Nuevo Hooper</span>
                         <input type="email" id="register-email" placeholder="Email" required />
                         <span class="field-hint">Necesario para recuperar tu cuenta.</span>
                         <input type="text" id="register-username" placeholder="Nombre de usuario" required />
                         <span class="field-hint">Tu alias en la calle. Mínimo 3 caracteres.</span>
-                        <input type="password" id="register-password" placeholder="Contraseña (mín. 4 caracteres)" required />
-                        <span class="field-hint">Mínimo 4 caracteres. Guárdala bien.</span>
+                        <input type="password" id="register-password" placeholder="Contraseña (mín. 4)" required />
+                        <span class="field-hint">Guárdala bien: no se puede recuperar.</span>
                         <input type="text" id="register-city" placeholder="Ciudad (opcional)" />
                         <span class="field-hint">Dónde juegas habitualmente.</span>
-
-                        <label for="register-photo" class="custom-file-upload photo-upload-label">
+                        <label for="register-photo" class="photo-upload-label">
                             <span class="photo-upload-text">Subir foto de perfil</span>
                             <span class="photo-upload-preview" id="register-photo-preview"></span>
                         </label>
                         <input type="file" id="register-photo" accept="image/*" class="photo-input-hidden" />
-                        <span class="field-hint">Se recortará en círculo. Recomendado 400×400px.</span>
-
-                        <button type="submit" class="brutalist-btn outline">Registrarse</button>
+                        <span class="field-hint">Se recorta en círculo. Recomendado 400×400px.</span>
+                        <button type="submit" class="brutalist-btn">Ficharse</button>
                     </form>
                 </article>
 
-                <!-- TU PERFIL (cuando está logueado) -->
                 <article class="feelow-panel profile-panel hidden" id="user-profile">
-                    <div class="panel-header-minimal">
-                        Tu perfil
-                        <span class="info-tooltip" data-tooltip="Esta es tu placa pública. Cualquiera puede verla al pulsar tu nombre en el ranking.">ⓘ</span>
-                    </div>
+                    <div class="panel-header-minimal">Tu perfil<span class="info-tooltip" data-tooltip="Tu placa pública. Cualquiera puede verla pulsando tu nombre en el ranking.">i</span></div>
                     <div id="profile-view" class="profile-view"></div>
-                    <button type="button" class="brutalist-btn outline" id="logout-btn" style="margin-top: 1rem;">Cerrar sesión</button>
+                    <button type="button" class="brutalist-btn" id="logout-btn" style="margin-top: 1rem;">Cerrar sesión</button>
                 </article>
 
-                <!-- NUEVO: EDITAR MI PERFIL (usuario normal) -->
                 <article class="feelow-panel edit-panel hidden" id="edit-my-profile">
-                    <div class="panel-header-minimal">
-                        Editar mi perfil
-                        <span class="info-tooltip" data-tooltip="Cambia tu ciudad, tu contraseña o tu foto de perfil. Los cambios son inmediatos.">ⓘ</span>
-                    </div>
+                    <div class="panel-header-minimal">Editar mi perfil<span class="info-tooltip" data-tooltip="Cambia tu ciudad, tu foto o tu contraseña. Los cambios son inmediatos.">i</span></div>
                     <form id="edit-self-form" class="feelow-form" autocomplete="off">
                         <input type="text" id="edit-self-city" placeholder="Ciudad" />
-                        <span class="field-hint">Dónde juegas habitualmente.</span>
-
                         <input type="password" id="edit-self-password" placeholder="Nueva contraseña (opcional)" />
-                        <span class="field-hint">Déjalo vacío si no quieres cambiarla.</span>
-
-                        <label for="edit-self-photo" class="custom-file-upload photo-upload-label">
+                        <span class="field-hint">Déjala en blanco si no quieres cambiarla.</span>
+                        <label for="edit-self-photo" class="photo-upload-label">
                             <span class="photo-upload-text">Cambiar foto</span>
                             <span class="photo-upload-preview" id="edit-self-photo-preview"></span>
                         </label>
                         <input type="file" id="edit-self-photo" accept="image/*" class="photo-input-hidden" />
-
                         <button type="submit" class="brutalist-btn">Guardar cambios</button>
                     </form>
                 </article>
             </div>
 
             <div class="feelow-main-content">
-                <!-- RANKING -->
                 <section class="feelow-panel ranking-panel">
-                    <div class="panel-header-minimal">
-                        Global Ranking
-                        <span class="info-tooltip" data-tooltip="La clasificación se actualiza en tiempo real. REP = tu reputación en la calle. Cuanto más juegas y ganas, más subes.">ⓘ</span>
-                    </div>
+                    <div class="panel-header-minimal">Global Ranking<span class="info-tooltip" data-tooltip="Clasificación en tiempo real. REP = reputación callejera: se gana jugando, no pidiéndola.">i</span></div>
                     <div class="ranking-table-wrap">
                         <table class="brutalist-table">
                             <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Hooper</th>
-                                    <th>W</th>
-                                    <th>JU</th>
-                                    <th>P</th>
-                                    <th>D</th>
-                                    <th>REP</th>
-                                    <th>Racha</th>
-                                </tr>
+                                <tr><th>#</th><th>Hooper</th><th>W</th><th>JU</th><th>P</th><th>D</th><th>REP</th><th>Racha</th></tr>
                             </thead>
                             <tbody id="ranking-body"></tbody>
                         </table>
                     </div>
-                    <p class="ranking-hint">💡 Pulsa cualquier hooper para abrir su placa.</p>
+                    <p class="ranking-hint">Pulsa cualquier hooper para abrir su placa.</p>
                 </section>
 
-                <!-- Separador spray -->
                 <div class="section-divider" aria-hidden="true">
-                    <span class="spray-line"></span>
-                    <span class="spray-dot"></span>
-                    <span class="spray-line"></span>
+                    <span class="spray-line"></span><span class="spray-dot"></span><span class="spray-line"></span>
                 </div>
 
-                <!-- TORNEOS -->
-                <section class="feelow-panel ranking-panel tournaments-section">
-                    <div class="panel-header-minimal">
-                        Torneos
-                        <span class="info-tooltip" data-tooltip="Torneos callejeros organizados por Leo Feelow. Las inscripciones las gestiona el admin. El campeón se lleva dos insignias exclusivas.">ⓘ</span>
-                    </div>
+                <section class="feelow-panel ranking-panel">
+                    <div class="panel-header-minimal">Torneos<span class="info-tooltip" data-tooltip="Torneos callejeros de Leo Feelow. El campeón se lleva DUEÑO DE LA PISTA y CAMPEÓN DE TORNEO.">i</span></div>
                     <div id="tournaments-list" class="tournaments-grid"></div>
                 </section>
 
-                <!-- ADMIN -->
                 <section id="admin-panel" class="feelow-panel admin-panel hidden">
                     <div class="panel-header-minimal admin-header">Administración Leo Feelow</div>
 
                     <div class="admin-section-title">Gestión de hoopers</div>
                     <div class="admin-grid">
-
                         <form id="admin-stats-form" class="feelow-form admin-box">
-                            <h3>
-                                Gestión de stats
-                                <span class="info-tooltip" data-tooltip="Ajusta manualmente victorias, derrotas y partidos. La REP se recalcula automáticamente con la fórmula oficial.">ⓘ</span>
-                            </h3>
+                            <h3>Gestión de stats<span class="info-tooltip" data-tooltip="Ajusta W / JU / torneos / partidos. La REP se recalcula sola con la fórmula oficial.">i</span></h3>
                             <select id="admin-user-select" class="admin-input" aria-label="Usuario"></select>
                             <div class="stats-inputs">
-                                <div class="stat-field">
-                                    <label for="admin-wins">Victorias</label>
-                                    <input type="number" id="admin-wins" min="0" value="0" />
-                                </div>
-                                <div class="stat-field">
-                                    <label for="admin-unique-games">Juego Único (JU)</label>
-                                    <input type="number" id="admin-unique-games" min="0" value="0" />
-                                </div>
+                                <div class="stat-field"><label for="admin-wins">Victorias</label><input type="number" id="admin-wins" min="0" value="0" /></div>
+                                <div class="stat-field"><label for="admin-unique-games">Juego Único (JU)</label><input type="number" id="admin-unique-games" min="0" value="0" /></div>
                             </div>
                             <div class="stats-inputs">
-                                <div class="stat-field">
-                                    <label for="admin-tournaments">Torneos</label>
-                                    <input type="number" id="admin-tournaments" min="0" value="0" />
-                                </div>
-                                <div class="stat-field">
-                                    <label for="admin-matches">Partidos</label>
-                                    <input type="number" id="admin-matches" min="0" value="0" />
-                                </div>
+                                <div class="stat-field"><label for="admin-tournaments">Torneos</label><input type="number" id="admin-tournaments" min="0" value="0" /></div>
+                                <div class="stat-field"><label for="admin-matches">Partidos</label><input type="number" id="admin-matches" min="0" value="0" /></div>
                             </div>
                             <div class="stat-field">
                                 <label for="admin-rep" class="rep-locked-label">Reputación (REP) — Automática</label>
                                 <input type="number" id="admin-rep" min="0" value="1000" disabled readonly aria-disabled="true" />
-                                <span class="rep-locked-hint">Calculada automáticamente: 1000 + W×30 + JU×15 + Partidos×4 + Insignias − Derrotas×6.</span>
+                                <span class="rep-locked-hint">1000 + W×30 + JU×15 + Partidos×4 + Insignias − Derrotas×6.</span>
                             </div>
-                            <button type="submit" class="brutalist-btn admin-btn">Actualizar</button>
+                            <button type="submit" class="brutalist-btn">Actualizar</button>
                         </form>
 
                         <form id="admin-edit-form" class="feelow-form admin-box">
@@ -245,58 +641,46 @@
                             <select id="admin-edit-user-select" class="admin-input" aria-label="Usuario a editar"></select>
                             <input type="text" id="admin-edit-city" placeholder="Ciudad" />
                             <div id="admin-edit-photo-current" class="admin-edit-photo-preview"></div>
-                            <label for="admin-edit-photo" class="custom-file-upload photo-upload-label">
+                            <label for="admin-edit-photo" class="photo-upload-label">
                                 <span class="photo-upload-text">Cambiar foto</span>
                                 <span class="photo-upload-preview" id="admin-edit-photo-preview"></span>
                             </label>
                             <input type="file" id="admin-edit-photo" accept="image/*" class="photo-input-hidden" />
-                            <button type="submit" class="brutalist-btn outline">Guardar cambios</button>
+                            <button type="submit" class="brutalist-btn">Guardar cambios</button>
                         </form>
 
                         <form id="admin-match-form" class="feelow-form admin-box">
-                            <h3>
-                                Registrar Enfrentamiento
-                                <span class="info-tooltip" data-tooltip="Un partido normal suma 1W al ganador y 1L al perdedor. Marca 'Juego Único (JU)' si la jugada fue especialmente memorable.">ⓘ</span>
-                            </h3>
+                            <h3>Registrar enfrentamiento<span class="info-tooltip" data-tooltip="Marca Juego Único (JU) si la jugada fue de las que se cuentan durante años.">i</span></h3>
                             <label for="admin-match-winner" class="admin-field-label">Ganador</label>
                             <select id="admin-match-winner" class="admin-input" aria-label="Ganador"></select>
                             <label for="admin-match-loser" class="admin-field-label">Perdedor</label>
                             <select id="admin-match-loser" class="admin-input" aria-label="Perdedor"></select>
-                            <label class="unique-game-toggle">
-                                <input type="checkbox" id="admin-match-unique-winner" />
-                                <span>Ganador: Juego Único (JU)</span>
-                            </label>
-                            <label class="unique-game-toggle">
-                                <input type="checkbox" id="admin-match-unique-loser" />
-                                <span>Perdedor: Juego Único (JU)</span>
-                            </label>
-                            <button type="submit" class="brutalist-btn admin-btn">Registrar Enfrentamiento</button>
+                            <label class="unique-game-toggle"><input type="checkbox" id="admin-match-unique-winner" /><span>Ganador: Juego Único (JU)</span></label>
+                            <label class="unique-game-toggle"><input type="checkbox" id="admin-match-unique-loser" /><span>Perdedor: Juego Único (JU)</span></label>
+                            <button type="submit" class="brutalist-btn">Registrar</button>
                         </form>
 
                         <form id="admin-badges-form" class="feelow-form admin-box">
-                            <h3>
-                                Insignias de la calle
-                                <span class="info-tooltip" data-tooltip="Cada insignia aporta REP extra según su rareza. Se otorgan por hitos o por decisión del admin.">ⓘ</span>
-                            </h3>
+                            <h3>Insignias de la calle<span class="info-tooltip" data-tooltip="Cada insignia suma REP según su rareza. Otórgalas con criterio: valen su historia.">i</span></h3>
                             <select id="admin-badge-user" aria-label="Usuario"></select>
                             <select id="admin-badge-select" aria-label="Insignia">
-                                <option value="CIMIENTOS">CIMIENTOS (+55 REP)</option>
-                                <option value="SANGRE NUEVA">SANGRE NUEVA (+40 REP)</option>
-                                <option value="DUEÑO DE LA PISTA">DUEÑO DE LA PISTA (+80 REP)</option>
-                                <option value="ROMPE-ÍDOLOS">ROMPE-ÍDOLOS (+75 REP)</option>
-                                <option value="LEYENDA">LEYENDA (+100 REP)</option>
-                                <option value="1V1 INCOMBATIBLE">1V1 INCOMBATIBLE (+70 REP)</option>
-                                <option value="CLUTCH">CLUTCH (+60 REP)</option>
-                                <option value="RACHA DE FUEGO">RACHA DE FUEGO (+65 REP)</option>
-                                <option value="CAMPEÓN DE TORNEO">CAMPEÓN DE TORNEO (+85 REP)</option>
-                                <option value="MVP DE LA CALLE">MVP DE LA CALLE (+90 REP)</option>
+                                <option value="CIMIENTOS">CIMIENTOS (+55)</option>
+                                <option value="SANGRE NUEVA">SANGRE NUEVA (+40)</option>
+                                <option value="DUEÑO DE LA PISTA">DUEÑO DE LA PISTA (+80)</option>
+                                <option value="ROMPE-ÍDOLOS">ROMPE-ÍDOLOS (+75)</option>
+                                <option value="LEYENDA">LEYENDA (+100)</option>
+                                <option value="1V1 INCOMBATIBLE">1V1 INCOMBATIBLE (+70)</option>
+                                <option value="CLUTCH">CLUTCH (+60)</option>
+                                <option value="RACHA DE FUEGO">RACHA DE FUEGO (+65)</option>
+                                <option value="CAMPEÓN DE TORNEO">CAMPEÓN DE TORNEO (+85)</option>
+                                <option value="MVP DE LA CALLE">MVP DE LA CALLE (+90)</option>
                             </select>
                             <div id="admin-badge-preview" class="admin-badge-preview" aria-live="polite">
                                 <div class="admin-badge-preview-icon" id="admin-badge-preview-icon"></div>
                                 <div class="admin-badge-preview-copy">
                                     <span class="preview-label">Previsualización</span>
                                     <strong id="admin-badge-preview-title">CIMIENTOS</strong>
-                                    <span id="admin-badge-preview-text">Fundó el registro del proyecto y abrió el camino del 1vs1 callejero.</span>
+                                    <span id="admin-badge-preview-text"></span>
                                 </div>
                             </div>
                             <div class="match-buttons">
@@ -310,57 +694,46 @@
                             <select id="admin-delete-select" aria-label="Usuario a eliminar"></select>
                             <button type="submit" class="brutalist-btn danger">Eliminar del registro</button>
                         </form>
-
                     </div>
 
                     <div class="admin-section-title">Gestión de torneos</div>
                     <div class="admin-grid">
-
                         <form id="tournament-create-form" class="feelow-form admin-box">
                             <h3>Crear torneo</h3>
                             <input type="text" id="tournament-name" placeholder="Nombre del torneo" required />
-                            <button type="submit" class="brutalist-btn admin-btn">Crear</button>
+                            <button type="submit" class="brutalist-btn">Crear</button>
                         </form>
-
                         <div class="feelow-form admin-box">
                             <h3>Inscribir participante</h3>
                             <select id="tournament-add-select" class="admin-input" aria-label="Torneo"></select>
                             <select id="tournament-add-user" class="admin-input" aria-label="Hooper"></select>
-                            <button type="button" id="tournament-add-btn" class="brutalist-btn outline">Inscribir</button>
+                            <button type="button" id="tournament-add-btn" class="brutalist-btn">Inscribir</button>
                         </div>
-
                         <form id="tournament-close-form" class="feelow-form admin-box">
                             <h3>Cerrar torneo</h3>
                             <select id="tournament-close-select" class="admin-input" aria-label="Torneo"></select>
                             <select id="tournament-close-participant" class="admin-input" aria-label="Campeón"></select>
-                            <button type="submit" class="brutalist-btn outline">Cerrar y designar campeón</button>
+                            <button type="submit" class="brutalist-btn">Cerrar y coronar</button>
                         </form>
-
                     </div>
                 </section>
             </div>
         </section>
     </main>
 
-    <!-- MODAL DE PLACA -->
     <dialog id="profile-modal" class="profile-modal" aria-labelledby="profile-modal-name">
         <article class="profile-modal-plate">
             <button type="button" class="profile-modal-close" id="profile-modal-close" aria-label="Cerrar placa">✕</button>
-            <div class="profile-modal-frame">
-                <img id="profile-modal-photo" class="profile-modal-photo" src="" alt="" />
-            </div>
+            <div class="profile-modal-frame"><img id="profile-modal-photo" class="profile-modal-photo" src="" alt="" /></div>
             <h2 id="profile-modal-name" class="profile-modal-name">—</h2>
             <p class="profile-modal-meta" id="profile-modal-city">—</p>
-
             <div class="profile-modal-stats">
                 <div><span>REP</span><strong id="profile-modal-rep">1000</strong></div>
                 <div><span>Racha</span><strong id="profile-modal-streak">0</strong></div>
                 <div><span>Victorias</span><strong id="profile-modal-wins">0</strong></div>
                 <div><span>Juego Único</span><strong id="profile-modal-unique">0</strong></div>
             </div>
-
             <div class="profile-modal-tier" id="profile-modal-tier">—</div>
-
             <div class="profile-modal-badges" id="profile-modal-badges"></div>
             <div class="badge-detail-card" id="profile-modal-badge-detail"></div>
         </article>
