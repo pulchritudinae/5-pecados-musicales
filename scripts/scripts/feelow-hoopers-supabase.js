@@ -6,7 +6,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // Configuración de Supabase (REEMPLAZA CON TUS CREDENCIALES)
 const SUPABASE_URL = 'https://olcakitusgghaiphdtgh.supabase.co';
-const SUPABASE_ANON_KEY = 'tsb_publishable_UMAQd1Zry4pbp2wHSFxNwA_MBjD9N2z';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2FraXR1c2dnaGFpcGhkdGdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwMzg3MjgsImV4cCI6MjEwMTYxNDcyOH0.Iud3mLFAn6xzrcxuQlNYKG6TtkYLnPvxJ_iIuKyzSck';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
