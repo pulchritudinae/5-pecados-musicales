@@ -1,5 +1,5 @@
 // =========================================================
-// FEELOW HOOPERS v5 — Correcciones técnicas completas
+// FEELOW HOOPERS v6 — Correcciones finales (sobre base v5)
 // =========================================================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -10,9 +10,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const PHOTO_TARGET_PX = 256;
 const STREAK_FIRE = 3;
 
-// =========================================================
-// INSIGNIAS: SVG de línea monocroma (estilo unificado)
-// =========================================================
 const BADGE_SVG = {
     'CIMIENTOS':         `<svg viewBox="0 0 24 24"><path d="M3 7h18v13H3z M3 11.5h18 M3 16h18 M9 7v4.5 M15 11.5v4.5 M9 16v4"/></svg>`,
     'SANGRE NUEVA':      `<svg viewBox="0 0 24 24"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z M8.5 14.5h2l1-2 1.5 3 1-1.5h1.5"/></svg>`,
@@ -39,7 +36,6 @@ const BADGE_META = {
     'MVP DE LA CALLE':   { rep: 90,  title: 'MVP DE LA CALLE',   description: 'La insignia de quien pesa en los momentos difíciles y deja la cancha más viva que cuando entró.' }
 };
 
-// Glifos monocromos para el ticker (sin emojis)
 const GLYPH = {
     crown:  '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M4 17l1.2-8 4 3.5L12 6l2.8 6.5 4-3.5L20 17z M4 20h16"/></svg>',
     flame:  '<svg class="tick-glyph" viewBox="0 0 24 24"><path d="M12 3c1 3.5 4.5 5 4.5 9a4.5 4.5 0 0 1-9 0c0-2.2 1.2-4 2.3-5.6.5 1.2 1.4 1.8 1.4 1.8C11.4 6.5 11.6 4.8 12 3z"/></svg>',
@@ -59,9 +55,6 @@ function tierByPosition(p) {
     return TIERS.asphalt;
 }
 
-// =========================================================
-// UTILIDADES
-// =========================================================
 function escapeHtml(v) {
     return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
@@ -84,7 +77,7 @@ function getDefaultAvatar() {
 }
 function getPhotoElement(u, cls) {
     const p = u.avatar_url || getDefaultAvatar();
-    return `<img class="${cls}" src="${p}" alt="${escapeHtml(u.username)}" loading="lazy" style="filter:none;-webkit-filter:none;" />`;
+    return `<img class="${cls}" src="${p}" alt="${escapeHtml(u.username)}" loading="lazy" style="filter:none;-webkit-filter:none;mix-blend-mode:normal;" />`;
 }
 function animateNumber(el, from, to, duration = 600) {
     if (!el) return;
@@ -99,17 +92,23 @@ function animateNumber(el, from, to, duration = 600) {
     requestAnimationFrame(tick);
 }
 
-// Fuerza el color en las fotos (gana a cualquier CSS externo)
+// FOTOS EN COLOR: limpia filter Y mix-blend-mode de la imagen Y DE TODOS SUS ANCESTROS
+// (el grayscale estaba en un contenedor padre de styles.css, no en el <img>)
 function forceColorPhotos() {
     document.querySelectorAll('img').forEach(img => {
         img.style.setProperty('filter', 'none', 'important');
         img.style.setProperty('-webkit-filter', 'none', 'important');
+        img.style.setProperty('mix-blend-mode', 'normal', 'important');
+        let el = img.parentElement;
+        while (el && el.tagName !== 'HTML' && el.tagName !== 'BODY') {
+            el.style.setProperty('filter', 'none', 'important');
+            el.style.setProperty('-webkit-filter', 'none', 'important');
+            el.style.setProperty('mix-blend-mode', 'normal', 'important');
+            el = el.parentElement;
+        }
     });
 }
 
-// =========================================================
-// FOTOS: compresión y subida
-// =========================================================
 async function getCompressedPhoto(file) {
     if (!file) return '';
     if (!file.type.startsWith('image/')) throw new Error('El archivo no es una imagen válida.');
@@ -164,9 +163,6 @@ function setupPhotoPreview(inputId, previewId) {
     });
 }
 
-// =========================================================
-// FEEDBACK
-// =========================================================
 let feedbackTimer = null;
 function showFeedback(msg, type = 'ok') {
     const el = document.getElementById('feedback');
@@ -177,9 +173,6 @@ function showFeedback(msg, type = 'ok') {
     feedbackTimer = setTimeout(() => el.classList.remove('is-visible'), 4200);
 }
 
-// =========================================================
-// AUTH
-// =========================================================
 async function getCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -193,15 +186,12 @@ async function handleRegister(event) {
     const email = document.getElementById('register-email').value.trim();
     const city = document.getElementById('register-city').value.trim();
     const photoFile = document.getElementById('register-photo').files[0];
-
     if (username.length < 3) return showFeedback('Usuario mínimo 3 caracteres.', 'error');
     if (password.length < 4) return showFeedback('Contraseña mínimo 4 caracteres.', 'error');
     if (!email || !email.includes('@')) return showFeedback('Email inválido.', 'error');
-
     const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username, city } } });
     if (error) return showFeedback('Error: ' + error.message, 'error');
     if (!data.user) return showFeedback('No se pudo crear la cuenta.', 'error');
-
     if (photoFile && data.session) {
         try {
             const compressed = await getCompressedPhoto(photoFile);
@@ -262,9 +252,6 @@ async function handleEditSelf(event) {
     updateAllViews();
 }
 
-// =========================================================
-// RANKING + SPOTLIGHT + TICKER
-// =========================================================
 let lastRepMap = {};
 async function updateRanking() {
     const { data: users, error } = await supabase.from('hoopers').select('*').order('rep', { ascending: false }).limit(50);
@@ -332,9 +319,6 @@ function updateTicker(users) {
     track.innerHTML = half + half;
 }
 
-// =========================================================
-// PERFIL
-// =========================================================
 async function renderProfile() {
     const pv = document.getElementById('profile-view');
     if (!pv) return;
@@ -373,9 +357,6 @@ async function renderProfile() {
     forceColorPhotos();
 }
 
-// =========================================================
-// TORNEOS
-// =========================================================
 async function renderTournaments() {
     const list = document.getElementById('tournaments-list');
     if (!list) return;
@@ -391,9 +372,6 @@ async function renderTournaments() {
     });
 }
 
-// =========================================================
-// MODAL PLACA (cursor movido al dialog para Top Layer)
-// =========================================================
 async function openProfileModal(userId) {
     const { data: user } = await supabase.from('hoopers').select('*').eq('id', userId).single();
     if (!user) return;
@@ -433,7 +411,6 @@ async function openProfileModal(userId) {
     if (typeof dialog.showModal === 'function') {
         if (dialog.open) dialog.close();
         dialog.showModal();
-        // Mover el cursor dentro del modal para que esté en la Top Layer
         const core = document.querySelector('.fh-cursor-core');
         const ring = document.querySelector('.fh-cursor-ring');
         if (core && ring) {
@@ -448,7 +425,6 @@ async function openProfileModal(userId) {
 function closeProfileModal() {
     const d = document.getElementById('profile-modal');
     if (d && d.open) {
-        // Devolver el cursor al body antes de cerrar
         const core = document.querySelector('.fh-cursor-core');
         const ring = document.querySelector('.fh-cursor-ring');
         if (core && ring) {
@@ -459,9 +435,6 @@ function closeProfileModal() {
     }
 }
 
-// =========================================================
-// ADMIN
-// =========================================================
 async function showAdminPanel() {
     const ap = document.getElementById('admin-panel');
     if (!ap) return;
@@ -624,9 +597,6 @@ async function handleCloseTournament(event) {
     updateAllViews();
 }
 
-// =========================================================
-// VISIBILIDAD
-// =========================================================
 async function toggleAuthViews() {
     const user = await getCurrentUser();
     const auth = document.querySelector('.auth-panel');
@@ -658,9 +628,7 @@ async function loadEditUser() {
     forceColorPhotos();
 }
 
-// =========================================================
-// MÚSICA (con desbloqueo al primer clic global)
-// =========================================================
+// MÚSICA: preload="none" + carga bajo demanda + desbloqueo al primer clic global
 function initMusicPlayer() {
     const audio = document.getElementById('bgMusic');
     const toggle = document.getElementById('musicToggle');
@@ -681,7 +649,6 @@ function initMusicPlayer() {
         if (iconMuted) iconMuted.style.display = 'block';
     }
 
-    // Feedback visual si el MP3 no carga
     audio.addEventListener('error', () => {
         const err = document.createElement('span');
         err.className = 'music-error';
@@ -690,13 +657,14 @@ function initMusicPlayer() {
         setTimeout(() => err.remove(), 5000);
     });
 
-    // Desbloqueo al primer clic global en la página
+    // Desbloqueo al primer clic global: carga el audio bajo demanda
     const unlockAudio = () => {
         if (audio.paused && !audio.muted) {
+            try { audio.load(); } catch(e) {}
             audio.play().then(() => {
                 if (iconPlay) iconPlay.style.display = 'none';
                 if (iconPause) iconPause.style.display = 'block';
-            }).catch(() => { /* Autoplay restringido hasta interacción con botón específico */ });
+            }).catch(() => {});
         }
         window.removeEventListener('pointerdown', unlockAudio);
     };
@@ -705,6 +673,7 @@ function initMusicPlayer() {
     toggle.addEventListener('click', (e) => {
         e.stopPropagation();
         if (audio.paused) {
+            try { audio.load(); } catch(e) {}
             audio.play().then(() => {
                 if (iconPlay) iconPlay.style.display = 'none';
                 if (iconPause) iconPause.style.display = 'block';
@@ -748,9 +717,7 @@ function initMusicPlayer() {
     });
 }
 
-// =========================================================
-// CURSOR GRIS (lógica de la web 5PM, versión Leo)
-// =========================================================
+// CURSOR GRIS: con corrección de calibrado cuando está dentro del dialog
 function initCursor() {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     const core = document.querySelector('.fh-cursor-core');
@@ -766,15 +733,18 @@ function initCursor() {
     (function loop() {
         cx += (mx - cx) * 0.35; cy += (my - cy) * 0.35;
         rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-        core.style.left = cx + 'px'; core.style.top = cy + 'px';
-        ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+        // Si el cursor vive dentro de un dialog abierto, restamos su posición
+        let ox = 0, oy = 0;
+        if (core.parentElement && core.parentElement.tagName === 'DIALOG') {
+            const r = core.parentElement.getBoundingClientRect();
+            ox = r.left; oy = r.top;
+        }
+        core.style.left = (cx - ox) + 'px'; core.style.top = (cy - oy) + 'px';
+        ring.style.left = (rx - ox) + 'px'; ring.style.top = (ry - oy) + 'px';
         requestAnimationFrame(loop);
     })();
 }
 
-// =========================================================
-// INIT
-// =========================================================
 function init() {
     setupPhotoPreview('register-photo', 'register-photo-preview');
     setupPhotoPreview('edit-self-photo', 'edit-self-photo-preview');
