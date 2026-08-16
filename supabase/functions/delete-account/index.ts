@@ -13,6 +13,12 @@ function json(body: Record<string, unknown>, status = 200) {
   });
 }
 
+function fail(step: string, error: unknown, status = 400) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`[delete-account] ${step}: ${message}`);
+  return json({ error: message, step }, status);
+}
+
 function getAvatarPath(avatarUrl: string | null | undefined) {
   if (!avatarUrl) return null;
   const marker = "/storage/v1/object/public/avatars/";
@@ -27,7 +33,9 @@ export default {
     if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
     const userId = ctx.userClaims?.sub;
-    if (!userId) return json({ error: "Unauthorized" }, 401);
+    if (!userId) return fail("auth-user-id", "Unauthorized", 401);
+
+    console.log(`[delete-account] start user=${userId}`);
 
     const { data: profile, error: profileError } = await ctx.supabaseAdmin
       .from("hoopers")
@@ -35,7 +43,8 @@ export default {
       .eq("id", userId)
       .maybeSingle();
 
-    if (profileError) return json({ error: profileError.message }, 400);
+    if (profileError) return fail("read-profile", profileError);
+    if (!profile) return fail("profile-not-found", "Profile not found", 404);
 
     const avatarPaths = new Set<string>();
     const currentAvatarPath = getAvatarPath(profile?.avatar_url);
@@ -58,29 +67,33 @@ export default {
       .from("tournament_participants")
       .delete()
       .eq("hooper_id", userId);
-    if (participantDeleteError) return json({ error: participantDeleteError.message }, 400);
+    if (participantDeleteError) return fail("delete-tournament-participants", participantDeleteError);
 
     const { error: matchDeleteError } = await ctx.supabaseAdmin
       .from("matches")
       .delete()
       .or(`winner_id.eq.${userId},loser_id.eq.${userId}`);
-    if (matchDeleteError) return json({ error: matchDeleteError.message }, 400);
+    if (matchDeleteError) return fail("delete-matches", matchDeleteError);
 
     // El torneo puede seguir existiendo para los demás participantes.
     const { error: tournamentUpdateError } = await ctx.supabaseAdmin
       .from("tournaments")
       .update({ winner_id: null })
       .eq("winner_id", userId);
-    if (tournamentUpdateError) return json({ error: tournamentUpdateError.message }, 400);
+    if (tournamentUpdateError) return fail("clear-tournament-winner", tournamentUpdateError);
 
     const { error: profileDeleteError } = await ctx.supabaseAdmin
       .from("hoopers")
       .delete()
       .eq("id", userId);
-    if (profileDeleteError) return json({ error: profileDeleteError.message }, 400);
+    if (profileDeleteError) return fail("delete-profile", profileDeleteError);
+
+    console.log(`[delete-account] profile deleted user=${userId}`);
 
     const { error: authDeleteError } = await ctx.supabaseAdmin.auth.admin.deleteUser(userId);
-    if (authDeleteError) return json({ error: authDeleteError.message }, 400);
+    if (authDeleteError) return fail("delete-auth-user", authDeleteError);
+
+    console.log(`[delete-account] auth user deleted user=${userId}`);
 
     // Storage se limpia al final: un fallo aquí no deja una cuenta activa,
     // aunque puede requerir borrar manualmente algún avatar antiguo.
@@ -89,7 +102,10 @@ export default {
       const { error: storageError } = await ctx.supabaseAdmin.storage
         .from("avatars")
         .remove([...avatarPaths]);
-      if (storageError) storageWarning = storageError.message;
+      if (storageError) {
+        console.error(`[delete-account] cleanup-storage: ${storageError.message}`);
+        storageWarning = storageError.message;
+      }
     }
 
     return json(storageWarning ? { ok: true, warning: storageWarning } : { ok: true });
