@@ -53,12 +53,25 @@ export default {
         .forEach((file) => avatarPaths.add(file.name));
     }
 
-    if (avatarPaths.size > 0) {
-      const { error: storageError } = await ctx.supabaseAdmin.storage
-        .from("avatars")
-        .remove([...avatarPaths]);
-      if (storageError) return json({ error: storageError.message }, 400);
-    }
+    // Primero eliminamos las relaciones que impedirían borrar el perfil.
+    const { error: participantDeleteError } = await ctx.supabaseAdmin
+      .from("tournament_participants")
+      .delete()
+      .eq("hooper_id", userId);
+    if (participantDeleteError) return json({ error: participantDeleteError.message }, 400);
+
+    const { error: matchDeleteError } = await ctx.supabaseAdmin
+      .from("matches")
+      .delete()
+      .or(`winner_id.eq.${userId},loser_id.eq.${userId}`);
+    if (matchDeleteError) return json({ error: matchDeleteError.message }, 400);
+
+    // El torneo puede seguir existiendo para los demás participantes.
+    const { error: tournamentUpdateError } = await ctx.supabaseAdmin
+      .from("tournaments")
+      .update({ winner_id: null })
+      .eq("winner_id", userId);
+    if (tournamentUpdateError) return json({ error: tournamentUpdateError.message }, 400);
 
     const { error: profileDeleteError } = await ctx.supabaseAdmin
       .from("hoopers")
@@ -69,6 +82,16 @@ export default {
     const { error: authDeleteError } = await ctx.supabaseAdmin.auth.admin.deleteUser(userId);
     if (authDeleteError) return json({ error: authDeleteError.message }, 400);
 
-    return json({ ok: true });
+    // Storage se limpia al final: un fallo aquí no deja una cuenta activa,
+    // aunque puede requerir borrar manualmente algún avatar antiguo.
+    let storageWarning: string | undefined;
+    if (avatarPaths.size > 0) {
+      const { error: storageError } = await ctx.supabaseAdmin.storage
+        .from("avatars")
+        .remove([...avatarPaths]);
+      if (storageError) storageWarning = storageError.message;
+    }
+
+    return json(storageWarning ? { ok: true, warning: storageWarning } : { ok: true });
   }),
 };
