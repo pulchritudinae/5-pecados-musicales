@@ -32,7 +32,9 @@ export default {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-    const userId = ctx.userClaims?.sub;
+    // @supabase/server puede exponer el identificador como userClaims.id
+    // y conserva el claim JWT original como jwtClaims.sub.
+    const userId = ctx.userClaims?.id ?? ctx.userClaims?.sub ?? ctx.jwtClaims?.sub;
     if (!userId) return fail("auth-user-id", "Unauthorized", 401);
 
     console.log(`[delete-account] start user=${userId}`);
