@@ -4904,6 +4904,26 @@ input[type="file"] { display: none; }
   line-height: 1.25;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .character-cursor-active, .character-cursor-active * { cursor: none !important; }
+  .character-cursor-core, .character-cursor-glow, .character-cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 200; will-change: transform;
+  }
+  .character-cursor-core {
+    width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
+    background: var(--world-accent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--world-accent), transparent 20%);
+  }
+  .character-cursor-glow {
+    width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; filter: blur(1px);
+    background: radial-gradient(circle, color-mix(in srgb, var(--world-accent), transparent 48%) 0%, transparent 70%);
+  }
+  .character-cursor-ring {
+    width: 48px; height: 48px; margin: -24px 0 0 -24px; border: 1px solid color-mix(in srgb, var(--world-accent), transparent 28%);
+    border-radius: 50%; box-shadow: 0 0 22px color-mix(in srgb, var(--world-accent), transparent 75%);
+  }
+}
+
 @media (max-width: 680px) {
   .smoke-blob { filter: blur(3rem); }
   .world-quote blockquote { font-size: clamp(1.4rem, 7vw, 2rem); }

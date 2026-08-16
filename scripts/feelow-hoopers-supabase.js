@@ -9,6 +9,12 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const PHOTO_TARGET_PX = 800;
 const STREAK_FIRE = 3;
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+
+let currentUserCache;
+let currentUserRequest = null;
+let liveRefreshTimer = null;
+let liveChannel = null;
 
 const BADGE_SVG = {
     'CIMIENTOS':         `<svg viewBox="0 0 24 24"><path d="M3 7h18v13H3z M3 11.5h18 M3 16h18 M9 7v4.5 M15 11.5v4.5 M9 16v4"/></svg>`,
@@ -92,25 +98,19 @@ function animateNumber(el, from, to, duration = 600) {
     requestAnimationFrame(tick);
 }
 
-// FOTOS EN COLOR: limpia filter Y mix-blend-mode de la imagen Y DE TODOS SUS ANCESTROS
+// FOTOS EN COLOR: normaliza solo las imágenes, sin recorrer todos sus ancestros en cada refresco.
 function forceColorPhotos() {
     document.querySelectorAll('img').forEach(img => {
         img.style.setProperty('filter', 'none', 'important');
         img.style.setProperty('-webkit-filter', 'none', 'important');
         img.style.setProperty('mix-blend-mode', 'normal', 'important');
-        let el = img.parentElement;
-        while (el && el.tagName !== 'HTML' && el.tagName !== 'BODY') {
-            el.style.setProperty('filter', 'none', 'important');
-            el.style.setProperty('-webkit-filter', 'none', 'important');
-            el.style.setProperty('mix-blend-mode', 'normal', 'important');
-            el = el.parentElement;
-        }
     });
 }
 
 async function getCompressedPhoto(file) {
     if (!file) return '';
     if (!file.type.startsWith('image/')) throw new Error('El archivo no es una imagen válida.');
+    if (file.size > MAX_PHOTO_BYTES) throw new Error('La imagen supera el límite de 10 MB.');
     const dataUrl = await new Promise((res, rej) => {
         const r = new FileReader();
         r.onload = () => res(r.result);
@@ -156,7 +156,9 @@ function setupPhotoPreview(inputId, previewId) {
     input.addEventListener('change', () => {
         const file = input.files[0];
         if (!file) { preview.innerHTML = ''; preview.classList.remove('has-image'); return; }
-        preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Preview" style="filter:none;-webkit-filter:none;" />`;
+        const objectUrl = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${objectUrl}" alt="Vista previa" style="filter:none;-webkit-filter:none;" />`;
+        preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(objectUrl), { once: true });
         preview.classList.add('has-image');
         forceColorPhotos();
     });
@@ -172,12 +174,22 @@ function showFeedback(msg, type = 'ok') {
     feedbackTimer = setTimeout(() => el.classList.remove('is-visible'), 4200);
 }
 
-async function getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    const { data: profile } = await supabase.from('hoopers').select('*').eq('id', user.id).single();
-    return profile;
+async function getCurrentUser(force = false) {
+    if (!force && currentUserCache !== undefined) return currentUserCache;
+    if (!force && currentUserRequest) return currentUserRequest;
+    const request = (async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return (currentUserCache = null);
+        const { data: profile } = await supabase.from('hoopers')
+            .select('id,username,city,avatar_url,rep,streak,wins,losses,unique_games,matches,tournaments,badges,role')
+            .eq('id', user.id).single();
+        return (currentUserCache = profile || null);
+    })();
+    currentUserRequest = request;
+    try { return await request; }
+    finally { if (currentUserRequest === request) currentUserRequest = null; }
 }
+function invalidateCurrentUser() { currentUserCache = undefined; currentUserRequest = null; }
 async function handleRegister(event) {
     event.preventDefault();
     const username = document.getElementById('register-username').value.trim();
@@ -202,6 +214,7 @@ async function handleRegister(event) {
         }
     }
     showFeedback(`Bienvenido a la calle, ${username}.`, 'ok');
+    invalidateCurrentUser();
     event.target.reset();
     const pv = document.getElementById('register-photo-preview');
     if (pv) { pv.innerHTML = ''; pv.classList.remove('has-image'); }
@@ -215,13 +228,70 @@ async function handleLogin(event) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return showFeedback('Credenciales incorrectas.', 'error');
     showFeedback('Sesión iniciada.', 'ok');
+    invalidateCurrentUser();
     event.target.reset();
     updateAllViews();
 }
+function setPasswordRecoveryMode(active) {
+    document.getElementById('password-update-panel')?.classList.toggle('hidden', !active);
+    if (active) document.getElementById('password-update-panel')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+async function handlePasswordRecovery(event) {
+    event.preventDefault();
+    const email = document.getElementById('recovery-email').value.trim();
+    if (!email || !email.includes('@')) return showFeedback('Introduce un email válido.', 'error');
+    const baseUrl = window.location.origin === 'null'
+        ? window.location.href.split('?')[0]
+        : `${window.location.origin}${window.location.pathname}`;
+    const redirectTo = `${baseUrl}?recovery=1`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) return showFeedback('No se pudo enviar el enlace: ' + error.message, 'error');
+    showFeedback('Si el email está registrado, recibirás un enlace de recuperación.', 'ok');
+    event.target.reset();
+}
+async function handlePasswordUpdate(event) {
+    event.preventDefault();
+    const password = document.getElementById('new-password').value;
+    const confirmation = document.getElementById('new-password-confirm').value;
+    if (password.length < 4) return showFeedback('La nueva contraseña necesita 4+ caracteres.', 'error');
+    if (password !== confirmation) return showFeedback('Las contraseñas no coinciden.', 'error');
+    const submit = event.submitter;
+    if (submit) submit.disabled = true;
+    try {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) return showFeedback('No se pudo actualizar: ' + error.message, 'error');
+        showFeedback('Contraseña actualizada.', 'ok');
+        event.target.reset();
+        setPasswordRecoveryMode(false);
+        invalidateCurrentUser();
+        await updateAllViews();
+    } finally {
+        if (submit) submit.disabled = false;
+    }
+}
 async function handleLogout() {
     await supabase.auth.signOut();
+    invalidateCurrentUser();
     showFeedback('Sesión cerrada.', 'ok');
     updateAllViews();
+}
+async function handleDeleteAccount() {
+    const user = await getCurrentUser();
+    if (!user) return showFeedback('No hay una sesión activa.', 'error');
+    const confirmed = window.confirm('Esta acción borrará tu perfil, tu foto y tu cuenta de acceso. No se puede deshacer. ¿Continuar?');
+    if (!confirmed) return;
+    const button = document.getElementById('delete-account-btn');
+    if (button) button.disabled = true;
+    try {
+        const { error } = await supabase.functions.invoke('delete-account', { body: {} });
+        if (error) return showFeedback('No se pudo eliminar la cuenta: ' + error.message, 'error');
+        await supabase.auth.signOut();
+        invalidateCurrentUser();
+        showFeedback('Cuenta eliminada.', 'ok');
+        await updateAllViews();
+    } finally {
+        if (button) button.disabled = false;
+    }
 }
 async function handleEditSelf(event) {
     event.preventDefault();
@@ -244,6 +314,7 @@ async function handleEditSelf(event) {
         if (pwErr) return showFeedback('Error de contraseña: ' + pwErr.message, 'error');
     }
     showFeedback('Perfil actualizado.', 'ok');
+    invalidateCurrentUser();
     document.getElementById('edit-self-password').value = '';
     const pv = document.getElementById('edit-self-photo-preview');
     if (pv) { pv.innerHTML = ''; pv.classList.remove('has-image'); }
@@ -253,12 +324,18 @@ async function handleEditSelf(event) {
 
 let lastRepMap = {};
 async function updateRanking() {
-    const { data: users, error } = await supabase.from('hoopers').select('*').order('rep', { ascending: false }).limit(50);
+    const { data: users, error } = await supabase.from('hoopers')
+        .select('id,username,city,avatar_url,rep,streak,wins,losses,unique_games,matches,tournaments,badges')
+        .order('rep', { ascending: false }).order('id', { ascending: true }).limit(50);
     const tbody = document.getElementById('ranking-body');
     if (!tbody) return;
     tbody.innerHTML = '';
-    if (error || !users || !users.length) {
-        tbody.innerHTML = `<tr><td colspan="8" class="ranking-empty">Aún no hay hoopers registrados</td></tr>`;
+    if (error) {
+        tbody.innerHTML = `<tr><td colspan="8" class="ranking-empty">No se pudo cargar el ranking. Inténtalo de nuevo.</td></tr>`;
+        return;
+    }
+    if (!users || !users.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="ranking-empty">Aún no hay hoopers registrados.</td></tr>`;
         return;
     }
     users.forEach((user, index) => {
@@ -268,6 +345,9 @@ async function updateRanking() {
         const row = document.createElement('tr');
         row.className = `ranking-row ${tier.cls}`;
         row.dataset.userId = user.id;
+        row.tabIndex = 0;
+        row.setAttribute('role', 'button');
+        row.setAttribute('aria-label', `Abrir placa de ${user.username}`);
         row.innerHTML = `
             <td><span class="rank-position">${label}</span></td>
             <td><div class="rank-photo-cell">${getPhotoElement(user, 'ranking-photo')}<span class="rank-name">${escapeHtml(user.username)}</span></div></td>
@@ -278,6 +358,12 @@ async function updateRanking() {
             <td><span class="score-cell" data-user-id="${user.id}">${user.rep || 0}</span></td>
             <td>${streakLabel(user.streak || 0)}</td>`;
         row.addEventListener('click', () => openProfileModal(user.id));
+        row.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openProfileModal(user.id);
+            }
+        });
         tbody.appendChild(row);
         if (lastRepMap[user.id] !== undefined && lastRepMap[user.id] !== (user.rep || 0)) {
             const cell = row.querySelector('.score-cell');
@@ -298,7 +384,10 @@ function updateSpotlight(top) {
     const photo = document.getElementById('spotlight-photo');
     const name = document.getElementById('spotlight-name');
     const rep = document.getElementById('spotlight-rep');
-    if (photo) photo.src = top.avatar_url || getDefaultAvatar();
+    if (photo) {
+        photo.src = top.avatar_url || getDefaultAvatar();
+        photo.alt = `Foto de ${top.username}`;
+    }
     if (name) name.textContent = top.username;
     if (rep) rep.textContent = `${top.rep || 0} REP`;
     forceColorPhotos();
@@ -325,7 +414,7 @@ async function renderProfile() {
     if (!pv) return;
     const user = await getCurrentUser();
     if (!user) { pv.innerHTML = '<p class="is-empty">No has iniciado sesión.</p>'; return; }
-    const { data: all } = await supabase.from('hoopers').select('id, rep').order('rep', { ascending: false });
+    const { data: all } = await supabase.from('hoopers').select('id, rep').order('rep', { ascending: false }).order('id', { ascending: true });
     const pos = (all || []).findIndex(u => u.id === user.id) + 1;
     const tier = tierByPosition(pos || 999);
     const badgesHtml = (user.badges && user.badges.length)
@@ -361,8 +450,11 @@ async function renderProfile() {
 async function renderTournaments() {
     const list = document.getElementById('tournaments-list');
     if (!list) return;
-    const { data } = await supabase.from('tournaments').select(`*,winner:hoopers!tournaments_winner_id_fkey(username),participants:tournament_participants(hooper:hoopers!tournament_participants_hooper_id_fkey(username))`).order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('tournaments')
+        .select(`id,name,status,created_at,closed_at,winner_id,winner:hoopers!tournaments_winner_id_fkey(username),participants:tournament_participants(hooper:hoopers!tournament_participants_hooper_id_fkey(username))`)
+        .order('created_at', { ascending: false });
     list.innerHTML = '';
+    if (error) { list.innerHTML = '<div class="tournament-empty">No se pudieron cargar los torneos.</div>'; return; }
     if (!data || !data.length) { list.innerHTML = `<div class="tournament-empty">La cancha espera su primer torneo.</div>`; return; }
     data.forEach(ev => {
         const card = document.createElement('article');
@@ -373,16 +465,47 @@ async function renderTournaments() {
     });
 }
 
+async function renderMatches() {
+    const list = document.getElementById('matches-list');
+    if (!list) return;
+    const { data: matches, error } = await supabase.from('matches')
+        .select('id,winner_id,loser_id,winner_unique,loser_unique,created_at')
+        .order('created_at', { ascending: false }).limit(20);
+    if (error) {
+        list.innerHTML = '<div class="match-history-empty">No se pudo cargar el historial.</div>';
+        return;
+    }
+    if (!matches || !matches.length) {
+        list.innerHTML = '<div class="match-history-empty">Todavía no hay enfrentamientos registrados.</div>';
+        return;
+    }
+    const ids = [...new Set(matches.flatMap(match => [match.winner_id, match.loser_id]).filter(Boolean))];
+    const { data: users } = await supabase.from('hoopers').select('id,username').in('id', ids);
+    const names = new Map((users || []).map(user => [user.id, user.username]));
+    list.innerHTML = matches.map(match => {
+        const date = match.created_at ? formatDate(match.created_at) : 'Partido registrado';
+        const ju = match.winner_unique || match.loser_unique ? 'JU' : '1V1';
+        return `<div class="match-history-row">
+            <strong class="winner">${escapeHtml(names.get(match.winner_id) || 'Hooper')}</strong>
+            <span class="match-result">${ju}<br>${escapeHtml(date)}</span>
+            <strong class="loser">${escapeHtml(names.get(match.loser_id) || 'Hooper')}</strong>
+        </div>`;
+    }).join('');
+}
+
 async function openProfileModal(userId) {
-    const { data: user } = await supabase.from('hoopers').select('*').eq('id', userId).single();
+    const { data: user } = await supabase.from('hoopers')
+        .select('id,username,city,avatar_url,rep,streak,wins,unique_games,badges')
+        .eq('id', userId).single();
     if (!user) return;
-    const { data: all } = await supabase.from('hoopers').select('id, rep').order('rep', { ascending: false });
+    const { data: all } = await supabase.from('hoopers').select('id, rep').order('rep', { ascending: false }).order('id', { ascending: true });
     const pos = (all || []).findIndex(u => u.id === user.id) + 1;
     const tier = tierByPosition(pos || 999);
     const dialog = document.getElementById('profile-modal');
     if (!dialog) return;
 
     document.getElementById('profile-modal-photo').src = user.avatar_url || getDefaultAvatar();
+    document.getElementById('profile-modal-photo').alt = `Foto de ${user.username}`;
     document.getElementById('profile-modal-name').textContent = user.username;
     document.getElementById('profile-modal-city').textContent = user.city || '—';
     document.getElementById('profile-modal-rep').textContent = user.rep || 0;
@@ -442,10 +565,11 @@ async function showAdminPanel() {
     const user = await getCurrentUser();
     const isAdm = user && user.role === 'admin';
     ap.classList.toggle('hidden', !isAdm);
-    if (isAdm) updateAdminSelects();
+    if (isAdm) await updateAdminSelects();
 }
 async function updateAdminSelects() {
-    const { data: users } = await supabase.from('hoopers').select('id, username').order('username');
+    const { data: users, error } = await supabase.from('hoopers').select('id, username').order('username');
+    if (error) return;
     if (!users) return;
     const opts = users.map(u => `<option value="${u.id}">${escapeHtml(u.username)}</option>`).join('');
     ['admin-user-select','admin-edit-user-select','admin-badge-user','admin-delete-select','tournament-add-user','admin-match-winner','admin-match-loser'].forEach(id => {
@@ -453,7 +577,37 @@ async function updateAdminSelects() {
         if (el) el.innerHTML = opts || '<option disabled>— Sin hoopers —</option>';
     });
     await loadTournamentSelects();
+    await loadAdminStats();
+    await updateBadgeAssignment();
     updateBadgePreview();
+}
+async function loadAdminStats() {
+    const uid = document.getElementById('admin-user-select')?.value;
+    if (!uid) return;
+    const { data: user } = await supabase.from('hoopers')
+        .select('wins,unique_games,tournaments,matches,rep').eq('id', uid).single();
+    if (!user) return;
+    const fields = {
+        'admin-wins': user.wins || 0,
+        'admin-unique-games': user.unique_games || 0,
+        'admin-tournaments': user.tournaments || 0,
+        'admin-matches': user.matches || 0,
+        'admin-rep': user.rep || 0
+    };
+    Object.entries(fields).forEach(([id, value]) => {
+        const field = document.getElementById(id);
+        if (field) field.value = value;
+    });
+}
+async function updateBadgeAssignment() {
+    const uid = document.getElementById('admin-badge-user')?.value;
+    const target = document.getElementById('admin-badge-current');
+    if (!target || !uid) return;
+    const { data: user } = await supabase.from('hoopers').select('badges').eq('id', uid).single();
+    const badges = user?.badges || [];
+    target.innerHTML = badges.length
+        ? `<strong>Actualmente:</strong> ${badges.map(escapeHtml).join(' · ')}`
+        : 'Actualmente: sin insignias';
 }
 function updateBadgePreview() {
     const sel = document.getElementById('admin-badge-select');
@@ -466,38 +620,62 @@ function updateBadgePreview() {
     if (title) title.textContent = m.title || sel.value;
     if (text) text.textContent = m.description || '';
 }
+async function requireAdmin() {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'admin') {
+        showFeedback('Necesitas permisos de administrador.', 'error');
+        return false;
+    }
+    return true;
+}
 async function handleAdminStats(event) {
     event.preventDefault();
+    if (!await requireAdmin()) return;
     const uid = document.getElementById('admin-user-select').value;
     if (!uid) return showFeedback('Selecciona un hooper.', 'error');
-    const { error } = await supabase.from('hoopers').update({
-        wins: Math.max(0, Number(document.getElementById('admin-wins').value || 0)),
-        unique_games: Math.max(0, Number(document.getElementById('admin-unique-games').value || 0)),
-        tournaments: Math.max(0, Number(document.getElementById('admin-tournaments').value || 0)),
-        matches: Math.max(0, Number(document.getElementById('admin-matches').value || 0))
-    }).eq('id', uid);
-    if (error) return showFeedback('Error: ' + error.message, 'error');
-    showFeedback('Stats actualizadas.', 'ok');
-    updateAllViews();
+    const values = ['admin-wins', 'admin-unique-games', 'admin-tournaments', 'admin-matches']
+        .map(id => Number(document.getElementById(id).value));
+    if (values.some(value => !Number.isInteger(value) || value < 0)) {
+        return showFeedback('Las estadísticas deben ser números enteros no negativos.', 'error');
+    }
+    const submit = event.submitter;
+    if (submit) submit.disabled = true;
+    try {
+        const [wins, unique_games, tournaments, matches] = values;
+        const { error } = await supabase.from('hoopers').update({ wins, unique_games, tournaments, matches }).eq('id', uid);
+        if (error) return showFeedback('Error: ' + error.message, 'error');
+        showFeedback('Stats actualizadas.', 'ok');
+        await updateAllViews();
+    } finally {
+        if (submit) submit.disabled = false;
+    }
 }
 async function handleAdminMatch(event) {
     event.preventDefault();
+    if (!await requireAdmin()) return;
     const w = document.getElementById('admin-match-winner').value;
     const l = document.getElementById('admin-match-loser').value;
     if (!w || !l) return showFeedback('Selecciona ganador y perdedor.', 'error');
     if (w === l) return showFeedback('Deben ser distintos.', 'error');
-    const { error } = await supabase.from('matches').insert({
-        winner_id: w, loser_id: l,
-        winner_unique: document.getElementById('admin-match-unique-winner')?.checked || false,
-        loser_unique: document.getElementById('admin-match-unique-loser')?.checked || false
-    });
-    if (error) return showFeedback('Error: ' + error.message, 'error');
-    document.getElementById('admin-match-unique-winner').checked = false;
-    document.getElementById('admin-match-unique-loser').checked = false;
-    showFeedback('Partido registrado. La calle toma nota.', 'ok');
-    updateAllViews();
+    const submit = event.submitter;
+    if (submit) submit.disabled = true;
+    try {
+        const { error } = await supabase.from('matches').insert({
+            winner_id: w, loser_id: l,
+            winner_unique: document.getElementById('admin-match-unique-winner')?.checked || false,
+            loser_unique: document.getElementById('admin-match-unique-loser')?.checked || false
+        });
+        if (error) return showFeedback('Error: ' + error.message, 'error');
+        document.getElementById('admin-match-unique-winner').checked = false;
+        document.getElementById('admin-match-unique-loser').checked = false;
+        showFeedback('Partido registrado. La calle toma nota.', 'ok');
+        await updateAllViews();
+    } finally {
+        if (submit) submit.disabled = false;
+    }
 }
 async function handleBadge(action) {
+    if (!await requireAdmin()) return;
     const uid = document.getElementById('admin-badge-user').value;
     const badge = document.getElementById('admin-badge-select').value;
     if (!uid) return showFeedback('Selecciona un hooper.', 'error');
@@ -506,13 +684,20 @@ async function handleBadge(action) {
     let nb = user.badges || [];
     if (action === 'grant') { if (nb.includes(badge)) return showFeedback('Ya tiene esa insignia.', 'error'); nb.push(badge); }
     else { const b = nb.length; nb = nb.filter(x => x !== badge); if (nb.length === b) return showFeedback('No tenía esa insignia.', 'error'); }
-    const { error } = await supabase.from('hoopers').update({ badges: nb }).eq('id', uid);
-    if (error) return showFeedback('Error: ' + error.message, 'error');
-    showFeedback(`Insignia ${action === 'grant' ? 'otorgada' : 'revocada'}.`, 'ok');
-    updateAllViews();
+    const button = document.getElementById(action === 'grant' ? 'admin-badge-grant' : 'admin-badge-revoke');
+    if (button) button.disabled = true;
+    try {
+        const { error } = await supabase.from('hoopers').update({ badges: nb }).eq('id', uid);
+        if (error) return showFeedback('Error: ' + error.message, 'error');
+        showFeedback(`Insignia ${action === 'grant' ? 'otorgada' : 'revocada'}.`, 'ok');
+        await updateAllViews();
+    } finally {
+        if (button) button.disabled = false;
+    }
 }
 async function handleAdminEdit(event) {
     event.preventDefault();
+    if (!await requireAdmin()) return;
     const uid = document.getElementById('admin-edit-user-select').value;
     if (!uid) return showFeedback('Selecciona un hooper.', 'error');
     const updateData = { city: document.getElementById('admin-edit-city').value.trim() };
@@ -533,9 +718,11 @@ async function handleAdminEdit(event) {
 }
 async function handleAdminDelete(event) {
     event.preventDefault();
+    if (!await requireAdmin()) return;
     const uid = document.getElementById('admin-delete-select').value;
     if (!uid) return showFeedback('Selecciona un hooper.', 'error');
     const me = await getCurrentUser();
+    if (!me) return showFeedback('La sesión de administrador ha caducado.', 'error');
     if (uid === me.id) return showFeedback('No puedes eliminarte a ti mismo.', 'error');
     if (!window.confirm('¿Eliminar definitivamente del registro?')) return;
     const { error } = await supabase.from('hoopers').delete().eq('id', uid);
@@ -554,13 +741,21 @@ async function loadTournamentSelects() {
 async function loadTournamentParticipants() {
     const tid = document.getElementById('tournament-close-select').value;
     const sel = document.getElementById('tournament-close-participant');
+    const remove = document.getElementById('tournament-remove-select');
     if (!sel) return;
-    if (!tid) { sel.innerHTML = '<option disabled value="">— Elige torneo —</option>'; return; }
+    if (!tid) {
+        sel.innerHTML = '<option disabled value="">— Elige torneo —</option>';
+        if (remove) remove.innerHTML = '<option disabled value="">— Elige torneo —</option>';
+        return;
+    }
     const { data } = await supabase.from('tournament_participants').select('hooper:hoopers(id, username)').eq('tournament_id', tid);
-    sel.innerHTML = data && data.length ? data.map(p => `<option value="${p.hooper.id}">${escapeHtml(p.hooper.username)}</option>`).join('') : '<option disabled value="">— Sin participantes —</option>';
+    const opts = data && data.length ? data.map(p => `<option value="${p.hooper.id}">${escapeHtml(p.hooper.username)}</option>`).join('') : '<option disabled value="">— Sin participantes —</option>';
+    sel.innerHTML = opts;
+    if (remove) remove.innerHTML = opts;
 }
 async function handleCreateTournament(event) {
     event.preventDefault();
+    if (!await requireAdmin()) return;
     const n = document.getElementById('tournament-name').value.trim();
     if (!n) return showFeedback('Falta el nombre del torneo.', 'error');
     const { error } = await supabase.from('tournaments').insert({ name: n, status: 'open' });
@@ -570,16 +765,18 @@ async function handleCreateTournament(event) {
     updateAllViews();
 }
 async function handleAddParticipant() {
+    if (!await requireAdmin()) return;
     const t = document.getElementById('tournament-add-select').value;
     const h = document.getElementById('tournament-add-user').value;
     if (!t || !h) return showFeedback('Selecciona torneo y hooper.', 'error');
     const { error } = await supabase.from('tournament_participants').insert({ tournament_id: t, hooper_id: h });
     if (error) return showFeedback(error.code === '23505' ? 'Ya estaba inscrito.' : 'Error: ' + error.message, 'error');
     showFeedback('Hooper inscrito.', 'ok');
-    updateAllViews();
+    await updateAllViews();
 }
 async function handleCloseTournament(event) {
     event.preventDefault();
+    if (!await requireAdmin()) return;
     const t = document.getElementById('tournament-close-select').value;
     const w = document.getElementById('tournament-close-participant').value;
     if (!t) return showFeedback('Selecciona un torneo.', 'error');
@@ -591,11 +788,23 @@ async function handleCloseTournament(event) {
             const nb = [...(winner.badges || [])];
             if (!nb.includes('DUEÑO DE LA PISTA')) nb.push('DUEÑO DE LA PISTA');
             if (!nb.includes('CAMPEÓN DE TORNEO')) nb.push('CAMPEÓN DE TORNEO');
-            await supabase.from('hoopers').update({ badges: nb }).eq('id', w);
+            const { error: badgeError } = await supabase.from('hoopers').update({ badges: nb }).eq('id', w);
+            if (badgeError) return showFeedback('Torneo cerrado, pero no se pudieron asignar las insignias: ' + badgeError.message, 'error');
         }
     }
     showFeedback('Torneo cerrado. Corona entregada.', 'ok');
-    updateAllViews();
+    await updateAllViews();
+}
+
+async function handleRemoveParticipant() {
+    if (!await requireAdmin()) return;
+    const t = document.getElementById('tournament-close-select').value;
+    const h = document.getElementById('tournament-remove-select').value;
+    if (!t || !h) return showFeedback('Selecciona torneo y participante.', 'error');
+    const { error } = await supabase.from('tournament_participants').delete().eq('tournament_id', t).eq('hooper_id', h);
+    if (error) return showFeedback('Error: ' + error.message, 'error');
+    showFeedback('Participante desinscrito.', 'ok');
+    await updateAllViews();
 }
 
 async function toggleAuthViews() {
@@ -608,11 +817,14 @@ async function toggleAuthViews() {
     else { auth.classList.remove('hidden'); prof.classList.add('hidden'); if (edit) edit.classList.add('hidden'); }
 }
 async function updateAllViews() {
-    await updateRanking();
-    await renderTournaments();
-    await renderProfile();
-    await showAdminPanel();
-    await toggleAuthViews();
+    await Promise.all([
+        updateRanking(),
+        renderTournaments(),
+        renderMatches(),
+        renderProfile(),
+        showAdminPanel(),
+        toggleAuthViews()
+    ]);
     forceColorPhotos();
 }
 async function loadEditUser() {
@@ -620,7 +832,7 @@ async function loadEditUser() {
     if (!sel) return;
     const uid = sel.value;
     if (!uid) return;
-    const { data: u } = await supabase.from('hoopers').select('*').eq('id', uid).single();
+    const { data: u } = await supabase.from('hoopers').select('username,city,avatar_url').eq('id', uid).single();
     if (!u) return;
     document.getElementById('admin-edit-city').value = u.city || '';
     document.getElementById('admin-edit-photo-current').innerHTML = u.avatar_url
@@ -630,6 +842,23 @@ async function loadEditUser() {
 }
 
 // MÚSICA v7: carga con fetch+blob desde catbox (evita error 416)
+function scheduleLiveRefresh() {
+    if (liveRefreshTimer) clearTimeout(liveRefreshTimer);
+    liveRefreshTimer = setTimeout(() => {
+        liveRefreshTimer = null;
+        updateAllViews();
+    }, 350);
+}
+function initRealtime() {
+    if (liveChannel) return;
+    liveChannel = supabase.channel('feelow-hoopers-live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'hoopers' }, scheduleLiveRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, scheduleLiveRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tournaments' }, scheduleLiveRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_participants' }, scheduleLiveRefresh)
+        .subscribe();
+}
+
 function initMusicPlayer() {
     const audio = document.getElementById('bgMusic');
     const toggle = document.getElementById('musicToggle');
@@ -757,13 +986,18 @@ function initCursor() {
     const ring = document.querySelector('.fh-cursor-ring');
     if (!core || !ring) return;
     let mx = innerWidth / 2, my = innerHeight / 2, cx = mx, cy = my, rx = mx, ry = my;
+    let cursorFrame = 0;
+    let lastMove = performance.now();
     window.addEventListener('pointermove', e => {
         mx = e.clientX; my = e.clientY;
+        lastMove = performance.now();
         const el = document.elementFromPoint(mx, my);
         const interactive = el && el.closest('a, button, select, input, label, .ranking-row, .street-badge, .profile-badge-chip, .info-tooltip');
         ring.classList.toggle('is-active', !!interactive);
+        if (!cursorFrame) cursorFrame = requestAnimationFrame(loop);
     }, { passive: true });
-    (function loop() {
+    function loop(now = performance.now()) {
+        cursorFrame = 0;
         cx += (mx - cx) * 0.35; cy += (my - cy) * 0.35;
         rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
         let ox = 0, oy = 0;
@@ -773,8 +1007,10 @@ function initCursor() {
         }
         core.style.left = (cx - ox) + 'px'; core.style.top = (cy - oy) + 'px';
         ring.style.left = (rx - ox) + 'px'; ring.style.top = (ry - oy) + 'px';
-        requestAnimationFrame(loop);
-    })();
+        const moving = now - lastMove < 260 || Math.abs(mx - cx) > 0.5 || Math.abs(my - cy) > 0.5;
+        if (moving) cursorFrame = requestAnimationFrame(loop);
+    }
+    loop();
 }
 
 // LIGHTBOX: ampliar cualquier foto al hacer clic
@@ -819,7 +1055,17 @@ function init() {
 
     document.getElementById('register-form')?.addEventListener('submit', handleRegister);
     document.getElementById('login-form')?.addEventListener('submit', handleLogin);
+    document.getElementById('forgot-password-btn')?.addEventListener('click', () => {
+        const form = document.getElementById('password-recovery-form');
+        if (!form) return;
+        form.classList.toggle('hidden');
+        const email = document.getElementById('login-email')?.value.trim();
+        if (email) document.getElementById('recovery-email').value = email;
+    });
+    document.getElementById('password-recovery-form')?.addEventListener('submit', handlePasswordRecovery);
+    document.getElementById('password-update-form')?.addEventListener('submit', handlePasswordUpdate);
     document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+    document.getElementById('delete-account-btn')?.addEventListener('click', handleDeleteAccount);
     document.getElementById('edit-self-form')?.addEventListener('submit', handleEditSelf);
 
     document.getElementById('admin-stats-form')?.addEventListener('submit', handleAdminStats);
@@ -829,10 +1075,13 @@ function init() {
     document.getElementById('admin-badge-grant')?.addEventListener('click', () => handleBadge('grant'));
     document.getElementById('admin-badge-revoke')?.addEventListener('click', () => handleBadge('revoke'));
     document.getElementById('admin-edit-user-select')?.addEventListener('change', loadEditUser);
+    document.getElementById('admin-user-select')?.addEventListener('change', loadAdminStats);
+    document.getElementById('admin-badge-user')?.addEventListener('change', updateBadgeAssignment);
     document.getElementById('admin-badge-select')?.addEventListener('change', updateBadgePreview);
     document.getElementById('tournament-close-select')?.addEventListener('change', () => { loadTournamentSelects(); loadTournamentParticipants(); });
     document.getElementById('tournament-create-form')?.addEventListener('submit', handleCreateTournament);
     document.getElementById('tournament-add-btn')?.addEventListener('click', handleAddParticipant);
+    document.getElementById('tournament-remove-btn')?.addEventListener('click', handleRemoveParticipant);
     document.getElementById('tournament-close-form')?.addEventListener('submit', handleCloseTournament);
 
     document.getElementById('profile-modal-close')?.addEventListener('click', closeProfileModal);
@@ -849,6 +1098,22 @@ function init() {
     initMusicPlayer();
     initCursor();
     initLightbox();
+    document.querySelectorAll('.info-tooltip').forEach(tip => {
+        tip.tabIndex = 0;
+        tip.setAttribute('role', 'img');
+        tip.setAttribute('aria-label', tip.dataset.tooltip || 'Información');
+    });
+    supabase.auth.onAuthStateChange((event) => {
+        invalidateCurrentUser();
+        if (event === 'PASSWORD_RECOVERY') setPasswordRecoveryMode(true);
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+            setTimeout(() => updateAllViews(), 0);
+        }
+    });
+    initRealtime();
+    window.addEventListener('beforeunload', () => {
+        if (liveChannel) supabase.removeChannel(liveChannel);
+    });
     updateAllViews();
 }
 init();

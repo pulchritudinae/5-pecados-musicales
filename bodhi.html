@@ -172,6 +172,7 @@
             background: #000;
             z-index: 7;
             pointer-events: none;
+            display: none;
         }
 
         .world-title {
@@ -529,19 +530,23 @@
             </section>
 
             <nav class="world-nav" aria-label="Navegación entre personajes">
-                <a class="world-nav-link world-nav-prev" href="kim.html"><span>Anterior</span><strong>Kim Tehk</strong></a>
-                <a class="world-nav-link world-nav-next" href="ander.html"><span>Siguiente</span><strong>Ander Popu</strong></a>
+                <a class="world-nav-link world-nav-prev" style="--world-accent: var(--kim);" href="kim.html"><span>Anterior</span><strong>Kim Tehk</strong></a>
+                <a class="world-nav-link world-nav-next" style="--world-accent: var(--ander);" href="ander.html"><span>Siguiente</span><strong>Ander Popu</strong></a>
             </nav>
 
             <div style="height: 20vh;"></div>
         </div>
     </main>
 
+    <div class="character-cursor-core" aria-hidden="true"></div><div class="character-cursor-glow" aria-hidden="true"></div><div class="character-cursor-ring" aria-hidden="true"></div>
+    <script src="./scripts/character-cursor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="./scripts/hero-sequence.js"></script>
 
     <script>
         (function() {
+            if (window.__optimizedHero) return;
             const frameCount = 26;
             const images = [];
             let loadedCount = 0;

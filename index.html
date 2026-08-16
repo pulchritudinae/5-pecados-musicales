@@ -1110,12 +1110,6 @@
         const GLOW_EASING = 0.18;
         const RING_EASING = 0.09;
 
-        const edgeThreshold = 120;
-        const maxScrollSpeed = 24;
-        let scrollInterval = null;
-        let autoScrollActive = true;
-        let isOverHeader = false;   // Zona de seguridad del header
-
         function updateCursor() {
           coreX += (mouseX - coreX) * CORE_EASING;
           coreY += (mouseY - coreY) * CORE_EASING;
@@ -1136,25 +1130,7 @@
           rafId = requestAnimationFrame(updateCursor);
         }
 
-        function handleScroll() {
           // No se activa si el cursor está sobre el header o si se pausó por un clic
-          if (!autoScrollActive || isOverHeader) return;
-
-          const topDistance = mouseY;
-          const bottomDistance = window.innerHeight - mouseY;
-          let speed = 0;
-
-          if (topDistance < edgeThreshold) {
-            speed = -maxScrollSpeed * Math.pow(1 - topDistance / edgeThreshold, 1.5);
-          } else if (bottomDistance < edgeThreshold) {
-            speed = maxScrollSpeed * Math.pow(1 - bottomDistance / edgeThreshold, 1.5);
-          }
-
-          if (Math.abs(speed) > 0.2) {
-            window.scrollBy({ top: speed, behavior: 'auto' });
-          }
-        }
-
         function onMouseMove(e) {
           mouseX = e.clientX;
           mouseY = e.clientY;
@@ -1162,8 +1138,6 @@
           const el = document.elementFromPoint(e.clientX, e.clientY);
           if (el) {
             // Actualizar zona de seguridad del header
-            isOverHeader = el.closest('.site-header') !== null;
-
             // Cambio de color del cursor
             const coloredEl = el.closest('[data-cursor-color]');
             if (coloredEl) {
@@ -1227,16 +1201,6 @@
         }
 
         // Pausar auto-scroll al hacer clic en enlaces internos
-        document.addEventListener('click', (e) => {
-          const link = e.target.closest('a[href^="#"]');
-          if (link) {
-            autoScrollActive = false;
-            setTimeout(() => { autoScrollActive = true; }, 800);
-          }
-        });
-
-        scrollInterval = setInterval(handleScroll, 16);
-
         document.addEventListener('pointermove', onMouseMove, { passive: true });
         rafId = requestAnimationFrame(updateCursor);
       })();

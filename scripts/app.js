@@ -144,16 +144,29 @@ carousels.forEach((carousel) => {
   });
 
   if (!prefersReducedMotion) {
-    frame.addEventListener("pointermove", (event) => {
+    let tiltFrame = 0;
+    let pendingPointer = null;
+
+    const applyTilt = () => {
+      tiltFrame = 0;
+      if (!pendingPointer) return;
+      const event = pendingPointer;
+      pendingPointer = null;
       const rect = frame.getBoundingClientRect();
       const x = (event.clientX - rect.left) / rect.width;
       const y = (event.clientY - rect.top) / rect.height;
 
       frame.style.setProperty("--tilt-x", `${((x - 0.5) * 8).toFixed(2)}deg`);
       frame.style.setProperty("--tilt-y", `${((0.5 - y) * 7).toFixed(2)}deg`);
+    };
+
+    frame.addEventListener("pointermove", (event) => {
+      pendingPointer = event;
+      if (!tiltFrame) tiltFrame = requestAnimationFrame(applyTilt);
     });
 
     frame.addEventListener("pointerleave", () => {
+      pendingPointer = null;
       frame.style.setProperty("--tilt-x", "0deg");
       frame.style.setProperty("--tilt-y", "0deg");
     });

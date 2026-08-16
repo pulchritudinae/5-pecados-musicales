@@ -173,6 +173,7 @@
             background: #000;
             z-index: 7;
             pointer-events: none;
+            display: none;
         }
 
         .world-title {
@@ -530,20 +531,24 @@
             </section>
 
             <nav class="world-nav" aria-label="Navegación entre personajes">
-                <a class="world-nav-link world-nav-prev" href="ander.html"><span>Anterior</span><strong>Ander Popu</strong></a>
-                <a class="world-nav-link world-nav-next" href="leo.html"><span>Siguiente</span><strong>Leo Feelow</strong></a>
+                <a class="world-nav-link world-nav-prev" style="--world-accent: var(--ander);" href="ander.html"><span>Anterior</span><strong>Ander Popu</strong></a>
+                <a class="world-nav-link world-nav-next" style="--world-accent: var(--leo);" href="leo.html"><span>Siguiente</span><strong>Leo Feelow</strong></a>
             </nav>
 
             <div style="height: 20vh;"></div>
         </div>
     </main>
 
+    <div class="character-cursor-core" aria-hidden="true"></div><div class="character-cursor-glow" aria-hidden="true"></div><div class="character-cursor-ring" aria-hidden="true"></div>
+    <script src="./scripts/character-cursor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="./scripts/hero-sequence.js"></script>
 
     <script>
         (function() {
-            const frameCount = 13;
+            if (window.__optimizedHero) return;
+            const frameCount = 33;
             const images = [];
             let loadedCount = 0;
             let isInitialized = false;
@@ -564,7 +569,7 @@
             const loadingPercent = document.getElementById("loading-percent");
 
             function frameSrc(i) {
-                return `./images/asher.vid/asher-animacion-${String(i).padStart(3, "0")}.jpg`;
+                return `./images/asher.vid/asher-animacion-${String(i).padStart(3, "0")}.webp`;
             }
 
             function setCanvasSize() {
