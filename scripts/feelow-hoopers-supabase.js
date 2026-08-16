@@ -276,14 +276,22 @@ async function handleLogout() {
     updateAllViews();
 }
 async function handleDeleteAccount() {
-    const user = await getCurrentUser();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.access_token) {
+        invalidateCurrentUser();
+        return showFeedback('La sesión ha caducado. Cierra sesión y vuelve a entrar antes de eliminar la cuenta.', 'error');
+    }
+    const user = await getCurrentUser(true);
     if (!user) return showFeedback('No hay una sesión activa.', 'error');
     const confirmed = window.confirm('Esta acción borrará tu perfil, tu foto y tu cuenta de acceso. No se puede deshacer. ¿Continuar?');
     if (!confirmed) return;
     const button = document.getElementById('delete-account-btn');
     if (button) button.disabled = true;
     try {
-        const { error } = await supabase.functions.invoke('delete-account', { body: {} });
+        const { error } = await supabase.functions.invoke('delete-account', {
+            body: {},
+            headers: { Authorization: `Bearer ${session.access_token}` },
+        });
         if (error) return showFeedback('No se pudo eliminar la cuenta: ' + error.message, 'error');
         await supabase.auth.signOut();
         invalidateCurrentUser();
