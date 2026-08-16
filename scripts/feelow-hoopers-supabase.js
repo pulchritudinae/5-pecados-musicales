@@ -275,6 +275,19 @@ async function handleLogout() {
     showFeedback('Sesión cerrada.', 'ok');
     updateAllViews();
 }
+
+function askDeleteAccountConfirmation() {
+    const dialog = document.getElementById('delete-account-dialog');
+    if (!dialog || typeof dialog.showModal !== 'function') {
+        return Promise.resolve(window.confirm('Esta acción borrará tu perfil, tu foto y tu cuenta de acceso. No se puede deshacer. ¿Continuar?'));
+    }
+    return new Promise(resolve => {
+        const handleClose = () => resolve(dialog.returnValue === 'confirm');
+        dialog.addEventListener('close', handleClose, { once: true });
+        dialog.showModal();
+    });
+}
+
 async function handleDeleteAccount() {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session?.access_token) {
@@ -283,7 +296,7 @@ async function handleDeleteAccount() {
     }
     const user = await getCurrentUser(true);
     if (!user) return showFeedback('No hay una sesión activa.', 'error');
-    const confirmed = window.confirm('Esta acción borrará tu perfil, tu foto y tu cuenta de acceso. No se puede deshacer. ¿Continuar?');
+    const confirmed = await askDeleteAccountConfirmation();
     if (!confirmed) return;
     const button = document.getElementById('delete-account-btn');
     if (button) button.disabled = true;

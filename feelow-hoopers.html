@@ -412,6 +412,23 @@
     .text-action:focus-visible { outline: 2px solid var(--amber-hi); outline-offset: 3px; }
     .brutalist-btn.danger:hover { background: #c70f18 !important; color: #fff !important; }
 
+    .delete-account-dialog {
+        width: min(92vw, 460px);
+        padding: 0;
+        border: 1px solid rgba(224,85,97,0.55);
+        border-radius: 8px;
+        background: rgba(9,9,9,0.97);
+        color: var(--text);
+        box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 35px rgba(199,15,24,0.15);
+    }
+    .delete-account-dialog::backdrop { background: rgba(0,0,0,0.72); backdrop-filter: blur(6px); }
+    .delete-account-dialog-card { padding: 1.5rem; }
+    .delete-account-kicker { color: #ff9aa1; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.22em; }
+    .delete-account-dialog h2 { margin: 0.45rem 0 0.7rem; font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.08em; color: #f4f2ec; }
+    .delete-account-dialog p { margin: 0; color: var(--text-dim); font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.55; }
+    .delete-account-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.65rem; margin-top: 1.35rem; }
+    .delete-account-actions .brutalist-btn { font-size: 0.86rem !important; }
+
     /* Acciones de insignias: el estilo base usaba --ink, que aquí es casi negro. */
     #admin-badge-grant,
     #admin-badge-revoke {
@@ -912,7 +929,6 @@
                     <div id="profile-view" class="profile-view"></div>
                     <button type="button" class="brutalist-btn" id="logout-btn" style="margin-top: 1rem;">Cerrar sesión</button>
                     <button type="button" class="brutalist-btn danger" id="delete-account-btn" style="margin-top: 0.65rem;">Eliminar mi cuenta</button>
-                    <span class="field-hint account-delete-hint">Borra tu perfil, tu foto y tu acceso de forma permanente.</span>
                 </article>
 
                 <article class="feelow-panel edit-panel hidden" id="edit-my-profile">
@@ -1082,6 +1098,18 @@
             </div>
         </section>
     </main>
+
+    <dialog id="delete-account-dialog" class="delete-account-dialog" aria-labelledby="delete-account-title">
+        <form method="dialog" class="delete-account-dialog-card">
+            <span class="delete-account-kicker">AVISO DE LA CALLE</span>
+            <h2 id="delete-account-title">¿Eliminar tu cuenta?</h2>
+            <p>Se borrarán tu perfil, tu foto, tus partidos y tus participaciones en torneos. Esta acción no se puede deshacer.</p>
+            <div class="delete-account-actions">
+                <button type="submit" value="cancel" class="brutalist-btn">Cancelar</button>
+                <button type="submit" value="confirm" class="brutalist-btn danger">Eliminar definitivamente</button>
+            </div>
+        </form>
+    </dialog>
 
     <dialog id="profile-modal" class="profile-modal" aria-labelledby="profile-modal-name">
         <article class="profile-modal-plate">
