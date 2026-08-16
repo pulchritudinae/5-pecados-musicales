@@ -66,6 +66,110 @@ function escapeHtml(v) {
 }
 function getBadgeMeta(b) { return BADGE_META[b] || { rep: 0, title: b, description: 'Insignia especial de la calle.' }; }
 function getBadgeSvg(b) { return BADGE_SVG[b] || '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>'; }
+
+const CUP_COLORS = {
+    Bronce: '#a86632',
+    Plata: '#c5ccd2',
+    Oro: '#f2c069',
+    Platino: '#dfe9f2',
+    Obsidiana: '#9b8be5'
+};
+const CUP_CATALOG = [
+    ['BRONZE_RISE','Ascenso de Bronce','Bronce',20,'Primer paso: la promesa empieza a convertirse en camino.','rise'],
+    ['BRONZE_BLOCK','Bloque de Bronce','Bronce',25,'Aguantar la presión de la primera calle.','block'],
+    ['BRONZE_SPARK','Chispa de Bronce','Bronce',30,'Una victoria pequeña con una historia grande.','spark'],
+    ['BRONZE_FOUNDATION','Cimiento de Bronce','Bronce',35,'Construir un nombre que todavía crecerá.','foundation'],
+    ['BRONZE_ROOKIE','Rookie de Bronce','Bronce',40,'El primer metal de quien entra con hambre.','ribbon'],
+    ['SILVER_PULSE','Pulso de Plata','Plata',45,'Saber cuándo acelerar y cuándo esperar.','pulse'],
+    ['SILVER_GRIT','Filo de Plata','Plata',50,'Disciplina y desgaste hasta la última ronda.','blade'],
+    ['SILVER_CIRCUIT','Circuito de Plata','Plata',55,'Cada ronda se convierte en experiencia.','circuit'],
+    ['SILVER_VANGUARD','Vanguardia de Plata','Plata',60,'Marcar el ritmo antes que los demás.','wings'],
+    ['SILVER_ELITE','Élite de Plata','Plata',65,'El salto que separa al buen hooper del rival habitual.','double'],
+    ['GOLD_CROWN','Corona de Oro','Oro',70,'Una victoria que ya pesa en la memoria.','crown'],
+    ['GOLD_IMPACT','Impacto de Oro','Oro',80,'Un torneo que cambia la posición en la calle.','impact'],
+    ['GOLD_DOMINION','Dominio de Oro','Oro',90,'Controlar el cuadro de principio a fin.','dominion'],
+    ['GOLD_HEADLINER','Cabeza de Cartel','Oro',100,'Convertir una final en un acontecimiento.','spotlight'],
+    ['GOLD_LEGACY','Legado de Oro','Oro',110,'Una actuación que seguirá citándose.','legacy'],
+    ['PLATINUM_VECTOR','Vector de Platino','Platino',120,'Trayectoria limpia, precisa y difícil de repetir.','vector'],
+    ['PLATINUM_MONUMENT','Monumento de Platino','Platino',135,'Dejar una marca visible en toda la competición.','monument'],
+    ['PLATINUM_APEX','Cima de Platino','Platino',150,'Reservada para cuadros realmente exigentes.','apex'],
+    ['PLATINUM_ORBIT','Órbita de Platino','Platino',165,'Jugar por encima del nivel esperado.','orbit'],
+    ['PLATINUM_ABSOLUTE','Absoluto de Platino','Platino',180,'Superioridad excepcional e incontestable.','absolute'],
+    ['OBSIDIAN_RELIC','Reliquia de Obsidiana','Obsidiana',200,'Una competición que entra en el mito de 5PM.','relic'],
+    ['OBSIDIAN_TITAN','Titán de Obsidiana','Obsidiana',225,'Sobrevivir a un cuadro de nivel extremo.','titan'],
+    ['OBSIDIAN_VOID','Vacío de Obsidiana','Obsidiana',250,'Una final que deja al resto sin respuesta.','void'],
+    ['OBSIDIAN_ECLIPSE','Eclipse de Obsidiana','Obsidiana',275,'Una hazaña que tapa cualquier actuación anterior.','eclipse'],
+    ['OBSIDIAN_5PM','Cima 5PM','Obsidiana',300,'Dificultad, nivel y leyenda en una sola noche.','five']
+].map(([key, name, tier, points, description, variant]) => ({ key, name, tier, points, description, variant }));
+const CUP_BY_KEY = Object.fromEntries(CUP_CATALOG.map(cup => [cup.key, cup]));
+function getCupMeta(key) { return CUP_BY_KEY[key] || { key, name: key || 'Copa', tier: 'Bronce', points: 0, description: 'Trofeo de torneo.', variant: 'rise' }; }
+function getCupSvg(cupKey, className = 'cup-icon') {
+    const cup = getCupMeta(cupKey);
+    const color = CUP_COLORS[cup.tier] || CUP_COLORS.Bronce;
+    const accent = cup.tier === 'Obsidiana' ? '#eeeaff' : '#fff6d8';
+    const extras = {
+        rise: '<path d="M12 2v4M6 5l2.5 3M18 5l-2.5 3"/>',
+        block: '<path d="M5 8h14v8H5zM8 16v3M16 16v3"/>',
+        spark: '<path d="m12 2 1.4 4.2L18 8l-4.6 1.8L12 14l-1.4-4.2L6 8l4.6-1.8Z"/>',
+        foundation: '<path d="M4 19h16M6 16h12M8 13h8"/>',
+        ribbon: '<path d="M9 17 8 22l4-2 4 2-1-5"/>',
+        pulse: '<path d="M3 11h4l2-4 3 9 2-5 2 3h5"/>',
+        blade: '<path d="m7 18 10-12 1 5-8 9Z"/>',
+        circuit: '<path d="M4 6h5v5h6v7h5M4 18h4"/>',
+        wings: '<path d="M9 8 4 5l2 7-4 3 7-1M15 8l5-3-2 7 4 3-7-1"/>',
+        double: '<path d="M7 5v4M17 5v4M5 12h14"/>',
+        crown: '<path d="m4 7 4 4 4-7 4 7 4-4-2 10H6Z"/>',
+        impact: '<circle cx="12" cy="9" r="6"/><path d="M12 3v12M6 9h12M8 19h8"/>',
+        dominion: '<path d="M4 17h16M6 17 8 6l4 5 4-5 2 11"/>',
+        spotlight: '<circle cx="12" cy="8" r="4"/><path d="M4 19h16M7 15l-3 4M17 15l3 4"/>',
+        legacy: '<path d="M12 3v17M7 8h10M5 20h14"/><circle cx="12" cy="3" r="2"/>',
+        vector: '<path d="m5 19 7-14 7 14M8 14h8"/>',
+        monument: '<path d="M6 20h12M7 17h10M8 17V8h8v9M6 8h12M12 4v4"/>',
+        apex: '<path d="m4 19 8-16 8 16-8-4Z"/>',
+        orbit: '<ellipse cx="12" cy="11" rx="9" ry="4"/><ellipse cx="12" cy="11" rx="4" ry="9"/>',
+        absolute: '<circle cx="12" cy="10" r="7"/><path d="M7 20h10M9 17h6"/>',
+        relic: '<path d="M7 4h10M8 4v7l4 4 4-4V4M5 20h14M8 18h8"/>',
+        titan: '<path d="M5 20h14M7 17h10M8 17 7 7l5 4 5-4-1 10M12 3v8"/>',
+        void: '<circle cx="12" cy="10" r="7" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="3" fill="#0b0b0b" stroke="none"/>',
+        eclipse: '<circle cx="10" cy="10" r="7"/><circle cx="15" cy="8" r="7" fill="#0b0b0b" stroke="none"/><path d="M8 20h8"/>',
+        five: '<path d="M12 2 14 8l6-2-4 5 5 3-6 .5 2 6.5-5-4-5 4 2-6.5-6-.5 5-3-4-5 6 2Z"/>'
+    }[cup.variant] || '';
+    return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4.5c0 3 1.2 4.8 3.2 5M17 6h2.5c0 3-1.2 4.8-3.2 5M12 14v3M8 20h8M9 17h6" stroke="${color}"/>${extras}<path d="M8 20h8" stroke="${accent}"/></svg>`;
+}
+function globalRep(user) { return (Number(user?.rep) || 0) + (Number(user?.tournament_rep) || 0); }
+function sortByGlobalRep(users) { return [...(users || [])].sort((a, b) => globalRep(b) - globalRep(a) || String(a.id).localeCompare(String(b.id))); }
+function formatDateTime(d) {
+    if (!d) return '';
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' });
+}
+function renderTrophyCards(trophies = [], compact = false) {
+    if (!trophies.length) return '<span class="profile-badges-empty">Sin copas todavía.</span>';
+    return trophies.map(trophy => {
+        const cup = getCupMeta(trophy.cup_key);
+        const tournamentName = trophy.tournament?.name || 'Torneo 5PM';
+        return `<article class="trophy-card${compact ? ' is-compact' : ''}" title="${escapeHtml(cup.description)}">
+            <div class="trophy-card-icon">${getCupSvg(cup.key)}</div>
+            <div class="trophy-card-copy"><strong>${escapeHtml(cup.name)}</strong><span>${escapeHtml(tournamentName)}</span><em>+${trophy.cup_points || cup.points} REP de copa</em></div>
+        </article>`;
+    }).join('');
+}
+function renderBracket(matches = [], names = new Map(), isAdmin = false) {
+    if (!matches.length) return '<div class="bracket-empty">Cuadro todavía no generado.</div>';
+    const rounds = [...new Set(matches.map(match => match.round))].sort((a, b) => a - b);
+    return `<div class="tournament-bracket">${rounds.map(round => {
+        const roundMatches = matches.filter(match => match.round === round).sort((a, b) => a.slot - b.slot);
+        return `<section class="bracket-round"><span class="bracket-round-label">${round === rounds.length ? 'Final' : round === rounds.length - 1 ? 'Semifinal' : `Ronda ${round}`}</span>${roundMatches.map(match => {
+            const a = names.get(match.player_a_id) || 'Pendiente';
+            const b = names.get(match.player_b_id) || 'Pendiente';
+            const completed = match.status === 'completed';
+            const actionA = isAdmin && !completed && match.player_a_id ? `<button type="button" class="bracket-winner-btn ${match.winner_id === match.player_a_id ? 'is-winner' : ''}" data-bracket-winner="${match.player_a_id}" data-bracket-match="${match.id}">${escapeHtml(a)}</button>` : `<span class="bracket-player ${match.winner_id === match.player_a_id ? 'is-winner' : ''}">${escapeHtml(a)}</span>`;
+            const actionB = isAdmin && !completed && match.player_b_id ? `<button type="button" class="bracket-winner-btn ${match.winner_id === match.player_b_id ? 'is-winner' : ''}" data-bracket-winner="${match.player_b_id}" data-bracket-match="${match.id}">${escapeHtml(b)}</button>` : `<span class="bracket-player ${match.winner_id === match.player_b_id ? 'is-winner' : ''}">${escapeHtml(b)}</span>`;
+            return `<article class="bracket-match ${completed ? 'is-completed' : ''}"><div>${actionA}</div><div>${actionB}</div></article>`;
+        }).join('')}</section>`;
+    }).join('')}</div>`;
+}
 function formatDate(d) {
     const date = new Date(d);
     if (isNaN(date.getTime())) return '—';
@@ -191,7 +295,7 @@ async function getCurrentUser(force = false) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return (currentUserCache = null);
         const { data: profile } = await supabase.from('hoopers')
-            .select('id,username,city,avatar_url,rep,streak,wins,losses,unique_games,matches,tournaments,badges,role')
+            .select('id,username,city,avatar_url,rep,tournament_rep,streak,wins,losses,unique_games,matches,tournaments,badges,role')
             .eq('id', user.id).single();
         return (currentUserCache = profile || null);
     })();
@@ -360,9 +464,9 @@ async function handleEditSelf(event) {
 
 let lastRepMap = {};
 async function updateRanking() {
-    const { data: users, error } = await supabase.from('hoopers')
-        .select('id,username,city,avatar_url,rep,streak,wins,losses,unique_games,matches,tournaments,badges')
-        .order('rep', { ascending: false }).order('id', { ascending: true }).limit(50);
+    const { data: rawUsers, error } = await supabase.from('hoopers')
+        .select('id,username,city,avatar_url,rep,tournament_rep,streak,wins,losses,unique_games,matches,tournaments,badges');
+    const users = sortByGlobalRep(rawUsers);
     const tbody = document.getElementById('ranking-body');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -391,7 +495,7 @@ async function updateRanking() {
             <td>${user.unique_games || 0}</td>
             <td>${user.matches || 0}</td>
             <td>${user.losses || 0}</td>
-            <td><span class="score-cell" data-user-id="${user.id}">${user.rep || 0}</span></td>
+            <td><span class="score-cell" data-user-id="${user.id}">${globalRep(user)}</span></td>
             <td>${streakLabel(user.streak || 0)}</td>`;
         row.addEventListener('click', () => openProfileModal(user.id));
         row.addEventListener('keydown', event => {
@@ -401,15 +505,15 @@ async function updateRanking() {
             }
         });
         tbody.appendChild(row);
-        if (lastRepMap[user.id] !== undefined && lastRepMap[user.id] !== (user.rep || 0)) {
+        if (lastRepMap[user.id] !== undefined && lastRepMap[user.id] !== globalRep(user)) {
             const cell = row.querySelector('.score-cell');
             if (cell) {
-                animateNumber(cell, lastRepMap[user.id], user.rep || 0);
+                animateNumber(cell, lastRepMap[user.id], globalRep(user));
                 cell.classList.add('glowing');
                 setTimeout(() => cell.classList.remove('glowing'), 2000);
             }
         }
-        lastRepMap[user.id] = user.rep || 0;
+        lastRepMap[user.id] = globalRep(user);
     });
     forceColorPhotos();
     updateSpotlight(users[0]);
@@ -425,7 +529,7 @@ function updateSpotlight(top) {
         photo.alt = `Foto de ${top.username}`;
     }
     if (name) name.textContent = top.username;
-    if (rep) rep.textContent = `${top.rep || 0} REP`;
+    if (rep) rep.textContent = `${globalRep(top)} REP`;
     forceColorPhotos();
 }
 
@@ -435,7 +539,7 @@ function updateTicker(users) {
     if (!track || !users || !users.length) return;
     const items = [];
     const medals = [GLYPH.crown, GLYPH.star, GLYPH.ball];
-    users.slice(0, 3).forEach((u, i) => items.push(`${medals[i]}<b class="ticker-user">${escapeHtml(u.username)}</b>\u00A0domina con ${u.rep || 0} REP`));
+    users.slice(0, 3).forEach((u, i) => items.push(`${medals[i]}<b class="ticker-user">${escapeHtml(u.username)}</b>\u00A0domina con ${globalRep(u)} REP`));
     users.filter(u => u.streak >= STREAK_FIRE).slice(0, 2).forEach(u => items.push(`${GLYPH.flame}<b class="ticker-user">${escapeHtml(u.username)}</b>\u00A0encadena ${u.streak} victorias`));
     const active = [...users].sort((a, b) => (b.matches || 0) - (a.matches || 0))[0];
     if (active && active.matches > 0) items.push(`${GLYPH.ball}<b class="ticker-user">${escapeHtml(active.username)}</b>\u00A0es el más activo: ${active.matches} partidos`);
@@ -450,8 +554,12 @@ async function renderProfile() {
     if (!pv) return;
     const user = await getCurrentUser();
     if (!user) { pv.innerHTML = '<p class="is-empty">No has iniciado sesión.</p>'; return; }
-    const { data: all } = await supabase.from('hoopers').select('id, rep').order('rep', { ascending: false }).order('id', { ascending: true });
-    const pos = (all || []).findIndex(u => u.id === user.id) + 1;
+    const [{ data: all }, { data: trophies }] = await Promise.all([
+        supabase.from('hoopers').select('id,rep,tournament_rep'),
+        supabase.from('tournament_trophies').select('id,cup_key,cup_points,awarded_at,tournament:tournaments(name)').eq('hooper_id', user.id).order('awarded_at', { ascending: false })
+    ]);
+    const ranked = sortByGlobalRep(all);
+    const pos = ranked.findIndex(u => u.id === user.id) + 1;
     const tier = tierByPosition(pos || 999);
     const badgesHtml = (user.badges && user.badges.length)
         ? user.badges.map(b => { const m = getBadgeMeta(b); return `<button type="button" class="profile-badge-chip" data-badge="${escapeHtml(b)}" title="${escapeHtml(m.title || b)}">${getBadgeSvg(b)}</button>`; }).join('')
@@ -462,7 +570,7 @@ async function renderProfile() {
             <div>
                 <h3>${escapeHtml(user.username)}</h3>
                 <p>${user.city ? escapeHtml(user.city) : 'Sin ciudad'}</p>
-                <p class="profile-rep-line"><strong>${user.rep || 0}</strong> REP · <span class="profile-tier-tag ${tier.cls}">${tier.label}</span></p>
+                <p class="profile-rep-line"><strong>${globalRep(user)}</strong> REP · <span class="profile-tier-tag ${tier.cls}">${tier.label}</span></p>
             </div>
         </div>
         <div class="profile-stats">
@@ -471,7 +579,9 @@ async function renderProfile() {
             <div><span>Victorias</span><strong>${user.wins}</strong></div>
             <div><span>Juego Único</span><strong>${user.unique_games || 0}</strong></div>
         </div>
-        <div class="profile-badges">${badgesHtml}</div>`;
+        <div class="profile-badges">${badgesHtml}</div>
+        <div class="profile-trophies-heading">Copas de torneo</div>
+        <div class="profile-trophies">${renderTrophyCards(trophies || [])}</div>`;
     pv.querySelectorAll('.profile-badge-chip').forEach(btn => {
         btn.addEventListener('click', () => {
             const m = getBadgeMeta(btn.dataset.badge);
@@ -484,6 +594,37 @@ async function renderProfile() {
 }
 
 async function renderTournaments() {
+    const list = document.getElementById('tournaments-list');
+    if (!list) return;
+    const { data, error } = await supabase.from('tournaments')
+        .select('id,name,status,created_at,closed_at,starts_at,ends_at,cup_key,cup_points,winner_id,winner:hoopers!tournaments_winner_id_fkey(username),participants:tournament_participants(hooper:hoopers!tournament_participants_hooper_id_fkey(username))')
+        .order('created_at', { ascending: false });
+    list.innerHTML = '';
+    if (error) { list.innerHTML = '<div class="tournament-empty">No se pudieron cargar los torneos.</div>'; return; }
+    if (!data || !data.length) { list.innerHTML = '<div class="tournament-empty">La cancha espera su primer torneo.</div>'; return; }
+    const tournamentIds = data.map(tournament => tournament.id);
+    const { data: bracketMatches } = await supabase.from('tournament_matches')
+        .select('id,tournament_id,round,slot,player_a_id,player_b_id,winner_id,status')
+        .in('tournament_id', tournamentIds);
+    const matchUserIds = [...new Set((bracketMatches || []).flatMap(match => [match.player_a_id, match.player_b_id, match.winner_id]).filter(Boolean))];
+    const { data: matchUsers } = matchUserIds.length ? await supabase.from('hoopers').select('id,username').in('id', matchUserIds) : { data: [] };
+    const names = new Map((matchUsers || []).map(user => [user.id, user.username]));
+    const currentUser = await getCurrentUser();
+    const isAdmin = currentUser?.role === 'admin';
+    data.forEach(tournament => {
+        const card = document.createElement('article');
+        card.className = `tournament-card is-${tournament.status}`;
+        const parts = (tournament.participants || []).map(p => p.hooper?.username).filter(Boolean).join(', ') || 'Sin participantes';
+        const cup = tournament.cup_key ? getCupMeta(tournament.cup_key) : null;
+        const timing = tournament.starts_at || tournament.ends_at ? `<div class="tournament-timing">${tournament.starts_at ? `Inicio · ${escapeHtml(formatDateTime(tournament.starts_at))}` : ''}${tournament.ends_at ? `<br>Final · ${escapeHtml(formatDateTime(tournament.ends_at))}` : ''}</div>` : '';
+        const matches = (bracketMatches || []).filter(match => match.tournament_id === tournament.id);
+        card.innerHTML = `<header class="tournament-head"><div><span class="tournament-status ${tournament.status}">${tournament.status === 'open' ? 'En curso' : 'Cerrado'}</span><h3>${escapeHtml(tournament.name)}</h3><p class="tournament-date">Creado · ${formatDate(tournament.created_at)}</p>${timing}${tournament.closed_at ? `<p class="tournament-date">Cerrado · ${formatDate(tournament.closed_at)}</p>` : ''}</div>${cup ? `<div class="tournament-cup-mark">${getCupSvg(cup.key)}<span>${escapeHtml(cup.name)} · +${cup.points}</span></div>` : ''}${tournament.winner ? `<div class="tournament-winner">Campeón<div class="tournament-winner-name">${escapeHtml(tournament.winner.username)}</div></div>` : ''}</header><div class="tournament-participants">${escapeHtml(parts)}</div>${renderBracket(matches, names, isAdmin)}`;
+        list.appendChild(card);
+    });
+    list.querySelectorAll('[data-bracket-winner]').forEach(button => button.addEventListener('click', handleBracketWinner));
+}
+
+async function renderTournamentsLegacy() {
     const list = document.getElementById('tournaments-list');
     if (!list) return;
     const { data, error } = await supabase.from('tournaments')
@@ -531,11 +672,15 @@ async function renderMatches() {
 
 async function openProfileModal(userId) {
     const { data: user } = await supabase.from('hoopers')
-        .select('id,username,city,avatar_url,rep,streak,wins,unique_games,badges')
+        .select('id,username,city,avatar_url,rep,tournament_rep,streak,wins,unique_games,badges')
         .eq('id', userId).single();
     if (!user) return;
-    const { data: all } = await supabase.from('hoopers').select('id, rep').order('rep', { ascending: false }).order('id', { ascending: true });
-    const pos = (all || []).findIndex(u => u.id === user.id) + 1;
+    const [{ data: all }, { data: trophies }] = await Promise.all([
+        supabase.from('hoopers').select('id,rep,tournament_rep'),
+        supabase.from('tournament_trophies').select('id,cup_key,cup_points,awarded_at,tournament:tournaments(name)').eq('hooper_id', user.id).order('awarded_at', { ascending: false })
+    ]);
+    const ranked = sortByGlobalRep(all);
+    const pos = ranked.findIndex(u => u.id === user.id) + 1;
     const tier = tierByPosition(pos || 999);
     const dialog = document.getElementById('profile-modal');
     if (!dialog) return;
@@ -544,12 +689,12 @@ async function openProfileModal(userId) {
     document.getElementById('profile-modal-photo').alt = `Foto de ${user.username}`;
     document.getElementById('profile-modal-name').textContent = user.username;
     document.getElementById('profile-modal-city').textContent = user.city || '—';
-    document.getElementById('profile-modal-rep').textContent = user.rep || 0;
+    document.getElementById('profile-modal-rep').textContent = globalRep(user);
     document.getElementById('profile-modal-streak').textContent = user.streak || 0;
     document.getElementById('profile-modal-wins').textContent = user.wins || 0;
     document.getElementById('profile-modal-unique').textContent = user.unique_games || 0;
     const tierEl = document.getElementById('profile-modal-tier');
-    tierEl.textContent = `${tier.label} · ${user.rep || 0} REP`;
+    tierEl.textContent = `${tier.label} · ${globalRep(user)} REP`;
     tierEl.className = `profile-modal-tier ${tier.cls}`;
     const bw = document.getElementById('profile-modal-badges');
     const detail = document.getElementById('profile-modal-badge-detail');
@@ -607,10 +752,17 @@ async function updateAdminSelects() {
     const { data: users, error } = await supabase.from('hoopers').select('id, username').order('username');
     if (error) return;
     if (!users) return;
+    const selectIds = ['admin-user-select','admin-edit-user-select','admin-badge-user','admin-delete-select','tournament-add-user','admin-match-winner','admin-match-loser'];
+    const previousSelections = new Map(selectIds.map(id => [id, document.getElementById(id)?.value || '']));
     const opts = users.map(u => `<option value="${u.id}">${escapeHtml(u.username)}</option>`).join('');
     ['admin-user-select','admin-edit-user-select','admin-badge-user','admin-delete-select','tournament-add-user','admin-match-winner','admin-match-loser'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = opts || '<option disabled>— Sin hoopers —</option>';
+    });
+    selectIds.forEach(id => {
+        const el = document.getElementById(id);
+        const previous = previousSelections.get(id);
+        if (el && previous && users.some(u => u.id === previous)) el.value = previous;
     });
     await loadTournamentSelects();
     await loadAdminStats();
@@ -621,14 +773,14 @@ async function loadAdminStats() {
     const uid = document.getElementById('admin-user-select')?.value;
     if (!uid) return;
     const { data: user } = await supabase.from('hoopers')
-        .select('wins,unique_games,tournaments,matches,rep').eq('id', uid).single();
+        .select('wins,unique_games,tournaments,matches,rep,tournament_rep').eq('id', uid).single();
     if (!user) return;
     const fields = {
         'admin-wins': user.wins || 0,
         'admin-unique-games': user.unique_games || 0,
         'admin-tournaments': user.tournaments || 0,
         'admin-matches': user.matches || 0,
-        'admin-rep': user.rep || 0
+        'admin-rep': globalRep(user)
     };
     Object.entries(fields).forEach(([id, value]) => {
         const field = document.getElementById(id);
@@ -655,6 +807,21 @@ function updateBadgePreview() {
     if (icon) icon.innerHTML = getBadgeSvg(sel.value);
     if (title) title.textContent = m.title || sel.value;
     if (text) text.textContent = m.description || '';
+}
+function cupOptions(selected = '') {
+    return CUP_CATALOG.map(cup => `<option value="${cup.key}"${cup.key === selected ? ' selected' : ''}>${escapeHtml(cup.tier)} · ${escapeHtml(cup.name)} (+${cup.points})</option>`).join('');
+}
+function populateCupSelect(id, selected = '') {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = cupOptions(selected);
+}
+function updateCupPreview() {
+    const select = document.getElementById('tournament-cup-select');
+    const preview = document.getElementById('tournament-cup-preview');
+    if (!select || !preview) return;
+    const cup = getCupMeta(select.value);
+    preview.innerHTML = `<div class="cup-preview-icon">${getCupSvg(cup.key)}</div><div><strong>${escapeHtml(cup.name)}</strong><span>${escapeHtml(cup.description)}</span><em>+${cup.points} REP de copa</em></div>`;
 }
 async function requireAdmin() {
     const user = await getCurrentUser();
@@ -779,12 +946,22 @@ async function handleAdminDelete(event) {
     updateAllViews();
 }
 async function loadTournamentSelects() {
-    const { data } = await supabase.from('tournaments').select('id, name').eq('status', 'open').order('created_at', { ascending: false });
+    const { data } = await supabase.from('tournaments').select('id, name, cup_key').eq('status', 'open').order('created_at', { ascending: false });
     const opts = data && data.length ? data.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('') : '<option disabled value="">— Sin torneos —</option>';
     const a = document.getElementById('tournament-add-select');
     const c = document.getElementById('tournament-close-select');
+    const b = document.getElementById('tournament-bracket-select');
+    const previous = { add: a?.value || '', close: c?.value || '', bracket: b?.value || '' };
     if (a) a.innerHTML = opts;
     if (c) c.innerHTML = opts;
+    if (b) b.innerHTML = opts;
+    if (a && data?.some(tournament => tournament.id === previous.add)) a.value = previous.add;
+    if (c && data?.some(tournament => tournament.id === previous.close)) c.value = previous.close;
+    if (b && data?.some(tournament => tournament.id === previous.bracket)) b.value = previous.bracket;
+    populateCupSelect('tournament-cup-select');
+    populateCupSelect('tournament-close-cup');
+    updateCupPreview();
+    await loadTournamentParticipants();
 }
 async function loadTournamentParticipants() {
     const tid = document.getElementById('tournament-close-select').value;
@@ -797,6 +974,9 @@ async function loadTournamentParticipants() {
         return;
     }
     const { data } = await supabase.from('tournament_participants').select('hooper:hoopers(id, username)').eq('tournament_id', tid);
+    const { data: tournament } = await supabase.from('tournaments').select('cup_key').eq('id', tid).maybeSingle();
+    const closeCup = document.getElementById('tournament-close-cup');
+    if (closeCup && tournament?.cup_key) closeCup.value = tournament.cup_key;
     const opts = data && data.length ? data.map(p => `<option value="${p.hooper.id}">${escapeHtml(p.hooper.username)}</option>`).join('') : '<option disabled value="">— Sin participantes —</option>';
     sel.innerHTML = opts;
     if (remove) remove.innerHTML = opts;
@@ -806,11 +986,72 @@ async function handleCreateTournament(event) {
     if (!await requireAdmin()) return;
     const n = document.getElementById('tournament-name').value.trim();
     if (!n) return showFeedback('Falta el nombre del torneo.', 'error');
-    const { error } = await supabase.from('tournaments').insert({ name: n, status: 'open' });
+    const startsValue = document.getElementById('tournament-starts-at')?.value;
+    const endsValue = document.getElementById('tournament-ends-at')?.value;
+    const starts_at = startsValue ? new Date(startsValue).toISOString() : null;
+    const ends_at = endsValue ? new Date(endsValue).toISOString() : null;
+    if (starts_at && ends_at && new Date(ends_at) <= new Date(starts_at)) return showFeedback('La finalización debe ser posterior al inicio.', 'error');
+    const cup_key = document.getElementById('tournament-cup-select')?.value || CUP_CATALOG[0].key;
+    const cup = getCupMeta(cup_key);
+    const { error } = await supabase.from('tournaments').insert({ name: n, status: 'open', starts_at, ends_at, cup_key, cup_points: cup.points });
     if (error) return showFeedback('Error: ' + error.message, 'error');
     event.target.reset();
     showFeedback(`Torneo «${n}» abierto.`, 'ok');
     updateAllViews();
+}
+async function handleGenerateBracket() {
+    if (!await requireAdmin()) return;
+    const tournamentId = document.getElementById('tournament-bracket-select')?.value;
+    if (!tournamentId) return showFeedback('Selecciona un torneo.', 'error');
+    const { data: participants, error: participantError } = await supabase.from('tournament_participants')
+        .select('hooper_id').eq('tournament_id', tournamentId).order('hooper_id');
+    if (participantError) return showFeedback('Error: ' + participantError.message, 'error');
+    const ids = (participants || []).map(participant => participant.hooper_id);
+    if (ids.length < 2) return showFeedback('Necesitas al menos dos participantes.', 'error');
+    const size = 2 ** Math.ceil(Math.log2(ids.length));
+    const rounds = Math.log2(size);
+    const { error: clearError } = await supabase.from('tournament_matches').delete().eq('tournament_id', tournamentId);
+    if (clearError) return showFeedback('No se pudo reiniciar el cuadro: ' + clearError.message, 'error');
+    const rows = [];
+    for (let round = 1; round <= rounds; round += 1) {
+        const matchCount = size / (2 ** round);
+        for (let slot = 1; slot <= matchCount; slot += 1) {
+            rows.push({
+                tournament_id: tournamentId,
+                round,
+                slot,
+                player_a_id: round === 1 ? ids[(slot - 1) * 2] || null : null,
+                player_b_id: round === 1 ? ids[(slot - 1) * 2 + 1] || null : null,
+                status: 'pending'
+            });
+        }
+    }
+    const { error: insertError } = await supabase.from('tournament_matches').insert(rows);
+    if (insertError) return showFeedback('No se pudo generar el cuadro: ' + insertError.message, 'error');
+    const status = document.getElementById('admin-bracket-status');
+    if (status) status.textContent = `${ids.length} participantes · cuadro de ${size} plazas generado.`;
+    showFeedback('Cuadro generado. Ya puedes avanzar los ganadores.', 'ok');
+    await updateAllViews();
+}
+async function handleBracketWinner(event) {
+    if (!await requireAdmin()) return;
+    const button = event.currentTarget;
+    const matchId = button.dataset.bracketMatch;
+    const winnerId = button.dataset.bracketWinner;
+    const { data: match, error: matchError } = await supabase.from('tournament_matches').select('id,tournament_id,round,slot,status').eq('id', matchId).single();
+    if (matchError || !match) return showFeedback('No se encontró esa partida.', 'error');
+    if (match.status === 'completed') return;
+    const { error: updateError } = await supabase.from('tournament_matches').update({ winner_id: winnerId, status: 'completed', played_at: new Date().toISOString() }).eq('id', matchId);
+    if (updateError) return showFeedback('No se pudo avanzar el ganador: ' + updateError.message, 'error');
+    const nextRound = match.round + 1;
+    const nextSlot = Math.ceil(match.slot / 2);
+    const { data: nextMatch } = await supabase.from('tournament_matches').select('id,slot,player_a_id,player_b_id').eq('tournament_id', match.tournament_id).eq('round', nextRound).eq('slot', nextSlot).maybeSingle();
+    if (nextMatch) {
+        const update = match.slot % 2 ? { player_a_id: winnerId } : { player_b_id: winnerId };
+        await supabase.from('tournament_matches').update(update).eq('id', nextMatch.id);
+    }
+    showFeedback('Ganador avanzado en el cuadro.', 'ok');
+    await updateAllViews();
 }
 async function handleAddParticipant() {
     if (!await requireAdmin()) return;
@@ -827,8 +1068,10 @@ async function handleCloseTournament(event) {
     if (!await requireAdmin()) return;
     const t = document.getElementById('tournament-close-select').value;
     const w = document.getElementById('tournament-close-participant').value;
+    const cupKey = document.getElementById('tournament-close-cup')?.value || CUP_CATALOG[0].key;
     if (!t) return showFeedback('Selecciona un torneo.', 'error');
-    const { error } = await supabase.from('tournaments').update({ status: 'closed', winner_id: w || null, closed_at: new Date().toISOString() }).eq('id', t);
+    if (!w) return showFeedback('Selecciona al campeón antes de cerrar el torneo.', 'error');
+    const { error } = await supabase.rpc('finalize_tournament', { p_tournament_id: t, p_winner_id: w, p_cup_key: cupKey });
     if (error) return showFeedback('Error: ' + error.message, 'error');
     if (w) {
         const { data: winner } = await supabase.from('hoopers').select('badges').eq('id', w).single();
@@ -873,6 +1116,8 @@ async function updateAllViews() {
         showAdminPanel(),
         toggleAuthViews()
     ]);
+    const trophiesEl = document.getElementById('profile-modal-trophies');
+    if (trophiesEl) trophiesEl.innerHTML = renderTrophyCards(trophies || [], true);
     forceColorPhotos();
 }
 async function loadEditUser() {
@@ -1126,8 +1371,10 @@ function init() {
     document.getElementById('admin-user-select')?.addEventListener('change', loadAdminStats);
     document.getElementById('admin-badge-user')?.addEventListener('change', updateBadgeAssignment);
     document.getElementById('admin-badge-select')?.addEventListener('change', updateBadgePreview);
-    document.getElementById('tournament-close-select')?.addEventListener('change', () => { loadTournamentSelects(); loadTournamentParticipants(); });
+    document.getElementById('tournament-cup-select')?.addEventListener('change', updateCupPreview);
+    document.getElementById('tournament-close-select')?.addEventListener('change', loadTournamentParticipants);
     document.getElementById('tournament-create-form')?.addEventListener('submit', handleCreateTournament);
+    document.getElementById('tournament-generate-bracket')?.addEventListener('click', handleGenerateBracket);
     document.getElementById('tournament-add-btn')?.addEventListener('click', handleAddParticipant);
     document.getElementById('tournament-remove-btn')?.addEventListener('click', handleRemoveParticipant);
     document.getElementById('tournament-close-form')?.addEventListener('submit', handleCloseTournament);
