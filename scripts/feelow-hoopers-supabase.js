@@ -149,6 +149,16 @@ async function uploadAvatar(username, dataUrl) {
     const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(data.path);
     return urlData.publicUrl;
 }
+async function removeOldAvatar(avatarUrl, targetUserId = null) {
+    if (!avatarUrl) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+    const { error } = await supabase.functions.invoke('delete-avatar', {
+        body: { avatarUrl, ...(targetUserId ? { targetUserId } : {}) },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (error) throw new Error(error.message);
+}
 function setupPhotoPreview(inputId, previewId) {
     const input = document.getElementById(inputId);
     const preview = document.getElementById(previewId);
@@ -319,6 +329,7 @@ async function handleEditSelf(event) {
     const me = await getCurrentUser();
     if (!me) return showFeedback('No hay sesión activa.', 'error');
     const updateData = { city: document.getElementById('edit-self-city').value.trim() };
+    const oldAvatarUrl = me.avatar_url;
     const password = document.getElementById('edit-self-password').value;
     const photoFile = document.getElementById('edit-self-photo').files[0];
     if (photoFile) {
@@ -329,12 +340,16 @@ async function handleEditSelf(event) {
     }
     const { error: upErr } = await supabase.from('hoopers').update(updateData).eq('id', me.id);
     if (upErr) return showFeedback('Error al guardar: ' + upErr.message, 'error');
+    let avatarCleanupWarning = false;
+    if (photoFile && oldAvatarUrl && oldAvatarUrl !== updateData.avatar_url) {
+        try { await removeOldAvatar(oldAvatarUrl); } catch { avatarCleanupWarning = true; }
+    }
     if (password) {
         if (password.length < 4) return showFeedback('La nueva contraseña necesita 4+ caracteres.', 'error');
         const { error: pwErr } = await supabase.auth.updateUser({ password });
         if (pwErr) return showFeedback('Error de contraseña: ' + pwErr.message, 'error');
     }
-    showFeedback('Perfil actualizado.', 'ok');
+    showFeedback(avatarCleanupWarning ? 'Perfil actualizado. La foto anterior quedó pendiente de limpieza.' : 'Perfil actualizado.', avatarCleanupWarning ? 'error' : 'ok');
     invalidateCurrentUser();
     document.getElementById('edit-self-password').value = '';
     const pv = document.getElementById('edit-self-photo-preview');
@@ -725,14 +740,21 @@ async function handleAdminEdit(event) {
     const photoFile = document.getElementById('admin-edit-photo').files[0];
     if (photoFile) {
         try {
-            const { data: u } = await supabase.from('hoopers').select('username').eq('id', uid).single();
+            const { data: u } = await supabase.from('hoopers').select('username,avatar_url').eq('id', uid).single();
             const compressed = await getCompressedPhoto(photoFile);
             updateData.avatar_url = await uploadAvatar(u.username, compressed);
+            updateData._oldAvatarUrl = u.avatar_url;
         } catch (err) { return showFeedback(err.message, 'error'); }
     }
+    const oldAvatarUrl = updateData._oldAvatarUrl;
+    delete updateData._oldAvatarUrl;
     const { error } = await supabase.from('hoopers').update(updateData).eq('id', uid);
     if (error) return showFeedback('Error: ' + error.message, 'error');
-    showFeedback('Perfil actualizado.', 'ok');
+    let avatarCleanupWarning = false;
+    if (oldAvatarUrl && oldAvatarUrl !== updateData.avatar_url) {
+        try { await removeOldAvatar(oldAvatarUrl, uid); } catch { avatarCleanupWarning = true; }
+    }
+    showFeedback(avatarCleanupWarning ? 'Perfil actualizado. La foto anterior quedó pendiente de limpieza.' : 'Perfil actualizado.', avatarCleanupWarning ? 'error' : 'ok');
     const pv = document.getElementById('admin-edit-photo-preview');
     if (pv) { pv.innerHTML = ''; pv.classList.remove('has-image'); }
     updateAllViews();
