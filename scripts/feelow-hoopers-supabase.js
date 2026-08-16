@@ -746,9 +746,14 @@ async function handleAdminDelete(event) {
     if (!me) return showFeedback('La sesión de administrador ha caducado.', 'error');
     if (uid === me.id) return showFeedback('No puedes eliminarte a ti mismo.', 'error');
     if (!window.confirm('¿Eliminar definitivamente del registro?')) return;
-    const { error } = await supabase.from('hoopers').delete().eq('id', uid);
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.access_token) return showFeedback('La sesión de administrador ha caducado.', 'error');
+    const { error } = await supabase.functions.invoke('delete-account', {
+        body: { targetUserId: uid },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+    });
     if (error) return showFeedback('Error: ' + error.message, 'error');
-    showFeedback('Usuario eliminado.', 'ok');
+    showFeedback('Usuario eliminado del registro y de Authentication.', 'ok');
     updateAllViews();
 }
 async function loadTournamentSelects() {

@@ -34,8 +34,30 @@ export default {
 
     // @supabase/server puede exponer el identificador como userClaims.id
     // y conserva el claim JWT original como jwtClaims.sub.
-    const userId = ctx.userClaims?.id ?? ctx.userClaims?.sub ?? ctx.jwtClaims?.sub;
-    if (!userId) return fail("auth-user-id", "Unauthorized", 401);
+    const callerId = ctx.userClaims?.id ?? ctx.userClaims?.sub ?? ctx.jwtClaims?.sub;
+    if (!callerId) return fail("auth-user-id", "Unauthorized", 401);
+
+    let userId = callerId;
+    try {
+      const payload = await req.json().catch(() => ({}));
+      const requestedUserId = typeof payload?.targetUserId === "string"
+        ? payload.targetUserId
+        : null;
+
+      if (requestedUserId && requestedUserId !== callerId) {
+        const { data: callerProfile, error: callerProfileError } = await ctx.supabaseAdmin
+          .from("hoopers")
+          .select("role")
+          .eq("id", callerId)
+          .maybeSingle();
+
+        if (callerProfileError) return fail("read-caller-role", callerProfileError);
+        if (callerProfile?.role !== "admin") return fail("admin-required", "Administrator role required", 403);
+        userId = requestedUserId;
+      }
+    } catch (error) {
+      return fail("read-request", error);
+    }
 
     console.log(`[delete-account] start user=${userId}`);
 
